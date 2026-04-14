@@ -32,7 +32,8 @@
   --radius:    14px;
   --topbar-h:  0px;
   --bottombar-h: 68px;
-  --font:      'Nunito', sans-serif;
+  --cell-hl:   rgba(92,124,250,.13);
+  --cell-same: rgba(92,124,250,.22);
   --mono:      'JetBrains Mono', monospace;
 }
 [data-theme="dark"] {
@@ -45,6 +46,8 @@
   --accent2:   #748ffc;
   --border:    #2e3355;
   --shadow:    0 4px 24px rgba(0,0,0,.4);
+  --cell-hl:   rgba(92,124,250,.22);
+  --cell-same: rgba(92,124,250,.38);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { height: 100%; overflow: hidden; }
@@ -156,7 +159,7 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 }
 
 /* Board */
-.board-wrap { display: flex; justify-content: center; flex-shrink: 0; width: 100%; }
+.board-wrap { display: flex; justify-content: center; flex-shrink: 0; width: 100%; position: relative; }
 .sudoku-board {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
@@ -193,9 +196,31 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .cell[data-row="8"]   { border-bottom: none; }
 .cell.given  { color: var(--text); font-weight: 700; }
 .cell.user   { color: var(--accent2); }
-.cell.error  { color: var(--danger) !important; background: rgba(224,49,49,.12) !important; }
-.cell.selected { background: rgba(59,91,219,.18) !important; }
-.cell.highlight { background: rgba(59,91,219,.07); }
+.cell.error  { color: var(--danger) !important; background: rgba(224,49,49,.18) !important; }
+
+/* Seçili hücre — her iki temada da belirgin */
+.cell.selected {
+  background: var(--accent) !important;
+  color: #fff !important;
+  z-index: 1;
+}
+/* Seçili + hatalı: kırmızı zemin, seçili renk değil */
+.cell.selected.error {
+  background: rgba(224,49,49,.5) !important;
+  color: #fff !important;
+}
+.cell.selected.given { color: #fff !important; }
+.cell.selected.user  { color: #fff !important; }
+
+/* Aynı satır/sütun/kutu vurgusu */
+.cell.highlight {
+  background: var(--cell-hl) !important;
+}
+
+/* Aynı rakam vurgusu (seçili sayıyla eşleşen) */
+.cell.same-num {
+  background: var(--cell-same) !important;
+}
 .cell.hint-flash { animation: hintFlash .6s ease; }
 @keyframes hintFlash {
   0%,100% { background: var(--bg2); }
@@ -210,7 +235,27 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 }
 .cell .note { font-size: clamp(6px, 1.8vw, 9px); color: var(--text2); display: flex; align-items: center; justify-content: center; }
 
-/* Numpad */
+/* Board pause veil */
+.board-pause-veil {
+  position: absolute;
+  inset: 0;
+  background: rgba(15,17,23,.82);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 10;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.board-pause-veil.hidden { display: none !important; }
+[data-theme="light"] .board-pause-veil { background: rgba(240,242,248,.85); }
+.veil-icon { font-size: 40px; }
+.veil-text { font-size: 15px; font-weight: 900; color: var(--text); letter-spacing: 1px; }
 .numpad-wrap { flex-shrink: 0; width: 100%; }
 .numpad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 6px 0; width: 100%; }
 .num-btn {
@@ -397,7 +442,76 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .no-show-label input:checked ~ .custom-check { background: var(--accent); border-color: var(--accent); }
 .no-show-label input:checked ~ .custom-check::after { content: '✓'; color: #fff; font-size: 12px; font-weight: 800; }
 
-/* Error Modal */
+/* Pause Modal */
+.pause-modal {
+  background: var(--bg2);
+  border-radius: 24px;
+  padding: 36px 28px 32px;
+  width: calc(100% - 48px);
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--border);
+  animation: fadeIn .2s;
+}
+.pause-icon { font-size: 52px; line-height: 1; }
+.pause-title { font-size: 26px; font-weight: 900; }
+.pause-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg3);
+  border-radius: 12px;
+  padding: 10px 20px;
+  width: 100%;
+  justify-content: center;
+}
+.pause-diff { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+.pause-time { font-size: 20px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+.pause-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+
+/* Pause button in game topbar */
+.pause-btn {
+  font-size: 18px;
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.pause-btn:active { background: var(--accent); }
+
+/* Resume banner on home screen */
+.resume-banner {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(59,91,219,.3);
+  animation: slideDown .3s cubic-bezier(.16,1,.3,1);
+}
+.resume-banner.hidden { display: none !important; }
+@keyframes slideDown { from { transform: translateY(-12px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+.resume-info { display: flex; align-items: center; gap: 10px; }
+.resume-icon { font-size: 24px; }
+.resume-title { font-size: 13px; font-weight: 900; color: #fff; }
+.resume-sub   { font-size: 11px; color: rgba(255,255,255,.75); font-family: var(--mono); margin-top: 2px; }
+.resume-banner .btn-primary {
+  background: rgba(255,255,255,.2);
+  border: 1.5px solid rgba(255,255,255,.4);
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 .error-modal { background: var(--bg2); border-radius: 20px; padding: 20px; width: calc(100% - 32px); max-width: 400px; max-height: 80vh; display: flex; flex-direction: column; gap: 12px; animation: fadeIn .2s; }
 @keyframes fadeIn { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: scale(1); } }
 .error-header { display: flex; align-items: center; gap: 10px; }
@@ -443,6 +557,23 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
     </div>
   </div>
 
+  <!-- PAUSE OVERLAY -->
+  <div id="pause-overlay" class="overlay hidden" style="align-items:center;justify-content:center">
+    <div class="pause-modal">
+      <div class="pause-icon">⏸</div>
+      <h2 class="pause-title">Duraklatıldı</h2>
+      <div class="pause-info">
+        <span class="pause-diff" id="pause-diff-label">Orta</span>
+        <span class="pause-time" id="pause-time-label">00:00</span>
+      </div>
+      <div class="pause-actions">
+        <button class="btn-primary big" id="pause-resume">▶ Devam Et</button>
+        <button class="btn-secondary big" id="pause-new">🔄 Yeni Oyun</button>
+        <button class="btn-secondary big" id="pause-home">⊞ Ana Sayfa</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ERROR -->
   <div id="error-overlay" class="overlay hidden" style="align-items:center;justify-content:center">
     <div class="error-modal">
@@ -469,6 +600,17 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 
     <!-- HOME -->
     <div id="screen-home" class="screen active">
+      <!-- Devam Et banner — sadece aktif oyun varsa görünür -->
+      <div id="resume-banner" class="resume-banner hidden">
+        <div class="resume-info">
+          <span class="resume-icon">⏸</span>
+          <div>
+            <div class="resume-title">Oyun duraklatıldı</div>
+            <div class="resume-sub" id="resume-sub">Orta · 00:00</div>
+          </div>
+        </div>
+        <button class="btn-primary" id="resume-btn">▶ Devam</button>
+      </div>
       <div class="home-hero">
         <div class="hero-title">SUDOKU</div>
         <div class="hero-sub">Zorluk seviyeni seç</div>
@@ -491,10 +633,15 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
           <span class="diff-label" id="current-diff-label">Orta</span>
           <span class="timer-display" id="timer-display">00:00</span>
         </div>
+        <button class="pause-btn" id="pause-btn" title="Duraklat">⏸</button>
         <button class="hint-btn" id="hint-btn">💡 <span id="hint-count">3</span></button>
       </div>
       <div class="board-wrap">
         <div id="sudoku-board" class="sudoku-board"></div>
+        <div id="board-pause-veil" class="board-pause-veil hidden">
+          <span class="veil-icon">⏸</span>
+          <span class="veil-text">Duraklatıldı</span>
+        </div>
       </div>
       <div class="numpad-wrap">
         <div class="numpad">
@@ -711,6 +858,7 @@ let state = {
   selected:null, level:3, levelName:'Orta',
   timerSec:0, timerInt:null, hints:3, hintsUsed:0,
   history:[], isComplete:false, notesMode:false,
+  isPaused:false,
 };
 const LEVEL_NAMES = {1:'Başlangıç',2:'Kolay',3:'Orta',4:'Zor',5:'Uzman',6:'Kabus'};
 const $ = id => document.getElementById(id);
@@ -724,11 +872,10 @@ function showScreen(id) {
 
 function startTimer() {
   clearInterval(state.timerInt);
-  state.timerSec = 0;
   updateTimerDisplay();
   state.timerInt = setInterval(() => { state.timerSec++; updateTimerDisplay(); }, 1000);
 }
-function stopTimer() { clearInterval(state.timerInt); }
+function stopTimer() { clearInterval(state.timerInt); state.timerInt = null; }
 function updateTimerDisplay() {
   const m = String(Math.floor(state.timerSec/60)).padStart(2,'0');
   const s = String(state.timerSec%60).padStart(2,'0');
@@ -736,6 +883,106 @@ function updateTimerDisplay() {
 }
 function formatTime(sec) {
   return String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0');
+}
+
+/* ---- PAUSE / RESUME ---- */
+function pauseGame() {
+  if (state.isComplete || !state.puzzle || state.isPaused) return;
+  state.isPaused = true;
+  stopTimer();
+  saveCurrentGame();
+  // Board'u örtle
+  const veil = $('board-pause-veil');
+  if (veil) veil.classList.remove('hidden');
+  // Pause modal'ı göster
+  $('pause-diff-label').textContent = state.levelName;
+  $('pause-time-label').textContent = formatTime(state.timerSec);
+  $('pause-overlay').classList.remove('hidden');
+}
+
+function resumeGame() {
+  if (!state.isPaused) return;
+  state.isPaused = false;
+  $('pause-overlay').classList.add('hidden');
+  // Board'u aç
+  const veil = $('board-pause-veil');
+  if (veil) veil.classList.add('hidden');
+  startTimer();
+}
+
+/* ---- SAVE / LOAD current game ---- */
+function saveCurrentGame() {
+  if (!state.puzzle || state.isComplete) {
+    localStorage.removeItem('sudoku_saved');
+    return;
+  }
+  // notes: Set[][]  → number[][]
+  const notesSerial = state.notes
+    ? state.notes.map(row => row.map(s => Array.from(s)))
+    : null;
+  const save = {
+    puzzle:    state.puzzle,
+    solution:  state.solution,
+    board:     state.board,
+    notes:     notesSerial,
+    level:     state.level,
+    levelName: state.levelName,
+    timerSec:  state.timerSec,
+    hints:     state.hints,
+    hintsUsed: state.hintsUsed,
+    history:   state.history,
+    notesMode: state.notesMode,
+  };
+  localStorage.setItem('sudoku_saved', JSON.stringify(save));
+}
+
+function loadSavedGame() {
+  const raw = localStorage.getItem('sudoku_saved');
+  if (!raw) return false;
+  try {
+    const save = JSON.parse(raw);
+    state.puzzle    = save.puzzle;
+    state.solution  = save.solution;
+    state.board     = save.board;
+    state.level     = save.level;
+    state.levelName = save.levelName;
+    state.timerSec  = save.timerSec;
+    state.hints     = save.hints;
+    state.hintsUsed = save.hintsUsed;
+    state.history   = save.history;
+    state.notesMode = save.notesMode;
+    state.isComplete= false;
+    state.isPaused  = true;
+    state.selected  = null;
+    // notes: number[][] → Set[][]
+    state.notes = save.notes
+      ? save.notes.map(row => row.map(arr => new Set(arr)))
+      : Array.from({length:9},()=>Array.from({length:9},()=>new Set()));
+    return true;
+  } catch(e) {
+    localStorage.removeItem('sudoku_saved');
+    return false;
+  }
+}
+
+function updateResumeBanner() {
+  const raw = localStorage.getItem('sudoku_saved');
+  const banner = $('resume-banner');
+  if (!banner) return;
+  if (raw) {
+    try {
+      const save = JSON.parse(raw);
+      $('resume-sub').textContent = `${save.levelName} · ${formatTime(save.timerSec)}`;
+      banner.classList.remove('hidden');
+    } catch(e) { banner.classList.add('hidden'); }
+  } else {
+    banner.classList.add('hidden');
+  }
+}
+
+function clearSavedGame() {
+  localStorage.removeItem('sudoku_saved');
+  updateResumeBanner();
 }
 
 function renderBoard() {
@@ -763,13 +1010,18 @@ function refreshBoard() {
     if (given) cell.classList.add('given');
     else if (val !== 0) cell.classList.add('user');
     if (sel) {
-      if (sel.row === r && sel.col === c) cell.classList.add('selected');
-      else {
+      if (sel.row === r && sel.col === c) {
+        cell.classList.add('selected');
+      } else {
         const sameBox = Math.floor(sel.row/3)===Math.floor(r/3) && Math.floor(sel.col/3)===Math.floor(c/3);
         if (sel.row===r || sel.col===c || sameBox) cell.classList.add('highlight');
+        // Aynı rakam vurgusu (highlight'tan üstün — sonra eklendiği için override eder)
+        const sv = state.board[sel.row][sel.col];
+        if (sv !== 0 && val === sv) {
+          cell.classList.remove('highlight');
+          cell.classList.add('same-num');
+        }
       }
-      const sv = state.board[sel.row][sel.col];
-      if (sv !== 0 && val === sv) cell.classList.add('highlight');
     }
     if (!given && val !== 0 && val !== state.solution[r][c]) cell.classList.add('error');
     if (val !== 0) {
@@ -791,10 +1043,13 @@ function refreshBoard() {
   });
 }
 
-function selectCell(r, c) { state.selected = {row:r, col:c}; refreshBoard(); }
+function selectCell(r, c) {
+  if (state.isPaused) return;
+  state.selected = {row:r, col:c}; refreshBoard();
+}
 
 function inputNumber(num) {
-  if (!state.selected || state.isComplete) return;
+  if (!state.selected || state.isComplete || state.isPaused) return;
   const {row, col} = state.selected;
   if (state.puzzle[row][col] !== 0) return;
   if (state.notesMode && num !== 0) {
@@ -808,17 +1063,19 @@ function inputNumber(num) {
   state.history.push({row, col, prev, next:num});
   refreshBoard();
   checkComplete();
+  if (!state.isComplete) saveCurrentGame();
 }
 
 function undoLast() {
-  if (!state.history.length) return;
+  if (!state.history.length || state.isPaused) return;
   const {row, col, prev} = state.history.pop();
   state.board[row][col] = prev;
   refreshBoard();
+  saveCurrentGame();
 }
 
 function useHint() {
-  if (state.hints <= 0 || state.isComplete) return;
+  if (state.hints <= 0 || state.isComplete || state.isPaused) return;
   const empties = [];
   for (let r = 0; r < 9; r++)
     for (let c = 0; c < 9; c++)
@@ -834,6 +1091,7 @@ function useHint() {
   const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
   if (cell) { cell.classList.add('hint-flash'); setTimeout(()=>cell.classList.remove('hint-flash'),700); }
   checkComplete();
+  if (!state.isComplete) saveCurrentGame();
 }
 
 function checkComplete() {
@@ -842,6 +1100,7 @@ function checkComplete() {
       if (state.board[r][c] !== state.solution[r][c]) return;
   state.isComplete = true;
   stopTimer();
+  clearSavedGame();
   saveStats();
   setTimeout(() => {
     $('win-time').textContent = formatTime(state.timerSec);
@@ -871,9 +1130,11 @@ function renderStats() {
 }
 
 function startGame(level) {
+  clearSavedGame();
   state.level=level; state.levelName=LEVEL_NAMES[level];
   state.hints=3; state.hintsUsed=0; state.history=[];
   state.selected=null; state.isComplete=false; state.notesMode=false;
+  state.isPaused=false; state.timerSec=0;
   state.notes = Array.from({length:9},()=>Array.from({length:9},()=>new Set()));
   $('hint-count').textContent = 3;
   $('current-diff-label').textContent = state.levelName;
@@ -894,8 +1155,12 @@ function startGame(level) {
     }
     if (showLoader) $('loading-overlay').classList.add('hidden');
     showScreen('screen-game');
+    // Yeni oyunda veil'i gizle
+    const veil = $('board-pause-veil');
+    if (veil) veil.classList.add('hidden');
     renderBoard();
     startTimer();
+    saveCurrentGame();
   }, showLoader ? 50 : 0);
 }
 
@@ -920,6 +1185,16 @@ function applyTheme(t) {
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   initChangelog();
+  updateResumeBanner();
+
+  // Sekme/uygulama arka plana geçince otomatik duraklat
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && state.puzzle && !state.isComplete && !state.isPaused) {
+      stopTimer();
+      state.isPaused = true;
+      saveCurrentGame();
+    }
+  });
 
   document.querySelectorAll('.diff-btn').forEach(btn => {
     btn.addEventListener('click', () => startGame(+btn.dataset.level));
@@ -930,20 +1205,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
   $('hint-btn').addEventListener('click', useHint);
   $('undo-btn').addEventListener('click', undoLast);
+  $('pause-btn').addEventListener('click', pauseGame);
+
+  // Board veil tıklanınca devam et
+  $('board-pause-veil').addEventListener('click', resumeGame);
+
+  // Pause overlay buttons
+  $('pause-resume').addEventListener('click', resumeGame);
+  $('pause-new').addEventListener('click', () => {
+    $('pause-overlay').classList.add('hidden');
+    state.isPaused = false;
+    startGame(state.level);
+  });
+  $('pause-home').addEventListener('click', () => {
+    $('pause-overlay').classList.add('hidden');
+    state.isPaused = false;
+    stopTimer();
+    // Oyun kayıtlı kalır (duraklatılmış olarak)
+    showScreen('screen-home');
+    updateResumeBanner();
+  });
+
   $('notes-btn').addEventListener('click', () => {
+    if (state.isPaused) return;
     state.notesMode = !state.notesMode;
     $('notes-btn').classList.toggle('active-notes', state.notesMode);
     $('notes-btn').textContent = state.notesMode ? '✏️ Not ●' : '✏️ Not';
   });
-  $('back-home').addEventListener('click', () => { stopTimer(); showScreen('screen-home'); });
+
+  // Ana sayfaya git → duraklat ve kaydet
+  $('back-home').addEventListener('click', () => {
+    if (state.puzzle && !state.isComplete) {
+      stopTimer();
+      state.isPaused = true;
+      saveCurrentGame();
+    }
+    showScreen('screen-home');
+    updateResumeBanner();
+  });
+
   $('new-game-btn').addEventListener('click', () => startGame(state.level));
   $('theme-toggle').addEventListener('click', () => {
     applyTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
   });
   $('win-new').addEventListener('click', () => startGame(state.level));
-  $('win-home').addEventListener('click', () => showScreen('screen-home'));
+  $('win-home').addEventListener('click', () => { showScreen('screen-home'); updateResumeBanner(); });
 
-  $('bb-home').addEventListener('click', () => { stopTimer(); showScreen('screen-home'); });
+  // Resume banner
+  $('resume-btn').addEventListener('click', () => {
+    if (loadSavedGame()) {
+      $('hint-count').textContent = state.hints;
+      $('current-diff-label').textContent = state.levelName;
+      $('notes-btn').textContent = state.notesMode ? '✏️ Not ●' : '✏️ Not';
+      $('notes-btn').classList.toggle('active-notes', state.notesMode);
+      showScreen('screen-game');
+      renderBoard();
+      updateTimerDisplay();
+      // Veil göster (duraklatılmış)
+      const veil = $('board-pause-veil');
+      if (veil) veil.classList.remove('hidden');
+      // Pause modal göster
+      $('pause-diff-label').textContent = state.levelName;
+      $('pause-time-label').textContent = formatTime(state.timerSec);
+      $('pause-overlay').classList.remove('hidden');
+    }
+  });
+
+  $('bb-home').addEventListener('click', () => {
+    if (state.puzzle && !state.isComplete && !state.isPaused) {
+      stopTimer();
+      state.isPaused = true;
+      saveCurrentGame();
+    }
+    // Pause overlay açıksa kapat (ana sayfaya gidiyoruz)
+    $('pause-overlay').classList.add('hidden');
+    showScreen('screen-home');
+    updateResumeBanner();
+  });
+
   $('bb-stats').addEventListener('click', () => { renderStats(); $('stats-panel').classList.remove('hidden'); $('panel-backdrop').classList.remove('hidden'); });
   $('stats-close').addEventListener('click', closePanel);
   $('panel-backdrop').addEventListener('click', closePanel);
@@ -961,6 +1300,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('keydown', e => {
     const key = e.key;
+    // Escape veya Space → duraklat/devam et
+    if (key === 'Escape' || key === ' ') {
+      e.preventDefault();
+      if (state.puzzle && !state.isComplete) {
+        if (state.isPaused) resumeGame();
+        else pauseGame();
+      }
+      return;
+    }
+    if (state.isPaused) return;
     if (key>='1'&&key<='9') inputNumber(+key);
     if (key==='0'||key==='Backspace'||key==='Delete') inputNumber(0);
     if (!state.selected) return;
