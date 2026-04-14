@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>sebasmobil sudoku v1.0</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#f0f2f8" media="(prefers-color-scheme: light)" id="theme-color-light">
+  <meta name="theme-color" content="#0f1117" media="(prefers-color-scheme: dark)" id="theme-color-dark">
+  <meta name="theme-color" content="#f0f2f8" id="theme-color-meta">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ========================================
+   sebasmobil sudoku — GNU AGPL v3.0
+======================================== */
+:root {
+  --bg:        #f0f2f8;
+  --bg2:       #ffffff;
+  --bg3:       #e4e8f4;
+  --text:      #1a1d2e;
+  --text2:     #5a5f7a;
+  --accent:    #3b5bdb;
+  --accent2:   #5c7cfa;
+  --danger:    #e03131;
+  --success:   #2f9e44;
+  --warn:      #f08c00;
+  --border:    #d0d5ee;
+  --shadow:    0 4px 24px rgba(59,91,219,.12);
+  --radius:    14px;
+  --topbar-h:  0px;
+  --bottombar-h: 68px;
+  --font:      'Nunito', sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+}
+[data-theme="dark"] {
+  --bg:        #0f1117;
+  --bg2:       #1a1d2e;
+  --bg3:       #252840;
+  --text:      #eef0ff;
+  --text2:     #8890b8;
+  --accent:    #5c7cfa;
+  --accent2:   #748ffc;
+  --border:    #2e3355;
+  --shadow:    0 4px 24px rgba(0,0,0,.4);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; overflow: hidden; }
+body {
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  transition: background .3s, color .3s;
+}
+button { cursor: pointer; border: none; background: none; font-family: var(--font); }
+
+#app {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-top: 0;
+  padding-bottom: calc(var(--bottombar-h) + env(safe-area-inset-bottom, 0px));
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Hero title — fit exactly on one line, no overflow */
+.hero-title {
+  font-size: clamp(28px, 11.5vw, 72px);
+  font-weight: 900;
+  letter-spacing: 0px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+  white-space: nowrap;
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 0 4px;
+}
+
+/* Screens */
+.screen { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.screen.hidden { display: none !important; }
+.screen.active { display: flex; }
+
+/* Home */
+.home-hero { text-align: center; padding: 12px 0 4px; overflow: hidden; }
+.hero-sub { font-size: 13px; color: var(--text2); margin-top: 4px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+
+.difficulty-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.diff-btn {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  transition: all .18s;
+  box-shadow: var(--shadow);
+  text-align: left;
+  min-width: 0;
+  width: 100%;
+}
+.diff-btn:active { transform: scale(.96); }
+.diff-btn:hover { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,91,219,.12); }
+.diff-icon { font-size: 22px; }
+.diff-name { font-size: 15px; font-weight: 900; color: var(--text); }
+.diff-desc { font-size: 11px; color: var(--text2); font-family: var(--mono); }
+
+/* Game Screen */
+.game-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 4px 0 6px;
+  flex-shrink: 0;
+  width: 100%;
+}
+.back-btn {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--bg3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.game-info { display: flex; flex-direction: column; align-items: center; gap: 1px; flex: 1; }
+.diff-label { font-size: 10px; font-weight: 700; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+.timer-display { font-size: 17px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+.hint-btn {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: linear-gradient(135deg,#f08c00,#fd7014);
+  color: #fff;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Board */
+.board-wrap { display: flex; justify-content: center; flex-shrink: 0; width: 100%; }
+.sudoku-board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 0;
+  border: 3px solid var(--text);
+  border-radius: 10px;
+  overflow: hidden;
+  width: min(calc(100vw - 32px), 400px);
+  max-width: calc(100vw - 32px);
+  aspect-ratio: 1;
+  box-shadow: var(--shadow);
+}
+.cell {
+  background: var(--bg2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: clamp(14px, 4vw, 22px);
+  font-weight: 600;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .12s, color .12s;
+  position: relative;
+  color: var(--text);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.cell:nth-child(3n)   { border-right: 2px solid var(--text2); }
+.cell:nth-child(9n)   { border-right: none; }
+.cell[data-row="2"],
+.cell[data-row="5"]   { border-bottom: 2px solid var(--text2); }
+.cell[data-row="8"]   { border-bottom: none; }
+.cell.given  { color: var(--text); font-weight: 700; }
+.cell.user   { color: var(--accent2); }
+.cell.error  { color: var(--danger) !important; background: rgba(224,49,49,.12) !important; }
+.cell.selected { background: rgba(59,91,219,.18) !important; }
+.cell.highlight { background: rgba(59,91,219,.07); }
+.cell.hint-flash { animation: hintFlash .6s ease; }
+@keyframes hintFlash {
+  0%,100% { background: var(--bg2); }
+  50%      { background: rgba(47,158,68,.3); }
+}
+.cell .notes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%; height: 100%;
+  padding: 1px;
+}
+.cell .note { font-size: clamp(6px, 1.8vw, 9px); color: var(--text2); display: flex; align-items: center; justify-content: center; }
+
+/* Numpad */
+.numpad-wrap { flex-shrink: 0; width: 100%; }
+.numpad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 6px 0; width: 100%; }
+.num-btn {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: var(--mono);
+  padding: 10px 0;
+  color: var(--text);
+  transition: all .12s;
+  box-shadow: var(--shadow);
+  min-height: 44px;
+}
+.num-btn:active { transform: scale(.92); background: var(--accent); color: #fff; border-color: var(--accent); }
+.erase-btn { font-size: 16px; }
+.action-row { display: flex; gap: 8px; }
+.action-btn {
+  flex: 1;
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px;
+  color: var(--text2);
+  transition: background .15s;
+}
+.action-btn:active { background: var(--accent); color: #fff; }
+.active-notes { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
+
+/* Win Screen */
+#screen-win { align-items: center; justify-content: center; min-height: 100%; }
+.win-card {
+  background: var(--bg2);
+  border-radius: 24px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--border);
+  max-width: 340px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+.win-emoji { font-size: 60px; }
+.win-title { font-size: 28px; font-weight: 800; }
+.win-sub { font-size: 14px; color: var(--text2); }
+.win-stats { display: flex; gap: 24px; }
+.win-stat { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.stat-val { font-size: 22px; font-weight: 800; font-family: var(--mono); color: var(--accent); }
+.stat-lbl { font-size: 11px; color: var(--text2); font-weight: 700; text-transform: uppercase; }
+
+/* Buttons */
+.btn-primary { background: var(--accent); color: #fff; border-radius: 12px; font-size: 15px; font-weight: 700; padding: 12px 24px; transition: opacity .15s; }
+.btn-primary:active { opacity: .8; }
+.btn-primary.big { width: 100%; padding: 14px; font-size: 16px; border-radius: 14px; }
+.btn-secondary { background: var(--bg3); color: var(--text); border-radius: 12px; font-size: 15px; font-weight: 700; padding: 12px 24px; border: 1.5px solid var(--border); }
+.btn-secondary.big { width: 100%; padding: 14px; font-size: 16px; border-radius: 14px; }
+.btn-ok { background: var(--accent); color: #fff; border-radius: 12px; font-size: 15px; font-weight: 700; padding: 12px 32px; transition: opacity .15s; }
+.btn-ok:active { opacity: .8; }
+
+/* Safe area for iPhone */
+.bottom-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--bottombar-h);
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 100;
+  box-shadow: 0 -2px 16px rgba(0,0,0,.06);
+  gap: 0;
+}
+.bb-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 2px;
+  border-radius: 10px;
+  color: var(--text2);
+  transition: color .15s, background .15s;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  min-width: 0;
+}
+.bb-btn .bb-icon { font-size: 19px; }
+.bb-btn.active, .bb-btn:active { color: var(--accent); background: rgba(59,91,219,.08); }
+/* Brand in bottom bar */
+.bb-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 4px 6px;
+  flex: 1.4;
+}
+.bb-brand-name { font-size: 12px; font-weight: 900; color: var(--accent); letter-spacing: -.3px; }
+.bb-brand-ver  { font-size: 9px; font-family: var(--mono); color: var(--text2); }
+/* Theme toggle in bottom bar */
+.bb-theme {
+  flex: 0 0 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 20px;
+  color: var(--text2);
+  transition: background .15s;
+}
+.bb-theme:active { background: var(--bg3); }
+
+/* Panels */
+.panel {
+  position: fixed;
+  bottom: var(--bottombar-h);
+  left: 0; right: 0;
+  background: var(--bg2);
+  border-top: 1.5px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  z-index: 200;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -8px 32px rgba(0,0,0,.15);
+  transition: transform .3s ease, opacity .3s ease;
+}
+.panel.hidden { transform: translateY(100%); display: flex !important; pointer-events: none; opacity: 0; }
+.panel-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 12px; border-bottom: 1px solid var(--border); }
+.panel-header h3 { font-size: 17px; font-weight: 800; }
+.panel-close { font-size: 18px; color: var(--text2); width: 30px; height: 30px; display:flex; align-items:center; justify-content:center; border-radius: 50%; }
+.panel-body { overflow-y: auto; padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 12px; }
+.panel-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 190; }
+.panel-backdrop.hidden { display: none; }
+.stat-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.stat-row:last-child { border-bottom: none; }
+.stat-row-label { font-size: 13px; color: var(--text2); font-weight: 700; }
+.stat-row-val { font-size: 14px; font-weight: 800; font-family: var(--mono); color: var(--accent); text-align: right; }
+.contact-action-btn { display: flex; align-items: center; gap: 14px; width: 100%; background: var(--bg3); border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 16px; text-align: left; color: var(--text); transition: all .15s; }
+.contact-action-btn:active { background: var(--accent); color: #fff; }
+
+/* Loading */
+.loading-box { background: var(--bg2); border-radius: 20px; padding: 36px 32px; display: flex; flex-direction: column; align-items: center; gap: 14px; box-shadow: var(--shadow); }
+.spinner { width: 44px; height: 44px; border: 4px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 16px; font-weight: 800; color: var(--text); }
+.loading-sub  { font-size: 12px; color: var(--text2); text-align: center; }
+
+/* Overlays */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 500; display: flex; align-items: flex-end; backdrop-filter: blur(4px); }
+.overlay.hidden { display: none !important; }
+
+/* Changelog */
+.changelog-modal { background: var(--bg2); border-radius: 24px 24px 0 0; width: 100%; max-height: 82vh; display: flex; flex-direction: column; animation: slideUp .35s cubic-bezier(.16,1,.3,1); }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.changelog-header { padding: 20px 20px 12px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.changelog-logo { font-size: 13px; font-weight: 800; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
+.changelog-version { font-size: 11px; font-family: var(--mono); color: var(--text2); background: var(--bg3); padding: 2px 8px; border-radius: 20px; }
+.changelog-title { font-size: 22px; font-weight: 800; }
+.changelog-body { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+.cl-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.cl-item:last-child { border-bottom: none; }
+.cl-emoji { font-size: 22px; flex-shrink: 0; }
+.cl-text { display: flex; flex-direction: column; gap: 3px; }
+.cl-text strong { font-size: 14px; font-weight: 700; }
+.cl-text span   { font-size: 12px; color: var(--text2); line-height: 1.5; }
+.changelog-footer { padding: 16px 20px 28px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.no-show-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text2); cursor: pointer; }
+.no-show-label input { display: none; }
+.custom-check { width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0; background: var(--bg3); }
+.no-show-label input:checked ~ .custom-check { background: var(--accent); border-color: var(--accent); }
+.no-show-label input:checked ~ .custom-check::after { content: '✓'; color: #fff; font-size: 12px; font-weight: 800; }
+
+/* Error Modal */
+.error-modal { background: var(--bg2); border-radius: 20px; padding: 20px; width: calc(100% - 32px); max-width: 400px; max-height: 80vh; display: flex; flex-direction: column; gap: 12px; animation: fadeIn .2s; }
+@keyframes fadeIn { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: scale(1); } }
+.error-header { display: flex; align-items: center; gap: 10px; }
+.error-icon { font-size: 24px; }
+.error-header h3 { font-size: 17px; font-weight: 800; color: var(--danger); }
+.error-body { background: var(--bg3); border-radius: 12px; padding: 12px; overflow-y: auto; max-height: 40vh; display: flex; flex-direction: column; gap: 8px; }
+.error-detail-row { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; }
+.error-detail-row .lbl { font-weight: 700; color: var(--text2); min-width: 50px; flex-shrink: 0; }
+.stack-row { flex-direction: column; }
+.stack-row pre { font-family: var(--mono); font-size: 10px; white-space: pre-wrap; word-break: break-all; color: var(--text2); margin-top: 4px; }
+.error-footer { display: flex; gap: 8px; }
+.error-footer .btn-secondary, .error-footer .btn-primary { flex: 1; padding: 12px; border-radius: 12px; }
+</style>
+</head>
+<body>
+
+  <!-- LOADING -->
+  <div id="loading-overlay" class="overlay hidden" style="align-items:center;justify-content:center">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <div class="loading-text">Bulmaca hazırlanıyor…</div>
+      <div class="loading-sub" id="loading-diff">Kabus seviyesi biraz zaman alabilir</div>
+    </div>
+  </div>
+
+  <!-- CHANGELOG -->
+  <div id="changelog-overlay" class="overlay hidden">
+    <div class="changelog-modal">
+      <div class="changelog-header">
+        <div class="changelog-logo">sebasmobil</div>
+        <div class="changelog-version" id="cl-version">v1.0</div>
+        <h2 class="changelog-title">🎉 Yenilikler</h2>
+      </div>
+      <div class="changelog-body" id="changelog-body"></div>
+      <div class="changelog-footer">
+        <label class="no-show-label">
+          <input type="checkbox" id="no-show-check" />
+          <span class="custom-check"></span>
+          Bir daha gösterme
+        </label>
+        <button class="btn-ok" id="changelog-ok">Anlaşıldı ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div id="error-overlay" class="overlay hidden" style="align-items:center;justify-content:center">
+    <div class="error-modal">
+      <div class="error-header">
+        <span class="error-icon">⚠️</span>
+        <h3>Bir Hata Oluştu</h3>
+      </div>
+      <div class="error-body">
+        <div class="error-detail-row"><span class="lbl">Mesaj:</span><span id="err-message"></span></div>
+        <div class="error-detail-row"><span class="lbl">Dosya:</span><span id="err-source"></span></div>
+        <div class="error-detail-row"><span class="lbl">Satır:</span><span id="err-line"></span></div>
+        <div class="error-detail-row"><span class="lbl">Sütun:</span><span id="err-col"></span></div>
+        <div class="error-detail-row stack-row"><span class="lbl">Stack:</span><pre id="err-stack"></pre></div>
+      </div>
+      <div class="error-footer">
+        <button class="btn-secondary" id="err-close">Kapat</button>
+        <button class="btn-primary" id="err-copy">📋 Kopyala</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app">
+
+    <!-- HOME -->
+    <div id="screen-home" class="screen active">
+      <div class="home-hero">
+        <div class="hero-title">SUDOKU</div>
+        <div class="hero-sub">Zorluk seviyeni seç</div>
+      </div>
+      <div class="difficulty-grid">
+        <button class="diff-btn" data-level="1"><span class="diff-icon">🌱</span><span class="diff-name">Başlangıç</span><span class="diff-desc">50 ipucu • Çok kolay</span></button>
+        <button class="diff-btn" data-level="2"><span class="diff-icon">🌿</span><span class="diff-name">Kolay</span><span class="diff-desc">40 ipucu • Rahat</span></button>
+        <button class="diff-btn" data-level="3"><span class="diff-icon">☀️</span><span class="diff-name">Orta</span><span class="diff-desc">32 ipucu • Dengeli</span></button>
+        <button class="diff-btn" data-level="4"><span class="diff-icon">🔥</span><span class="diff-name">Zor</span><span class="diff-desc">26 ipucu • Zorlu</span></button>
+        <button class="diff-btn" data-level="5"><span class="diff-icon">💀</span><span class="diff-name">Uzman</span><span class="diff-desc">22 ipucu • Çok zor</span></button>
+        <button class="diff-btn" data-level="6"><span class="diff-icon">👹</span><span class="diff-name">Kabus</span><span class="diff-desc">17 ipucu • Acımasız</span></button>
+      </div>
+    </div>
+
+    <!-- GAME -->
+    <div id="screen-game" class="screen hidden">
+      <div class="game-topbar">
+        <button class="back-btn" id="back-home">← Ana Sayfa</button>
+        <div class="game-info">
+          <span class="diff-label" id="current-diff-label">Orta</span>
+          <span class="timer-display" id="timer-display">00:00</span>
+        </div>
+        <button class="hint-btn" id="hint-btn">💡 <span id="hint-count">3</span></button>
+      </div>
+      <div class="board-wrap">
+        <div id="sudoku-board" class="sudoku-board"></div>
+      </div>
+      <div class="numpad-wrap">
+        <div class="numpad">
+          <button class="num-btn" data-num="1">1</button>
+          <button class="num-btn" data-num="2">2</button>
+          <button class="num-btn" data-num="3">3</button>
+          <button class="num-btn" data-num="4">4</button>
+          <button class="num-btn" data-num="5">5</button>
+          <button class="num-btn" data-num="6">6</button>
+          <button class="num-btn" data-num="7">7</button>
+          <button class="num-btn" data-num="8">8</button>
+          <button class="num-btn" data-num="9">9</button>
+          <button class="num-btn erase-btn" data-num="0">⌫</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn" id="undo-btn">↩ Geri Al</button>
+          <button class="action-btn" id="notes-btn">✏️ Not</button>
+          <button class="action-btn" id="new-game-btn">🔄 Yeni</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WIN -->
+    <div id="screen-win" class="screen hidden">
+      <div class="win-card">
+        <div class="win-emoji">🏆</div>
+        <h2 class="win-title">Tebrikler!</h2>
+        <p class="win-sub">Sudoku'yu çözdün!</p>
+        <div class="win-stats">
+          <div class="win-stat"><span class="stat-val" id="win-time">00:00</span><span class="stat-lbl">Süre</span></div>
+          <div class="win-stat"><span class="stat-val" id="win-diff">Orta</span><span class="stat-lbl">Zorluk</span></div>
+          <div class="win-stat"><span class="stat-val" id="win-hints">0</span><span class="stat-lbl">İpucu</span></div>
+        </div>
+        <button class="btn-primary big" id="win-new">Yeni Oyun</button>
+        <button class="btn-secondary big" id="win-home">Ana Sayfa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <nav class="bottom-bar">
+    <button class="bb-btn active" id="bb-home"><span class="bb-icon">⊞</span><span class="bb-label">Ana Sayfa</span></button>
+    <button class="bb-btn" id="bb-stats"><span class="bb-icon">📊</span><span class="bb-label">İstatistik</span></button>
+    <div class="bb-brand">
+      <span class="bb-brand-name">sebasmobil</span>
+      <span class="bb-brand-ver">sudoku v1.0</span>
+    </div>
+    <button class="bb-theme" id="theme-toggle" title="Tema">🌙</button>
+    <button class="bb-btn contact-btn" id="bb-contact"><span class="bb-icon">📬</span><span class="bb-label">İletişim</span></button>
+  </nav>
+
+  <!-- STATS PANEL -->
+  <div id="stats-panel" class="panel hidden">
+    <div class="panel-header"><h3>📊 İstatistikler</h3><button class="panel-close" id="stats-close">✕</button></div>
+    <div class="panel-body" id="stats-body"></div>
+  </div>
+
+  <!-- CONTACT PANEL -->
+  <div id="contact-panel" class="panel hidden">
+    <div class="panel-header"><h3>📬 İletişim</h3><button class="panel-close" id="contact-close">✕</button></div>
+    <div class="panel-body">
+      <p style="font-size:13px;color:var(--text2);line-height:1.6">sebasmobil ile iletişime geçmek için aşağıdaki kanalları kullanabilirsin.</p>
+      <button class="contact-action-btn" id="contact-instagram">
+        <span style="font-size:22px">📸</span>
+        <div><div style="font-weight:800;font-size:14px">Instagram</div><div style="font-size:12px;color:var(--text2)">@sebasmobil</div></div>
+      </button>
+      <button class="contact-action-btn" id="contact-mail">
+        <span style="font-size:22px">✉️</span>
+        <div><div style="font-weight:800;font-size:14px">E-posta Gönder</div><div style="font-size:12px;color:var(--text2)">Konu: sebasmobil sudoku iletişim</div></div>
+      </button>
+      <div style="font-size:10px;color:var(--text2);text-align:center;margin-top:8px;font-family:var(--mono)">sebasmobil sudoku v1.0 · GNU AGPL v3.0</div>
+    </div>
+  </div>
+
+  <div id="panel-backdrop" class="panel-backdrop hidden"></div>
+
+<script>
+// ============================================================
+// CHANGELOG — GNU AGPL v3.0
+// ============================================================
+const CHANGELOGS = {
+  "1.0": {
+    items: [
+      { emoji: "🎮", title: "6 Zorluk Seviyesi", desc: "Başlangıç'tan Kabus'a kadar 6 farklı zorluk seviyesi." },
+      { emoji: "⏱️", title: "Zamanlayıcı", desc: "Her oyunda süreyi takip edebilirsin." },
+      { emoji: "💡", title: "İpucu Sistemi", desc: "Her oyunda 3 ipucu hakkın var. Gerçekten sıkışınca kullan!" },
+      { emoji: "✏️", title: "Not Modu", desc: "Hücrelere küçük notlar ekleyerek olası sayıları işaretle." },
+      { emoji: "↩️", title: "Geri Al", desc: "Yanlış yazdın mı? Son hamleni geri alabilirsin." },
+      { emoji: "📊", title: "İstatistikler", desc: "Zorluk bazlı oyun sayısı ve en iyi süreler." },
+      { emoji: "🌙", title: "Karanlık Tema", desc: "Göz yormayan karanlık mod desteği." },
+      { emoji: "📱", title: "Mobil Öncelikli", desc: "Tamamen mobil cihazlar için optimize edildi." },
+    ]
+  }
+};
+const APP_VERSION = "1.0";
+
+function initChangelog() {
+  const stored = JSON.parse(localStorage.getItem('cl_prefs') || '{}');
+  const dismissed = stored.dismissed || {};
+  if (dismissed[APP_VERSION]) return;
+  const cl = CHANGELOGS[APP_VERSION];
+  document.getElementById('cl-version').textContent = `v${APP_VERSION}`;
+  document.getElementById('changelog-body').innerHTML = cl.items.map(i =>
+    `<div class="cl-item"><span class="cl-emoji">${i.emoji}</span><div class="cl-text"><strong>${i.title}</strong><span>${i.desc}</span></div></div>`
+  ).join('');
+  document.getElementById('changelog-overlay').classList.remove('hidden');
+  document.getElementById('changelog-ok').addEventListener('click', () => {
+    if (document.getElementById('no-show-check').checked) {
+      dismissed[APP_VERSION] = true;
+      localStorage.setItem('cl_prefs', JSON.stringify({ dismissed }));
+    }
+    document.getElementById('changelog-overlay').classList.add('hidden');
+  });
+}
+
+// ============================================================
+// CONTACT — GNU AGPL v3.0
+// ============================================================
+function openInstagram() {
+  const appUrl = 'instagram://user?username=sebasmobil';
+  const webUrl = 'https://www.instagram.com/sebasmobil';
+  const start = Date.now();
+  window.location.href = appUrl;
+  setTimeout(() => { if (Date.now() - start < 2000) window.open(webUrl, '_blank'); }, 1500);
+}
+function openMail() {
+  const s = encodeURIComponent('sebasmobil sudoku iletişim');
+  const b = encodeURIComponent('Merhaba sebasmobil,\n\n');
+  window.location.href = `mailto:?subject=${s}&body=${b}`;
+}
+
+// ============================================================
+// SUDOKU ENGINE — GNU AGPL v3.0
+// ============================================================
+const SudokuEngine = (() => {
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  function emptyGrid() { return Array.from({length:9}, () => new Array(9).fill(0)); }
+  function isValid(grid, row, col, num) {
+    if (grid[row].includes(num)) return false;
+    for (let r = 0; r < 9; r++) if (grid[r][col] === num) return false;
+    const br = Math.floor(row/3)*3, bc = Math.floor(col/3)*3;
+    for (let r = br; r < br+3; r++)
+      for (let c = bc; c < bc+3; c++)
+        if (grid[r][c] === num) return false;
+    return true;
+  }
+  function solve(grid, limit = 2) {
+    let count = 0;
+    function bt() {
+      if (count >= limit) return;
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          if (grid[r][c] === 0) {
+            for (const n of shuffle([1,2,3,4,5,6,7,8,9])) {
+              if (isValid(grid, r, c, n)) {
+                grid[r][c] = n; bt();
+                if (count >= limit) return;
+                grid[r][c] = 0;
+              }
+            }
+            return;
+          }
+        }
+      }
+      count++;
+    }
+    bt();
+    return count;
+  }
+  function generateSolution() {
+    const grid = emptyGrid();
+    const first = shuffle([1,2,3,4,5,6,7,8,9]);
+    for (let c = 0; c < 9; c++) grid[0][c] = first[c];
+    solve(grid);
+    return grid;
+  }
+  function digHoles(solution, clues) {
+    const grid = solution.map(r => [...r]);
+    const cells = [];
+    for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) cells.push([r,c]);
+    shuffle(cells);
+    let filled = 81;
+    for (const [r,c] of cells) {
+      if (filled <= clues) break;
+      const backup = grid[r][c];
+      grid[r][c] = 0;
+      const test = grid.map(row => [...row]);
+      if (solve(test) === 1) filled--;
+      else grid[r][c] = backup;
+    }
+    return grid;
+  }
+  const CLUE_MAP = {1:50, 2:40, 3:32, 4:26, 5:22, 6:17};
+  function generate(level) {
+    const solution = generateSolution();
+    const puzzle = digHoles(solution, CLUE_MAP[level] || 32);
+    return { puzzle, solution };
+  }
+  return { generate };
+})();
+
+// ============================================================
+// APP — GNU AGPL v3.0
+// ============================================================
+'use strict';
+let state = {
+  puzzle:null, solution:null, board:null, notes:null,
+  selected:null, level:3, levelName:'Orta',
+  timerSec:0, timerInt:null, hints:3, hintsUsed:0,
+  history:[], isComplete:false, notesMode:false,
+};
+const LEVEL_NAMES = {1:'Başlangıç',2:'Kolay',3:'Orta',4:'Zor',5:'Uzman',6:'Kabus'};
+const $ = id => document.getElementById(id);
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.toggle('hidden', s.id !== id);
+    s.classList.toggle('active', s.id === id);
+  });
+}
+
+function startTimer() {
+  clearInterval(state.timerInt);
+  state.timerSec = 0;
+  updateTimerDisplay();
+  state.timerInt = setInterval(() => { state.timerSec++; updateTimerDisplay(); }, 1000);
+}
+function stopTimer() { clearInterval(state.timerInt); }
+function updateTimerDisplay() {
+  const m = String(Math.floor(state.timerSec/60)).padStart(2,'0');
+  const s = String(state.timerSec%60).padStart(2,'0');
+  $('timer-display').textContent = `${m}:${s}`;
+}
+function formatTime(sec) {
+  return String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0');
+}
+
+function renderBoard() {
+  const c = $('sudoku-board');
+  c.innerHTML = '';
+  for (let r = 0; r < 9; r++)
+    for (let c2 = 0; c2 < 9; c2++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.row = r; cell.dataset.col = c2;
+      cell.addEventListener('click', () => selectCell(r, c2));
+      c.appendChild(cell);
+    }
+  refreshBoard();
+}
+
+function refreshBoard() {
+  document.querySelectorAll('.cell').forEach(cell => {
+    const r = +cell.dataset.row, c = +cell.dataset.col;
+    const val = state.board[r][c];
+    const given = state.puzzle[r][c] !== 0;
+    const sel = state.selected;
+    cell.className = 'cell';
+    cell.innerHTML = '';
+    if (given) cell.classList.add('given');
+    else if (val !== 0) cell.classList.add('user');
+    if (sel) {
+      if (sel.row === r && sel.col === c) cell.classList.add('selected');
+      else {
+        const sameBox = Math.floor(sel.row/3)===Math.floor(r/3) && Math.floor(sel.col/3)===Math.floor(c/3);
+        if (sel.row===r || sel.col===c || sameBox) cell.classList.add('highlight');
+      }
+      const sv = state.board[sel.row][sel.col];
+      if (sv !== 0 && val === sv) cell.classList.add('highlight');
+    }
+    if (!given && val !== 0 && val !== state.solution[r][c]) cell.classList.add('error');
+    if (val !== 0) {
+      cell.textContent = val;
+    } else if (state.notes) {
+      const ns = state.notes[r][c];
+      if (ns && ns.size > 0) {
+        const ng = document.createElement('div');
+        ng.className = 'notes-grid';
+        for (let n = 1; n <= 9; n++) {
+          const nd = document.createElement('div');
+          nd.className = 'note';
+          nd.textContent = ns.has(n) ? n : '';
+          ng.appendChild(nd);
+        }
+        cell.appendChild(ng);
+      }
+    }
+  });
+}
+
+function selectCell(r, c) { state.selected = {row:r, col:c}; refreshBoard(); }
+
+function inputNumber(num) {
+  if (!state.selected || state.isComplete) return;
+  const {row, col} = state.selected;
+  if (state.puzzle[row][col] !== 0) return;
+  if (state.notesMode && num !== 0) {
+    const ns = state.notes[row][col];
+    if (ns.has(num)) ns.delete(num); else ns.add(num);
+    refreshBoard(); return;
+  }
+  const prev = state.board[row][col];
+  state.board[row][col] = num;
+  if (num !== 0 && state.notes) state.notes[row][col].clear();
+  state.history.push({row, col, prev, next:num});
+  refreshBoard();
+  checkComplete();
+}
+
+function undoLast() {
+  if (!state.history.length) return;
+  const {row, col, prev} = state.history.pop();
+  state.board[row][col] = prev;
+  refreshBoard();
+}
+
+function useHint() {
+  if (state.hints <= 0 || state.isComplete) return;
+  const empties = [];
+  for (let r = 0; r < 9; r++)
+    for (let c = 0; c < 9; c++)
+      if (state.puzzle[r][c]===0 && state.board[r][c]!==state.solution[r][c])
+        empties.push({r,c});
+  if (!empties.length) return;
+  const {r,c} = empties[Math.floor(Math.random()*empties.length)];
+  state.board[r][c] = state.solution[r][c];
+  state.history.push({row:r, col:c, prev:0, next:state.solution[r][c]});
+  state.hints--; state.hintsUsed++;
+  $('hint-count').textContent = state.hints;
+  refreshBoard();
+  const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+  if (cell) { cell.classList.add('hint-flash'); setTimeout(()=>cell.classList.remove('hint-flash'),700); }
+  checkComplete();
+}
+
+function checkComplete() {
+  for (let r = 0; r < 9; r++)
+    for (let c = 0; c < 9; c++)
+      if (state.board[r][c] !== state.solution[r][c]) return;
+  state.isComplete = true;
+  stopTimer();
+  saveStats();
+  setTimeout(() => {
+    $('win-time').textContent = formatTime(state.timerSec);
+    $('win-diff').textContent = state.levelName;
+    $('win-hints').textContent = state.hintsUsed;
+    showScreen('screen-win');
+  }, 400);
+}
+
+function saveStats() {
+  const stats = JSON.parse(localStorage.getItem('sudoku_stats')||'{}');
+  const lvl = state.level;
+  if (!stats[lvl]) stats[lvl] = {played:0, bestTime:null};
+  stats[lvl].played++;
+  if (stats[lvl].bestTime===null || state.timerSec<stats[lvl].bestTime) stats[lvl].bestTime=state.timerSec;
+  localStorage.setItem('sudoku_stats', JSON.stringify(stats));
+}
+
+function renderStats() {
+  const stats = JSON.parse(localStorage.getItem('sudoku_stats')||'{}');
+  let html = '';
+  for (let lvl=1; lvl<=6; lvl++) {
+    const s=stats[lvl];
+    html += `<div class="stat-row"><span class="stat-row-label">${LEVEL_NAMES[lvl]}</span><span class="stat-row-val">${s?s.played:0} oyun · En iyi: ${s&&s.bestTime!==null?formatTime(s.bestTime):'—'}</span></div>`;
+  }
+  $('stats-body').innerHTML = html;
+}
+
+function startGame(level) {
+  state.level=level; state.levelName=LEVEL_NAMES[level];
+  state.hints=3; state.hintsUsed=0; state.history=[];
+  state.selected=null; state.isComplete=false; state.notesMode=false;
+  state.notes = Array.from({length:9},()=>Array.from({length:9},()=>new Set()));
+  $('hint-count').textContent = 3;
+  $('current-diff-label').textContent = state.levelName;
+  $('notes-btn').textContent = '✏️ Not';
+  $('notes-btn').classList.remove('active-notes');
+  const showLoader = level >= 5;
+  if (showLoader) {
+    $('loading-diff').textContent = level===6 ? 'Kabus seviyesi biraz zaman alabilir…' : 'Uzman bulmacası hazırlanıyor…';
+    $('loading-overlay').classList.remove('hidden');
+  }
+  setTimeout(() => {
+    try {
+      const {puzzle, solution} = SudokuEngine.generate(level);
+      state.puzzle=puzzle; state.solution=solution; state.board=puzzle.map(r=>[...r]);
+    } catch(e) {
+      if (showLoader) $('loading-overlay').classList.add('hidden');
+      throw e;
+    }
+    if (showLoader) $('loading-overlay').classList.add('hidden');
+    showScreen('screen-game');
+    renderBoard();
+    startTimer();
+  }, showLoader ? 50 : 0);
+}
+
+function initTheme() { applyTheme(localStorage.getItem('theme')||'light'); }
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = t==='dark' ? '☀️' : '🌙';
+  // Tarayıcı chrome rengini güncelle (Safari, Chrome Android)
+  const dark  = t === 'dark';
+  const color = dark ? '#0f1117' : '#f0f2f8';
+  const meta  = document.getElementById('theme-color-meta');
+  if (meta) meta.content = color;
+  // media-query versiyonlarını da güncelle
+  const ml = document.getElementById('theme-color-light');
+  const md = document.getElementById('theme-color-dark');
+  if (ml) ml.content = dark ? '#0f1117' : '#f0f2f8';
+  if (md) md.content = dark ? '#0f1117' : '#f0f2f8';
+  localStorage.setItem('theme', t);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  initChangelog();
+
+  document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.addEventListener('click', () => startGame(+btn.dataset.level));
+  });
+  document.querySelectorAll('.num-btn').forEach(btn => {
+    btn.addEventListener('click', () => inputNumber(+btn.dataset.num));
+  });
+
+  $('hint-btn').addEventListener('click', useHint);
+  $('undo-btn').addEventListener('click', undoLast);
+  $('notes-btn').addEventListener('click', () => {
+    state.notesMode = !state.notesMode;
+    $('notes-btn').classList.toggle('active-notes', state.notesMode);
+    $('notes-btn').textContent = state.notesMode ? '✏️ Not ●' : '✏️ Not';
+  });
+  $('back-home').addEventListener('click', () => { stopTimer(); showScreen('screen-home'); });
+  $('new-game-btn').addEventListener('click', () => startGame(state.level));
+  $('theme-toggle').addEventListener('click', () => {
+    applyTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
+  });
+  $('win-new').addEventListener('click', () => startGame(state.level));
+  $('win-home').addEventListener('click', () => showScreen('screen-home'));
+
+  $('bb-home').addEventListener('click', () => { stopTimer(); showScreen('screen-home'); });
+  $('bb-stats').addEventListener('click', () => { renderStats(); $('stats-panel').classList.remove('hidden'); $('panel-backdrop').classList.remove('hidden'); });
+  $('stats-close').addEventListener('click', closePanel);
+  $('panel-backdrop').addEventListener('click', closePanel);
+
+  $('bb-contact').addEventListener('click', () => { $('contact-panel').classList.remove('hidden'); $('panel-backdrop').classList.remove('hidden'); });
+  $('contact-close').addEventListener('click', closePanel);
+  $('contact-instagram').addEventListener('click', () => { closePanel(); openInstagram(); });
+  $('contact-mail').addEventListener('click', () => { closePanel(); openMail(); });
+
+  function closePanel() {
+    $('stats-panel').classList.add('hidden');
+    $('contact-panel').classList.add('hidden');
+    $('panel-backdrop').classList.add('hidden');
+  }
+
+  document.addEventListener('keydown', e => {
+    const key = e.key;
+    if (key>='1'&&key<='9') inputNumber(+key);
+    if (key==='0'||key==='Backspace'||key==='Delete') inputNumber(0);
+    if (!state.selected) return;
+    const {row,col} = state.selected;
+    if (key==='ArrowUp'   &&row>0) selectCell(row-1,col);
+    if (key==='ArrowDown' &&row<8) selectCell(row+1,col);
+    if (key==='ArrowLeft' &&col>0) selectCell(row,col-1);
+    if (key==='ArrowRight'&&col<8) selectCell(row,col+1);
+  });
+});
+
+// ============================================================
+// ERROR HANDLER — GNU AGPL v3.0
+// ============================================================
+(function(){
+  function showError(d) {
+    const o = document.getElementById('error-overlay');
+    if(!o) return;
+    document.getElementById('err-message').textContent = d.message||'—';
+    document.getElementById('err-source').textContent  = d.source ||'—';
+    document.getElementById('err-line').textContent    = d.lineno ||'—';
+    document.getElementById('err-col').textContent     = d.colno  ||'—';
+    document.getElementById('err-stack').textContent   = d.stack  ||'—';
+    o.classList.remove('hidden');
+  }
+  window.addEventListener('error', e => showError({message:e.message, source:e.filename, lineno:e.lineno, colno:e.colno, stack:e.error?e.error.stack:'—'}));
+  window.addEventListener('unhandledrejection', e => {
+    const err=e.reason;
+    showError({message:err&&err.message?err.message:String(err), source:'(Promise)', lineno:'—', colno:'—', stack:err&&err.stack?err.stack:'—'});
+  });
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('err-close').addEventListener('click', () => document.getElementById('error-overlay').classList.add('hidden'));
+    document.getElementById('err-copy').addEventListener('click', () => {
+      const btn = document.getElementById('err-copy');
+      const text = [
+        'sebasmobil sudoku — Hata Raporu',
+        'Tarih: '+new Date().toLocaleString('tr-TR'),
+        'Mesaj: '+document.getElementById('err-message').textContent,
+        'Dosya: '+document.getElementById('err-source').textContent,
+        'Satır: '+document.getElementById('err-line').textContent,
+        'Sütun: '+document.getElementById('err-col').textContent,
+        'Stack:\n'+document.getElementById('err-stack').textContent,
+      ].join('\n');
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(()=>{btn.textContent='✅ Kopyalandı!';setTimeout(()=>btn.textContent='📋 Kopyala',2000);});
+      } else {
+        const ta=document.createElement('textarea'); ta.value=text;
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        btn.textContent='✅ Kopyalandı!'; setTimeout(()=>btn.textContent='📋 Kopyala',2000);
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
