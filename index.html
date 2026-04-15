@@ -31,7 +31,7 @@
   --shadow:    0 4px 24px rgba(59,91,219,.12);
   --radius:    14px;
   --topbar-h:  0px;
-  --bottombar-h: 74px;
+  --bottombar-h: 96px;
   --cell-hl:   rgba(92,124,250,.13);
   --cell-same: rgba(92,124,250,.22);
   --mono:      'JetBrains Mono', monospace;
@@ -315,24 +315,33 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .btn-ok { background: var(--accent); color: #fff; border-radius: 12px; font-size: 15px; font-weight: 700; padding: 12px 32px; transition: opacity .15s; }
 .btn-ok:active { opacity: .8; }
 
-/* ── BOTTOM BAR — yeni tasarım ── */
+/* ── BOTTOM BAR — Pro 2.0 tasarım ── */
+:root {
+  --bb-h: 80px;  /* üst satır */
+}
+
 .bottom-bar {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  height: var(--bottombar-h);
   background: var(--bg2);
   border-top: 1.5px solid var(--border);
   display: flex;
+  flex-direction: column;
   align-items: stretch;
-  padding: 6px 8px;
-  padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   z-index: 100;
-  box-shadow: 0 -4px 20px rgba(0,0,0,.10);
-  gap: 4px;
+  box-shadow: 0 -4px 24px rgba(0,0,0,.12);
   overflow: hidden;
 }
 
-.bb-nav-row { display: contents; }
+/* Üst satır: nav butonları */
+.bb-top {
+  display: flex;
+  align-items: stretch;
+  padding: 6px 8px 2px;
+  gap: 4px;
+  min-height: 60px;
+}
 
 /* Her nav öğesi */
 .bb-item {
@@ -346,77 +355,92 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   border-radius: 12px;
   cursor: pointer;
   transition: background .15s, color .15s;
-  padding: 4px 2px;
+  padding: 6px 4px;
   color: var(--text2);
   border: none;
   background: none;
   font-family: var(--font);
 }
-.bb-item:active  { background: var(--bg3); }
-.bb-item.active  { color: var(--accent); background: rgba(92,124,250,.10); }
-
-.bb-icon  { font-size: 20px; line-height: 1; display:block; }
+.bb-item:active { background: var(--bg3); }
+.bb-item.active { color: var(--accent); background: rgba(92,124,250,.10); }
+.bb-icon  { font-size: 22px; line-height: 1; display: block; }
 .bb-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
 
-/* Orta alan — marka + versiyon + tema */
-.bb-brand-area {
-  flex: 1.5;
+/* Tema butonu — orta, büyük */
+.bb-theme-btn {
+  flex: 1.6;
   min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: background .15s;
-  padding: 4px 6px;
   border: none;
-  background: none;
+  background: var(--bg3);
   font-family: var(--font);
+  transition: background .15s, transform .1s;
+  padding: 6px 8px;
 }
-.bb-brand-area:active { background: var(--bg3); }
+.bb-theme-btn:active { transform: scale(.95); background: var(--border); }
 
+.bb-theme-emoji {
+  font-size: 28px;
+  line-height: 1;
+  display: block;
+}
 .bb-app-name {
   font-size: 11px;
   font-weight: 900;
   color: var(--accent);
-  letter-spacing: -.3px;
+  letter-spacing: -.2px;
   white-space: nowrap;
-}
-.bb-theme-emoji {
-  font-size: 22px;
-  line-height: 1;
-  display: block;
 }
 .bb-version-pill {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
   background: var(--accent);
   color: #fff;
-  font-size: 7.5px;
+  font-size: 8px;
   font-weight: 800;
   font-family: var(--mono);
-  padding: 2px 6px;
+  padding: 2px 8px;
   border-radius: 20px;
   letter-spacing: .3px;
   white-space: nowrap;
 }
-.bb-copy-inline {
-  font-size: 7px;
+
+/* Alt satır: lisans / copyright */
+.bb-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px 6px;
+  gap: 8px;
+}
+.bb-bottom-left {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: var(--text2);
+  white-space: nowrap;
+  letter-spacing: -.1px;
+}
+.bb-bottom-left span { color: var(--accent); }
+.bb-bottom-right {
+  font-size: 9px;
   color: var(--text2);
   font-family: var(--mono);
-  opacity: .7;
   white-space: nowrap;
-  letter-spacing: .2px;
 }
 
 /* Eski elemanlar — artık kullanılmıyor */
-.bb-btn   { display: none; }
-.bb-brand { display: none; }
-.bb-theme { display: none; }
-.bb-center { display: none; }
+.bb-btn      { display: none; }
+.bb-brand    { display: none; }
+.bb-theme    { display: none; }
+.bb-center   { display: none; }
+.bb-brand-area { display: none; }
+.bb-copyright  { display: none; }
 
 /* Panels */
 .panel {
@@ -720,25 +744,31 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 
   <!-- BOTTOM BAR -->
   <nav class="bottom-bar">
-    <div class="bb-nav-row">
-    <button class="bb-item active" id="bb-home">
-      <span class="bb-icon">🏠</span>
-      <span class="bb-label">Ana Sayfa</span>
-    </button>
-    <button class="bb-item" id="bb-stats">
-      <span class="bb-icon">📊</span>
-      <span class="bb-label">İstatistik</span>
-    </button>
-    <button class="bb-brand-area" id="theme-toggle" title="Tema değiştir">
-      <span class="bb-theme-emoji" id="bb-theme-icon">🌙</span>
-      <span class="bb-app-name">S-Sudoku</span>
-      <span class="bb-version-pill">Pro 2.0</span>
-      <span class="bb-copy-inline">© sebasmobil · GNU AGPL</span>
-    </button>
-    <button class="bb-item" id="bb-contact">
-      <span class="bb-icon">📬</span>
-      <span class="bb-label">İletişim</span>
-    </button>
+    <!-- Üst satır: butonlar -->
+    <div class="bb-top">
+      <button class="bb-item active" id="bb-home">
+        <span class="bb-icon">🏠</span>
+        <span class="bb-label">Ana Sayfa</span>
+      </button>
+      <button class="bb-item" id="bb-stats">
+        <span class="bb-icon">📊</span>
+        <span class="bb-label">İstatistik</span>
+      </button>
+      <!-- Tema butonu — büyük, ortada -->
+      <button class="bb-theme-btn" id="theme-toggle" title="Tema değiştir">
+        <span class="bb-theme-emoji" id="bb-theme-icon">🌙</span>
+        <span class="bb-app-name">S-Sudoku</span>
+        <span class="bb-version-pill">Pro 2.0</span>
+      </button>
+      <button class="bb-item" id="bb-contact">
+        <span class="bb-icon">📬</span>
+        <span class="bb-label">İletişim</span>
+      </button>
+    </div>
+    <!-- Alt satır: lisans -->
+    <div class="bb-bottom">
+      <span class="bb-bottom-left"><span>S-Sudoku</span> Pro 2.0.</span>
+      <span class="bb-bottom-right">@sebasmobil GNU AGPL v3.0</span>
     </div>
   </nav>
 
@@ -761,6 +791,7 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
         <span style="font-size:22px">✉️</span>
         <div><div style="font-weight:800;font-size:14px">E-posta Gönder</div><div style="font-size:12px;color:var(--text2)">Konu: S-Sudoku iletişim</div></div>
       </button>
+      <div style="font-size:10px;color:var(--text2);text-align:center;margin-top:8px;font-family:var(--mono)">© sebasmobil · S-Sudoku Pro 2.0 · GNU AGPL v3.0</div>
     </div>
   </div>
 
@@ -1217,11 +1248,10 @@ function startGame(level) {
 function initTheme() { applyTheme(localStorage.getItem('theme')||'light'); }
 function applyTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
-  const pill = document.getElementById('bb-theme-icon');
-  if (pill) pill.textContent = (t==='dark' ? '☀️' : '🌙');
-  const dark  = t === 'dark';
-  const color = dark ? '#0f1117' : '#f0f2f8';
-  const meta  = document.getElementById('theme-color-meta');
+  const emoji = document.getElementById('bb-theme-icon');
+  if (emoji) emoji.textContent = t === 'dark' ? '☀️' : '🌙';
+  const color = t === 'dark' ? '#0f1117' : '#f0f2f8';
+  const meta = document.getElementById('theme-color-meta');
   if (meta) meta.content = color;
   const ml = document.getElementById('theme-color-light');
   const md = document.getElementById('theme-color-dark');
