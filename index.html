@@ -196,18 +196,12 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .cell[data-row="8"]   { border-bottom: none; }
 .cell.given  { color: var(--text); font-weight: 700; }
 .cell.user   { color: var(--accent2); }
-.cell.error  { color: var(--danger) !important; background: rgba(224,49,49,.18) !important; }
 
 /* Seçili hücre — her iki temada da belirgin */
 .cell.selected {
   background: var(--accent) !important;
   color: #fff !important;
   z-index: 1;
-}
-/* Seçili + hatalı: kırmızı zemin, seçili renk değil */
-.cell.selected.error {
-  background: rgba(224,49,49,.5) !important;
-  color: #fff !important;
 }
 .cell.selected.given { color: #fff !important; }
 .cell.selected.user  { color: #fff !important; }
@@ -330,56 +324,56 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
-  padding: 0 4px;
+  padding: 0 2px;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   z-index: 100;
   box-shadow: 0 -2px 16px rgba(0,0,0,.06);
   gap: 0;
+  overflow: hidden;
 }
 .bb-btn {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 6px 2px;
-  border-radius: 10px;
+  gap: 2px;
+  padding: 4px 1px;
+  border-radius: 8px;
   color: var(--text2);
   transition: color .15s, background .15s;
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .4px;
-  min-width: 0;
+  letter-spacing: .3px;
+  white-space: nowrap;
+  overflow: hidden;
 }
-.bb-btn .bb-icon { font-size: 19px; }
+.bb-btn .bb-icon { font-size: 18px; line-height: 1; }
+.bb-btn .bb-label { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .bb-btn.active, .bb-btn:active { color: var(--accent); background: rgba(59,91,219,.08); }
-/* Brand in bottom bar */
-.bb-brand {
+
+/* Brand + theme toggle birleşik alan */
+.bb-center {
+  flex: 1.2;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px;
-  padding: 4px 6px;
-  flex: 1.4;
-}
-.bb-brand-name { font-size: 12px; font-weight: 900; color: var(--accent); letter-spacing: -.3px; }
-.bb-brand-ver  { font-size: 9px; font-family: var(--mono); color: var(--text2); }
-/* Theme toggle in bottom bar */
-.bb-theme {
-  flex: 0 0 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  font-size: 20px;
-  color: var(--text2);
+  gap: 0;
+  padding: 2px 4px;
+  cursor: pointer;
+  border-radius: 8px;
   transition: background .15s;
 }
-.bb-theme:active { background: var(--bg3); }
+.bb-center:active { background: var(--bg3); }
+.bb-brand-name { font-size: 11px; font-weight: 900; color: var(--accent); letter-spacing: -.3px; white-space: nowrap; }
+.bb-brand-ver  { font-size: 8px; font-family: var(--mono); color: var(--text2); white-space: nowrap; }
+/* Eski ayrı elemanlar artık kullanılmıyor */
+.bb-brand { display: none; }
+.bb-theme { display: none; }
 
 /* Panels */
 .panel {
@@ -685,11 +679,10 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   <nav class="bottom-bar">
     <button class="bb-btn active" id="bb-home"><span class="bb-icon">⊞</span><span class="bb-label">Ana Sayfa</span></button>
     <button class="bb-btn" id="bb-stats"><span class="bb-icon">📊</span><span class="bb-label">İstatistik</span></button>
-    <div class="bb-brand">
+    <div class="bb-center" id="theme-toggle" title="Tema değiştir">
       <span class="bb-brand-name">sebasmobil</span>
-      <span class="bb-brand-ver">sudoku v1.0</span>
+      <span class="bb-brand-ver" id="bb-theme-icon">🌙 sudoku v1.0</span>
     </div>
-    <button class="bb-theme" id="theme-toggle" title="Tema">🌙</button>
     <button class="bb-btn contact-btn" id="bb-contact"><span class="bb-icon">📬</span><span class="bb-label">İletişim</span></button>
   </nav>
 
@@ -1023,7 +1016,10 @@ function refreshBoard() {
         }
       }
     }
-    if (!given && val !== 0 && val !== state.solution[r][c]) cell.classList.add('error');
+    if (!given && val !== 0 && val !== state.solution[r][c]) {
+      // Hata göstergesi devre dışı — kullanıcı kendisi bulsun
+      // cell.classList.add('error');
+    }
     if (val !== 0) {
       cell.textContent = val;
     } else if (state.notes) {
@@ -1167,18 +1163,18 @@ function startGame(level) {
 function initTheme() { applyTheme(localStorage.getItem('theme')||'light'); }
 function applyTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
-  const btn = document.getElementById('theme-toggle');
-  if (btn) btn.textContent = t==='dark' ? '☀️' : '🌙';
-  // Tarayıcı chrome rengini güncelle (Safari, Chrome Android)
+  // bb-center'daki tema ikonu
+  const icon = document.getElementById('bb-theme-icon');
+  if (icon) icon.textContent = (t==='dark' ? '☀️' : '🌙') + ' sudoku v1.0';
+  // Tarayıcı chrome rengini güncelle
   const dark  = t === 'dark';
   const color = dark ? '#0f1117' : '#f0f2f8';
   const meta  = document.getElementById('theme-color-meta');
   if (meta) meta.content = color;
-  // media-query versiyonlarını da güncelle
   const ml = document.getElementById('theme-color-light');
   const md = document.getElementById('theme-color-dark');
-  if (ml) ml.content = dark ? '#0f1117' : '#f0f2f8';
-  if (md) md.content = dark ? '#0f1117' : '#f0f2f8';
+  if (ml) ml.content = color;
+  if (md) md.content = color;
   localStorage.setItem('theme', t);
 }
 
