@@ -31,7 +31,7 @@
   --shadow:    0 4px 24px rgba(59,91,219,.12);
   --radius:    14px;
   --topbar-h:  0px;
-  --bottombar-h: 76px;
+  --bottombar-h: 68px;
   --cell-hl:   rgba(92,124,250,.13);
   --cell-same: rgba(92,124,250,.22);
   --mono:      'JetBrains Mono', monospace;
@@ -65,6 +65,7 @@ body {
 }
 button { cursor: pointer; border: none; background: none; font-family: var(--font); }
 
+/* App shell — centering for tablet/desktop */
 #app {
   flex: 1;
   overflow: hidden;
@@ -73,7 +74,8 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   padding-top: 0;
   padding-bottom: calc(var(--bottombar-h) + env(safe-area-inset-bottom, 0px));
   width: 100%;
-  max-width: 100%;
+  max-width: 600px;       /* tablet sınırı */
+  margin: 0 auto;
 }
 
 /* Hero title — fit exactly on one line, no overflow */
@@ -124,33 +126,43 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .diff-name { font-size: 15px; font-weight: 900; color: var(--text); }
 .diff-desc { font-size: 11px; color: var(--text2); font-family: var(--mono); }
 
-/* Game Screen */
+/* Game topbar */
 .game-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  padding: 4px 0 6px;
+  padding: 2px 0 4px;
   flex-shrink: 0;
   width: 100%;
 }
 .back-btn {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--accent);
-  padding: 6px 10px;
+  padding: 5px 8px;
   border-radius: 8px;
   background: var(--bg3);
   white-space: nowrap;
   flex-shrink: 0;
 }
-.game-info { display: flex; flex-direction: column; align-items: center; gap: 1px; flex: 1; }
-.diff-label { font-size: 10px; font-weight: 700; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
-.timer-display { font-size: 17px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+.game-info { display: flex; flex-direction: column; align-items: center; gap: 0; flex: 1; }
+.diff-label { font-size: 9px; font-weight: 700; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+.timer-display { font-size: 16px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+.pause-btn {
+  font-size: 16px;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.pause-btn:active { background: var(--accent); }
 .hint-btn {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 6px 10px;
+  padding: 5px 8px;
   border-radius: 8px;
   background: linear-gradient(135deg,#f08c00,#fd7014);
   color: #fff;
@@ -158,20 +170,65 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   flex-shrink: 0;
 }
 
-/* Board */
+/* Game Screen — tüm içerik ekrana sığsın, scroll olmasın */
+#screen-game {
+  overflow: hidden;
+  padding: 6px 12px;
+  gap: 6px;
+  justify-content: space-between;
+}
+
+/* Board — küçük ekranda küçülür, büyük ekranda büyür, kare kalır */
 .board-wrap { display: flex; justify-content: center; flex-shrink: 0; width: 100%; position: relative; }
 .sudoku-board {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
   gap: 0;
   border: 3px solid var(--text);
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
-  width: min(calc(100vw - 32px), 400px);
-  max-width: calc(100vw - 32px);
+  /* Kullanılabilir yüksekliğin ~%46'sı veya genişliğin %94'ü, hangisi küçükse */
+  width: min(
+    calc(100vw - 24px),
+    calc(100dvh - var(--bottombar-h) - 120px)
+  );
+  max-width: 420px;
   aspect-ratio: 1;
   box-shadow: var(--shadow);
 }
+
+/* Numpad — board boyutuna göre esnek */
+.numpad-wrap { flex-shrink: 0; width: 100%; }
+.numpad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; padding: 4px 0; width: 100%; }
+.num-btn {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  font-size: clamp(15px, 4.5vw, 22px);
+  font-weight: 700;
+  font-family: var(--mono);
+  padding: clamp(6px, 2vh, 12px) 0;
+  color: var(--text);
+  transition: all .12s;
+  box-shadow: var(--shadow);
+  min-height: 38px;
+}
+.num-btn:active { transform: scale(.92); background: var(--accent); color: #fff; border-color: var(--accent); }
+.erase-btn { font-size: clamp(12px, 3.5vw, 17px); }
+.action-row { display: flex; gap: 6px; }
+.action-btn {
+  flex: 1;
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  font-size: clamp(11px, 3vw, 13px);
+  font-weight: 700;
+  padding: clamp(6px, 1.5vh, 10px);
+  color: var(--text2);
+  transition: background .15s;
+}
+.action-btn:active { background: var(--accent); color: #fff; }
+.active-notes { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
 .cell {
   background: var(--bg2);
   display: flex;
@@ -230,7 +287,6 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .cell .note { font-size: clamp(6px, 1.8vw, 9px); color: var(--text2); display: flex; align-items: center; justify-content: center; }
 
 /* Board pause veil */
-.board-pause-veil {
   position: absolute;
   inset: 0;
   background: rgba(15,17,23,.82);
@@ -250,37 +306,6 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 [data-theme="light"] .board-pause-veil { background: rgba(240,242,248,.85); }
 .veil-icon { font-size: 40px; }
 .veil-text { font-size: 15px; font-weight: 900; color: var(--text); letter-spacing: 1px; }
-.numpad-wrap { flex-shrink: 0; width: 100%; }
-.numpad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 6px 0; width: 100%; }
-.num-btn {
-  background: var(--bg2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  font-size: 20px;
-  font-weight: 700;
-  font-family: var(--mono);
-  padding: 10px 0;
-  color: var(--text);
-  transition: all .12s;
-  box-shadow: var(--shadow);
-  min-height: 44px;
-}
-.num-btn:active { transform: scale(.92); background: var(--accent); color: #fff; border-color: var(--accent); }
-.erase-btn { font-size: 16px; }
-.action-row { display: flex; gap: 8px; }
-.action-btn {
-  flex: 1;
-  background: var(--bg3);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 10px;
-  color: var(--text2);
-  transition: background .15s;
-}
-.action-btn:active { background: var(--accent); color: #fff; }
-.active-notes { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
 
 /* Win Screen */
 #screen-win { align-items: center; justify-content: center; min-height: 100%; }
@@ -334,7 +359,7 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .bb-top {
   display: flex;
   align-items: center;
-  height: 52px;
+  height: 46px;
   padding: 0 6px;
   gap: 2px;
 }
@@ -367,7 +392,7 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   border-radius: 0 0 2px 2px;
 }
 .bb-home-block:active { background: var(--bg3); }
-.bb-home-icon { font-size: 20px; line-height: 1; display: block; }
+.bb-home-icon { font-size: 18px; line-height: 1; display: block; }
 .bb-home-label { display: none; }
 
 /* İstatistik butonu — ikon only */
@@ -387,7 +412,7 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   transition: background .15s, color .15s;
 }
 .bb-stats-btn:active { background: var(--bg3); color: var(--accent); }
-.bb-stats-icon { font-size: 19px; line-height: 1; display: block; }
+.bb-stats-icon { font-size: 17px; line-height: 1; display: block; }
 .bb-stats-label { display: none; }
 
 /* Orta — S-Sudoku brand + tema */
@@ -435,7 +460,7 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px; height: 36px;
+  width: 32px; height: 32px;
   border-radius: 50%;
   border: 1.5px solid var(--border);
   background: var(--bg3);
@@ -445,7 +470,7 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   flex-shrink: 0;
 }
 .bb-theme-btn:active { transform: scale(.9); background: var(--border); }
-.bb-theme-emoji { font-size: 18px; line-height: 1; display: block; }
+.bb-theme-emoji { font-size: 16px; line-height: 1; display: block; }
 
 /* Sağ — İletişim: yazı üstte, ikonlar altta yan yana */
 .bb-contact-block {
@@ -491,7 +516,7 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   align-items: center;
   justify-content: center;
   gap: 5px;
-  padding: 2px 12px 5px;
+  padding: 1px 12px 4px;
   border-top: 1px solid var(--border);
 }
 .bb-bottom-text {
@@ -854,11 +879,9 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 
     <!-- Alt satır: lisans -->
     <div class="bb-bottom">
-      <span class="bb-bottom-text"><b>S-Sudoku</b></span>
+      <span class="bb-bottom-text">©sebasmobil</span>
       <span class="bb-bottom-sep">·</span>
       <span class="bb-ver-pill">Pro 2.0</span>
-      <span class="bb-bottom-sep">·</span>
-      <span class="bb-bottom-text">©sebasmobil</span>
       <span class="bb-bottom-sep">·</span>
       <span class="bb-bottom-text">AGPL V3.0</span>
       <span class="bb-bottom-sep">·</span>
@@ -1359,12 +1382,28 @@ document.addEventListener('DOMContentLoaded', () => {
   initChangelog();
   updateResumeBanner();
 
-  // Sekme/uygulama arka plana geçince otomatik duraklat
+  // Arka plana geçince duraklat, geri gelince pause modal göster
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden && state.puzzle && !state.isComplete && !state.isPaused) {
-      stopTimer();
-      state.isPaused = true;
-      saveCurrentGame();
+    if (document.hidden) {
+      // Arka plana geçti → duraklat
+      if (state.puzzle && !state.isComplete && !state.isPaused) {
+        stopTimer();
+        state.isPaused = true;
+        saveCurrentGame();
+        // Board veil göster
+        const veil = $('board-pause-veil');
+        if (veil) veil.classList.remove('hidden');
+      }
+    } else {
+      // Geri geldi → oyun duraklatılmışsa ve game ekranındaysa pause modal göster
+      if (state.puzzle && !state.isComplete && state.isPaused) {
+        const gameScreen = $('screen-game');
+        if (gameScreen && gameScreen.classList.contains('active')) {
+          $('pause-diff-label').textContent = state.levelName;
+          $('pause-time-label').textContent = formatTime(state.timerSec);
+          $('pause-overlay').classList.remove('hidden');
+        }
+      }
     }
   });
 
