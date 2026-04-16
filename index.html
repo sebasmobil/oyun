@@ -31,7 +31,7 @@
   --shadow:    0 4px 24px rgba(59,91,219,.12);
   --radius:    14px;
   --topbar-h:  0px;
-  --bottombar-h: 96px;
+  --bottombar-h: 76px;
   --cell-hl:   rgba(92,124,250,.13);
   --cell-same: rgba(92,124,250,.22);
   --mono:      'JetBrains Mono', monospace;
@@ -315,132 +315,202 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .btn-ok { background: var(--accent); color: #fff; border-radius: 12px; font-size: 15px; font-weight: 700; padding: 12px 32px; transition: opacity .15s; }
 .btn-ok:active { opacity: .8; }
 
-/* ── BOTTOM BAR — Pro 2.0 tasarım ── */
-:root {
-  --bb-h: 80px;  /* üst satır */
-}
-
+/* ══════════════════════════════════════
+   BOTTOM BAR — kompakt, mavi
+══════════════════════════════════════ */
 .bottom-bar {
   position: fixed;
   bottom: 0; left: 0; right: 0;
   background: var(--bg2);
-  border-top: 1.5px solid var(--border);
+  border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
   z-index: 100;
-  box-shadow: 0 -4px 24px rgba(0,0,0,.12);
-  overflow: hidden;
+  box-shadow: 0 -2px 12px rgba(0,0,0,.07);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Üst satır: nav butonları */
+/* Üst satır */
 .bb-top {
   display: flex;
-  align-items: stretch;
-  padding: 6px 8px 2px;
-  gap: 4px;
-  min-height: 60px;
+  align-items: center;
+  height: 52px;
+  padding: 0 6px;
+  gap: 2px;
 }
 
-/* Her nav öğesi */
-.bb-item {
-  flex: 1;
-  min-width: 0;
+/* Anasayfa butonu — ikon only, aktif çizgi mavi */
+.bb-home-block {
+  width: 52px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  border-radius: 12px;
+  height: 100%;
+  position: relative;
   cursor: pointer;
-  transition: background .15s, color .15s;
-  padding: 6px 4px;
-  color: var(--text2);
   border: none;
   background: none;
   font-family: var(--font);
+  color: var(--text2);
+  transition: color .15s;
+  border-radius: 10px;
 }
-.bb-item:active { background: var(--bg3); }
-.bb-item.active { color: var(--accent); background: rgba(92,124,250,.10); }
-.bb-icon  { font-size: 22px; line-height: 1; display: block; }
-.bb-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+.bb-home-block.active { color: var(--accent); }
+.bb-home-block.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 8px; right: 8px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 0 0 2px 2px;
+}
+.bb-home-block:active { background: var(--bg3); }
+.bb-home-icon { font-size: 20px; line-height: 1; display: block; }
+.bb-home-label { display: none; }
 
-/* Tema butonu — orta, büyük */
+/* İstatistik butonu — ikon only */
+.bb-stats-btn {
+  width: 46px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text2);
+  font-family: var(--font);
+  transition: background .15s, color .15s;
+}
+.bb-stats-btn:active { background: var(--bg3); color: var(--accent); }
+.bb-stats-icon { font-size: 19px; line-height: 1; display: block; }
+.bb-stats-label { display: none; }
+
+/* Orta — S-Sudoku brand + tema */
+.bb-mid {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  padding: 0 4px;
+}
+
+/* Marka alanı */
+.bb-brand-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.bb-app-name {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--accent);
+  letter-spacing: -.2px;
+  white-space: nowrap;
+  font-family: var(--font);
+}
+.bb-ver-pill {
+  display: inline-flex;
+  align-items: center;
+  background: var(--accent);
+  color: #fff;
+  font-size: 7.5px;
+  font-weight: 800;
+  font-family: var(--mono);
+  padding: 1.5px 6px;
+  border-radius: 20px;
+  letter-spacing: .2px;
+  white-space: nowrap;
+}
+
+/* Tema butonu — kompakt yuvarlak */
 .bb-theme-btn {
-  flex: 1.6;
-  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--bg3);
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  font-family: var(--font);
+  flex-shrink: 0;
+}
+.bb-theme-btn:active { transform: scale(.9); background: var(--border); }
+.bb-theme-emoji { font-size: 18px; line-height: 1; display: block; }
+
+/* Sağ — İletişim: yazı üstte, ikonlar altta yan yana */
+.bb-contact-block {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  border-radius: 14px;
-  cursor: pointer;
-  border: none;
-  background: var(--bg3);
-  font-family: var(--font);
-  transition: background .15s, transform .1s;
-  padding: 6px 8px;
+  padding: 4px 6px 4px 4px;
+  flex-shrink: 0;
 }
-.bb-theme-btn:active { transform: scale(.95); background: var(--border); }
-
-.bb-theme-emoji {
-  font-size: 28px;
-  line-height: 1;
-  display: block;
-}
-.bb-app-name {
-  font-size: 11px;
-  font-weight: 900;
-  color: var(--accent);
-  letter-spacing: -.2px;
-  white-space: nowrap;
-}
-.bb-version-pill {
-  display: inline-flex;
-  align-items: center;
-  background: var(--accent);
-  color: #fff;
-  font-size: 8px;
+.bb-contact-label {
+  font-size: 7.5px;
   font-weight: 800;
-  font-family: var(--mono);
-  padding: 2px 8px;
-  border-radius: 20px;
-  letter-spacing: .3px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text2);
   white-space: nowrap;
+  writing-mode: horizontal-tb;
 }
+.bb-contact-icons {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  align-items: center;
+}
+.bb-contact-icon-btn {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--text2);
+  transition: background .15s, color .15s;
+}
+.bb-contact-icon-btn:active { background: var(--bg3); color: var(--accent); }
+.bb-contact-icon-btn svg { width: 16px; height: 16px; }
 
-/* Alt satır: lisans / copyright */
+/* Alt satır: lisans — kompakt */
 .bb-bottom {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 14px 6px;
-  gap: 8px;
+  justify-content: center;
+  gap: 5px;
+  padding: 2px 12px 5px;
+  border-top: 1px solid var(--border);
 }
-.bb-bottom-left {
-  font-size: 9.5px;
-  font-weight: 800;
-  color: var(--text2);
-  white-space: nowrap;
-  letter-spacing: -.1px;
-}
-.bb-bottom-left span { color: var(--accent); }
-.bb-bottom-right {
-  font-size: 9px;
-  color: var(--text2);
+.bb-bottom-text {
+  font-size: 8.5px;
   font-family: var(--mono);
+  color: var(--text2);
   white-space: nowrap;
 }
+.bb-bottom-text b { font-weight: 900; color: var(--text); }
+.bb-bottom-sep { font-size: 8px; color: var(--border); }
 
-/* Eski elemanlar — artık kullanılmıyor */
-.bb-btn      { display: none; }
-.bb-brand    { display: none; }
-.bb-theme    { display: none; }
-.bb-center   { display: none; }
-.bb-brand-area { display: none; }
-.bb-copyright  { display: none; }
+/* Eski elemanlar — gizle */
+.bb-btn      { display: none !important; }
+.bb-brand    { display: none !important; }
+.bb-theme    { display: none !important; }
+.bb-center   { display: none !important; }
+.bb-brand-area { display: none !important; }
+.bb-copyright  { display: none !important; }
+.bb-item     { display: none !important; }
 
 /* Panels */
 .panel {
@@ -744,31 +814,55 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 
   <!-- BOTTOM BAR -->
   <nav class="bottom-bar">
-    <!-- Üst satır: butonlar -->
     <div class="bb-top">
-      <button class="bb-item active" id="bb-home">
-        <span class="bb-icon">🏠</span>
-        <span class="bb-label">Ana Sayfa</span>
+
+      <!-- Anasayfa — ikon only -->
+      <button class="bb-home-block active" id="bb-home">
+        <span class="bb-home-icon">🏠</span>
       </button>
-      <button class="bb-item" id="bb-stats">
-        <span class="bb-icon">📊</span>
-        <span class="bb-label">İstatistik</span>
+
+      <!-- İstatistik — ikon only -->
+      <button class="bb-stats-btn" id="bb-stats">
+        <span class="bb-stats-icon">📊</span>
       </button>
-      <!-- Tema butonu — büyük, ortada -->
-      <button class="bb-theme-btn" id="theme-toggle" title="Tema değiştir">
-        <span class="bb-theme-emoji" id="bb-theme-icon">🌙</span>
-        <span class="bb-app-name">S-Sudoku</span>
-        <span class="bb-version-pill">Pro 2.0</span>
-      </button>
-      <button class="bb-item" id="bb-contact">
-        <span class="bb-icon">📬</span>
-        <span class="bb-label">İletişim</span>
-      </button>
+
+      <!-- Orta: Marka + Tema -->
+      <div class="bb-mid">
+        <div class="bb-brand-block">
+          <span class="bb-app-name">S-Sudoku</span>
+          <span class="bb-ver-pill">Pro 2.0</span>
+        </div>
+        <button class="bb-theme-btn" id="theme-toggle" title="Tema">
+          <span class="bb-theme-emoji" id="bb-theme-icon">🌙</span>
+        </button>
+      </div>
+
+      <!-- Sağ: İletişim — yazı üstte, ikonlar yan yana altta -->
+      <div class="bb-contact-block">
+        <span class="bb-contact-label">İletişim</span>
+        <div class="bb-contact-icons">
+          <button class="bb-contact-icon-btn" id="contact-instagram-btn" title="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </button>
+          <button class="bb-contact-icon-btn" id="contact-mail-btn" title="E-posta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,6 12,13 2,6"/></svg>
+          </button>
+        </div>
+      </div>
+
     </div>
+
     <!-- Alt satır: lisans -->
     <div class="bb-bottom">
-      <span class="bb-bottom-left"><span>S-Sudoku</span> Pro 2.0.</span>
-      <span class="bb-bottom-right">@sebasmobil GNU AGPL v3.0</span>
+      <span class="bb-bottom-text"><b>S-Sudoku</b></span>
+      <span class="bb-bottom-sep">·</span>
+      <span class="bb-ver-pill">Pro 2.0</span>
+      <span class="bb-bottom-sep">·</span>
+      <span class="bb-bottom-text">©sebasmobil</span>
+      <span class="bb-bottom-sep">·</span>
+      <span class="bb-bottom-text">AGPL V3.0</span>
+      <span class="bb-bottom-sep">·</span>
+      <span class="bb-bottom-text">2026</span>
     </div>
   </nav>
 
@@ -1362,18 +1456,19 @@ document.addEventListener('DOMContentLoaded', () => {
     $('pause-overlay').classList.add('hidden');
     showScreen('screen-home');
     updateResumeBanner();
-    document.querySelectorAll('.bb-item').forEach(b => b.classList.remove('active'));
-    $('bb-home').classList.add('active');
   });
 
-  $('bb-stats').addEventListener('click', () => { renderStats(); $('stats-panel').classList.remove('hidden'); $('panel-backdrop').classList.remove('hidden'); });
+  $('bb-stats').addEventListener('click', () => {
+    renderStats();
+    $('stats-panel').classList.remove('hidden');
+    $('panel-backdrop').classList.remove('hidden');
+  });
   $('stats-close').addEventListener('click', closePanel);
   $('panel-backdrop').addEventListener('click', closePanel);
 
-  $('bb-contact').addEventListener('click', () => { $('contact-panel').classList.remove('hidden'); $('panel-backdrop').classList.remove('hidden'); });
-  $('contact-close').addEventListener('click', closePanel);
-  $('contact-instagram').addEventListener('click', () => { closePanel(); openInstagram(); });
-  $('contact-mail').addEventListener('click', () => { closePanel(); openMail(); });
+  // İletişim ikonları (sağ blok)
+  $('contact-instagram-btn').addEventListener('click', () => openInstagram());
+  $('contact-mail-btn').addEventListener('click', () => openMail());
 
   function closePanel() {
     $('stats-panel').classList.add('hidden');
