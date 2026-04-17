@@ -20,7 +20,10 @@
   --border2: #c4bfb5;
   --cell-bg: #ffffff;
   --cell-given: #e8f0f8;
-  --cell-select: #b8d0eb;
+  --cell-given-text: #1a3a5c;
+  --cell-user-text: #1a6b3a;
+  --cell-select: #a8c8e8;
+  --cell-select-border: #2d5a8e;
   --cell-highlight: #dceaf6;
   --cell-error: #fde8e8;
   --cell-error-text: #c0392b;
@@ -46,17 +49,20 @@
   --text2: #a09b92;
   --text3: #6e6a63;
   --accent: #5b8ec4;
-  --accent2: #7aaad6;
+  --accent2: #8bbae0;
   --accent-light: #1a2a3a;
   --border: #3a362e;
   --border2: #4a4640;
   --cell-bg: #1e1c18;
-  --cell-given: #1a2a3a;
-  --cell-select: #2a3d52;
-  --cell-highlight: #1e2d3e;
+  --cell-given: #1e2e40;
+  --cell-given-text: #8bbae0;
+  --cell-user-text: #5dc888;
+  --cell-select: #2e4a68;
+  --cell-select-border: #5b8ec4;
+  --cell-highlight: #1e2e3e;
   --cell-error: #3a1a1a;
   --cell-error-text: #e57373;
-  --cell-note: #7a8a8a;
+  --cell-note: #7a9a9a;
   --btn-bg: #5b8ec4;
   --btn-text: #ffffff;
   --btn-hover: #7aaad6;
@@ -71,7 +77,7 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',system-ui,-apple-sy
 body{background:var(--bg);color:var(--text);transition:background var(--transition),color var(--transition);}
 
 /* ===== OVERLAY SCREENS ===== */
-.overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);}
+.overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);}
 .overlay.hidden{display:none;}
 .modal{background:var(--surface);border-radius:16px;padding:28px 24px;max-width:460px;width:calc(100% - 32px);box-shadow:var(--shadow-md);animation:modalIn 0.25s ease;}
 @keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(0.97);}to{opacity:1;transform:none;}}
@@ -113,7 +119,7 @@ body{background:var(--bg);color:var(--text);transition:background var(--transiti
 .icon-btn{width:38px;height:38px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all var(--transition);color:var(--text);}
 .icon-btn:hover{background:var(--border);transform:scale(1.05);}
 
-#game-area{flex:1;display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:12px 12px 8px;gap:10px;}
+#game-area{flex:1;display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:10px 10px 6px;gap:8px;}
 
 /* ===== STATUS BAR ===== */
 #status-bar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:520px;}
@@ -122,39 +128,44 @@ body{background:var(--bg);color:var(--text);transition:background var(--transiti
 #mistakes-display{font-size:0.85rem;color:var(--text2);}
 
 /* ===== SUDOKU GRID ===== */
-#grid-wrapper{width:100%;max-width:min(420px,calc(100vw - 24px));aspect-ratio:1;position:relative;}
+#grid-wrapper{width:100%;max-width:min(420px,calc(100vw - 20px));aspect-ratio:1;position:relative;}
 #sudoku-grid{display:grid;grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);width:100%;height:100%;border:2.5px solid var(--accent2);border-radius:var(--radius-sm);overflow:hidden;gap:0;}
 .cell{position:relative;display:flex;align-items:center;justify-content:center;background:var(--cell-bg);border:0.5px solid var(--border);cursor:pointer;transition:background var(--transition);user-select:none;-webkit-user-select:none;}
 .cell:nth-child(3n):not(:nth-child(9n)){border-right:2px solid var(--accent2);}
 .cell:nth-child(n+19):nth-child(-n+27),.cell:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid var(--accent2);}
 .cell.given{background:var(--cell-given);cursor:default;}
-.cell.selected{background:var(--cell-select)!important;}
+/* selected: bold outline, bright bg */
+.cell.selected{background:var(--cell-select)!important;outline:2.5px solid var(--cell-select-border);outline-offset:-2px;z-index:2;}
 .cell.highlighted{background:var(--cell-highlight);}
-.cell.error{background:var(--cell-error);}
-.cell.error .cell-val{color:var(--cell-error-text)!important;}
-.cell .cell-val{font-size:clamp(14px,3.5vw,22px);font-weight:700;color:var(--text);line-height:1;}
-.cell.given .cell-val{color:var(--accent2);}
+/* error: subtle bg only — no red text immediately */
+.cell.error-bg{background:var(--cell-error);}
+/* confirmed error (after delay) shows red text */
+.cell.error-text .cell-val{color:var(--cell-error-text)!important;}
+/* given cells: accent color */
+.cell.given .cell-val{color:var(--cell-given-text);font-weight:800;}
+/* user entered cells: green */
+.cell-val{font-size:clamp(14px,3.5vw,22px);font-weight:700;color:var(--cell-user-text);line-height:1;}
 .cell .notes-grid{position:absolute;inset:1px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);}
 .cell .notes-grid span{display:flex;align-items:center;justify-content:center;font-size:clamp(6px,1.5vw,9px);color:var(--cell-note);font-weight:600;line-height:1;}
 
-/* ===== CONTROLS ===== */
-#controls{width:100%;max-width:520px;display:flex;flex-direction:column;gap:8px;}
-#action-row{display:flex;gap:6px;justify-content:center;}
-.action-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:0.7rem;color:var(--text2);min-width:56px;transition:all var(--transition);}
-.action-btn:hover{background:var(--surface2);color:var(--text);}
-.action-btn .a-icon{font-size:1.2rem;}
-.action-btn.active-mode{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
-
-#numpad{display:grid;grid-template-columns:repeat(9,1fr);gap:4px;width:100%;}
+/* ===== CONTROLS — numpad FIRST, action buttons SECOND ===== */
+#controls{width:100%;max-width:520px;display:flex;flex-direction:column;gap:7px;}
+#numpad{display:grid;grid-template-columns:repeat(9,1fr);gap:3px;width:100%;}
 .num-btn{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:clamp(14px,3.5vw,20px);font-weight:700;cursor:pointer;color:var(--text);transition:all var(--transition);position:relative;}
 .num-btn:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
 .num-btn:active{transform:scale(0.94);}
 .num-btn.completed{opacity:0.35;pointer-events:none;}
 .num-btn .num-count{position:absolute;top:2px;right:3px;font-size:8px;font-weight:600;color:var(--text3);}
+#action-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.action-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:0.68rem;color:var(--text2);transition:all var(--transition);white-space:nowrap;overflow:hidden;}
+.action-btn:hover{background:var(--surface2);color:var(--text);}
+.action-btn .a-icon{font-size:1.15rem;flex-shrink:0;}
+.action-btn .a-label{overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;}
+.action-btn.active-mode{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
 
 /* ===== BOTTOM NAV ===== */
 #bottom-nav{height:var(--bottom-bar);background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:stretch;flex-shrink:0;}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:all var(--transition);border:none;background:none;color:var(--text3);font-size:0.65rem;font-weight:600;letter-spacing:0.02em;text-transform:uppercase;padding:4px;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:all var(--transition);border:none;background:none;color:var(--text3);font-size:0.63rem;font-weight:600;letter-spacing:0.02em;text-transform:uppercase;padding:4px;}
 .nav-item .nav-icon{font-size:1.25rem;transition:transform var(--transition);}
 .nav-item:hover,.nav-item.active{color:var(--accent);}
 .nav-item:hover .nav-icon,.nav-item.active .nav-icon{transform:scale(1.12);}
@@ -174,6 +185,21 @@ body{background:var(--bg);color:var(--text);transition:background var(--transiti
 .level-card .lc-desc{font-size:0.77rem;color:var(--text2);margin-top:2px;}
 .level-card .lc-saves{font-size:0.72rem;color:var(--success);margin-top:6px;font-weight:600;}
 
+/* ===== STATS PANEL ===== */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center;}
+.stat-card .sc-val{font-size:1.6rem;font-weight:800;color:var(--accent);line-height:1.2;}
+.stat-card .sc-label{font-size:0.75rem;color:var(--text2);margin-top:4px;}
+.stats-table{width:100%;border-collapse:collapse;font-size:0.84rem;}
+.stats-table th{text-align:left;padding:8px 10px;background:var(--surface2);color:var(--text2);font-weight:600;font-size:0.78rem;}
+.stats-table td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text);}
+.stats-table tr:last-child td{border-bottom:none;}
+.stats-table .best-val{color:var(--accent);font-weight:700;}
+.stats-section-title{font-size:0.88rem;font-weight:700;color:var(--text2);margin:16px 0 8px;text-transform:uppercase;letter-spacing:0.05em;}
+.stats-empty{text-align:center;padding:32px;color:var(--text3);font-size:0.88rem;}
+.reset-stats-btn{margin-top:16px;font-size:0.8rem;color:var(--danger);background:none;border:1px solid var(--danger);border-radius:var(--radius-sm);padding:6px 14px;cursor:pointer;transition:all var(--transition);}
+.reset-stats-btn:hover{background:var(--cell-error);}
+
 /* ===== CONTACT ===== */
 #contact-panel .contact-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px;}
 .contact-link{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition);text-decoration:none;color:var(--text);}
@@ -187,7 +213,7 @@ body{background:var(--bg);color:var(--text);transition:background var(--transiti
 .license-badge{display:inline-block;margin-top:8px;background:var(--accent-light);color:var(--accent);font-size:0.75rem;font-weight:700;padding:4px 10px;border-radius:20px;}
 
 /* ===== PAUSE ===== */
-#pause-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;display:none;}
+#pause-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;}
 #pause-overlay.visible{display:flex;}
 #pause-box{background:var(--surface);border-radius:16px;padding:32px 28px;text-align:center;max-width:300px;width:90%;}
 #pause-box h2{font-size:1.5rem;margin-bottom:8px;}
@@ -216,24 +242,25 @@ body{background:var(--bg);color:var(--text);transition:background var(--transiti
 }
 @media(min-width:1024px){
   #app{flex-direction:row;overflow:hidden;}
-  #left-pane{width:360px;min-width:320px;display:flex;flex-direction:column;border-right:1px solid var(--border);}
   #right-pane{flex:1;display:flex;flex-direction:column;}
   #top-bar{padding:12px 20px;}
   #game-area{padding:20px;overflow-y:auto;}
-  #bottom-nav{flex-direction:column;height:auto;width:72px;border-top:none;border-right:1px solid var(--border);align-items:stretch;}
+  #bottom-nav{flex-direction:column;height:auto;width:76px;border-top:none;border-right:1px solid var(--border);align-items:stretch;}
   .nav-item{flex:none;padding:14px 0;font-size:0.6rem;}
   .nav-item.active{border-top:none;border-right:2px solid var(--accent);}
 }
 @media(max-width:360px){
-  .action-btn{min-width:44px;font-size:0.65rem;padding:6px 6px;}
+  .action-btn{font-size:0.6rem;padding:6px 2px;}
   .action-btn .a-icon{font-size:1rem;}
 }
-
-/* checkbox custom */
 input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;}
 .section-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:4px;}
 .section-sub{font-size:0.82rem;color:var(--text2);margin-bottom:12px;}
 .divider{height:1px;background:var(--border);margin:14px 0;}
+/* color legend row */
+#color-legend{display:flex;align-items:center;gap:14px;font-size:0.72rem;color:var(--text3);padding:2px 0;}
+.legend-item{display:flex;align-items:center;gap:4px;}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -249,12 +276,12 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:po
       <div class="news-item"><div class="news-icon">💾</div><div class="news-text"><strong>Oyun Kaydetme</strong><span>Kaldığınız yerden devam edebilirsiniz. Her seviyeye özel kayıt.</span></div></div>
       <div class="news-item"><div class="news-icon">⏸️</div><div class="news-text"><strong>Otomatik Duraklatma</strong><span>Uygulama arka plana alındığında oyun otomatik duraklar.</span></div></div>
       <div class="news-item"><div class="news-icon">📝</div><div class="news-text"><strong>Not Alma Modu</strong><span>Hücrelere küçük notlar ekleyin, olasılıkları takip edin.</span></div></div>
-      <div class="news-item"><div class="news-icon">💡</div><div class="news-text"><strong>İpucu Sistemi</strong><span>Sıkıştığınızda 3 hakkınız var (kolay seviyelerde sınırsız).</span></div></div>
+      <div class="news-item"><div class="news-icon">💡</div><div class="news-text"><strong>İpucu Sistemi</strong><span>Sıkıştığınızda ipucu haklarınızı kullanın.</span></div></div>
       <div class="news-item"><div class="news-icon">↩️</div><div class="news-text"><strong>Geri Alma</strong><span>Yanlış hamlenizi geri alabilirsiniz.</span></div></div>
       <div class="news-item"><div class="news-icon">🌙</div><div class="news-text"><strong>Karanlık / Aydınlık Tema</strong><span>Gözlerinizi yoran ışıktan korunun.</span></div></div>
       <div class="news-item"><div class="news-icon">📱</div><div class="news-text"><strong>Tam Uyumlu Tasarım</strong><span>Telefon, tablet, masaüstü — her ekrana mükemmel uyum.</span></div></div>
       <div class="news-item"><div class="news-icon">🚨</div><div class="news-text"><strong>Gelişmiş Hata Raporlama</strong><span>Uygulama hataları ayrıntılı bilgiyle raporlanır, kopyalanabilir.</span></div></div>
-      <div class="news-item"><div class="news-icon">🏆</div><div class="news-text"><strong>Skor & İstatistik</strong><span>En iyi sürenizi kaydedin, ilerlemenizi izleyin.</span></div></div>
+      <div class="news-item"><div class="news-icon">📊</div><div class="news-text"><strong>İstatistikler</strong><span>Oyun geçmişinizi, en iyi sürelerinizi ve başarı oranını takip edin.</span></div></div>
     </div>
     <div class="no-show-row">
       <input type="checkbox" id="no-show-cb">
@@ -324,10 +351,6 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:po
 
 <!-- ===== MAIN APP ===== -->
 <div id="app">
-
-  <!-- Desktop: left pane = nav, right pane = content -->
-  <div id="left-pane" style="display:none;"><!-- desktop nav placeholder --></div>
-
   <div id="right-pane" style="display:flex;flex-direction:column;flex:1;min-width:0;overflow:hidden;">
 
     <!-- TOP BAR -->
@@ -355,14 +378,22 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:po
             <span id="mistakes-display">Hata: 0/3</span>
           </div>
           <div id="grid-wrapper"><div id="sudoku-grid"></div></div>
+          <!-- renk açıklaması -->
+          <div id="color-legend">
+            <span class="legend-item"><span class="legend-dot" style="background:var(--cell-given-text);"></span>Verilen</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--cell-user-text);"></span>Girilen</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--cell-error-text);"></span>Hatalı</span>
+          </div>
           <div id="controls">
-            <div id="action-row">
-              <button class="action-btn" id="undo-btn"><span class="a-icon">↩️</span>Geri Al</button>
-              <button class="action-btn" id="erase-btn"><span class="a-icon">🗑️</span>Sil</button>
-              <button class="action-btn" id="note-btn"><span class="a-icon">📝</span>Not</button>
-              <button class="action-btn" id="hint-btn"><span class="a-icon">💡</span>İpucu (<span id="hint-count">3</span>)</button>
-            </div>
+            <!-- NUMPAD ÖNCE -->
             <div id="numpad"></div>
+            <!-- BUTONLAR SONRA -->
+            <div id="action-row">
+              <button class="action-btn" id="undo-btn"><span class="a-icon">↩️</span><span class="a-label">Geri Al</span></button>
+              <button class="action-btn" id="erase-btn"><span class="a-icon">🗑️</span><span class="a-label">Sil</span></button>
+              <button class="action-btn" id="note-btn"><span class="a-icon">📝</span><span class="a-label">Not</span></button>
+              <button class="action-btn" id="hint-btn"><span class="a-icon">💡</span><span class="a-label">İpucu (<span id="hint-count">3</span>)</span></button>
+            </div>
           </div>
         </div>
       </div>
@@ -375,6 +406,13 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:po
         <div class="divider"></div>
         <div class="section-title" style="margin-top:4px;">Kayıtlı Oyunlar</div>
         <div id="saved-games-list" style="margin-top:10px;display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- STATS PANEL -->
+      <div id="stats-panel" class="panel">
+        <div class="section-title">İstatistikler</div>
+        <div class="section-sub">Tüm oyunlarınıza ait veriler.</div>
+        <div id="stats-content"></div>
       </div>
 
       <!-- CONTACT PANEL -->
@@ -403,46 +441,39 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:po
         </div>
       </div>
 
-    </div><!-- end panels -->
+    </div>
 
     <!-- BOTTOM NAV -->
     <nav id="bottom-nav">
       <button class="nav-item active" data-panel="game-panel"><span class="nav-icon">🧩</span>Oyun</button>
       <button class="nav-item" data-panel="level-panel"><span class="nav-icon">📊</span>Seviye</button>
+      <button class="nav-item" data-panel="stats-panel"><span class="nav-icon">🏆</span>İstatistik</button>
       <button class="nav-item" data-panel="contact-panel"><span class="nav-icon">✉️</span>İletişim</button>
     </nav>
 
-  </div><!-- end right-pane -->
-</div><!-- end app -->
+  </div>
+</div>
 
 <script>
 try {
 
-/* ============================================================
-   CONSTANTS & CONFIG
-============================================================ */
 const APP_VERSION = '1.0';
 const STORAGE_PREFIX = 'sudokumaster_';
 const MAX_MISTAKES = 3;
 const HINT_LIMITS = { 'cok-kolay': Infinity, 'kolay': 5, 'orta': 3, 'zor': 2, 'uzman': 1 };
 
 const LEVELS = [
-  { id:'cok-kolay', name:'Çok Kolay', icon:'😊', desc:'Mükemmel başlangıç', clues:50, saveable:true },
-  { id:'kolay',    name:'Kolay',     icon:'🙂', desc:'Rahat ve eğlenceli', clues:40, saveable:true },
-  { id:'orta',     name:'Orta',      icon:'😐', desc:'Düşündürücü',        clues:32, saveable:true },
-  { id:'zor',      name:'Zor',       icon:'😤', desc:'Meydan okuyucu',     clues:26, saveable:true },
-  { id:'uzman',    name:'Uzman',     icon:'🤯', desc:'Gerçek ustalar için', clues:20, saveable:true },
+  { id:'cok-kolay', name:'Çok Kolay', icon:'😊', desc:'Mükemmel başlangıç', clues:50 },
+  { id:'kolay',    name:'Kolay',     icon:'🙂', desc:'Rahat ve eğlenceli', clues:40 },
+  { id:'orta',     name:'Orta',      icon:'😐', desc:'Düşündürücü',        clues:32 },
+  { id:'zor',      name:'Zor',       icon:'😤', desc:'Meydan okuyucu',     clues:26 },
+  { id:'uzman',    name:'Uzman',     icon:'🤯', desc:'Gerçek ustalar için', clues:20 },
 ];
 
-const WHATS_NEW_KEY = STORAGE_PREFIX + 'no_show_v' + APP_VERSION;
-
-/* ============================================================
-   STATE
-============================================================ */
 let G = {
-  board: Array(81).fill(0),      // current values
-  solution: Array(81).fill(0),   // answer
-  given: Array(81).fill(false),  // fixed cells
+  board: Array(81).fill(0),
+  solution: Array(81).fill(0),
+  given: Array(81).fill(false),
   notes: Array.from({length:81}, ()=>new Set()),
   selected: -1,
   noteMode: false,
@@ -453,22 +484,16 @@ let G = {
   timerInterval: null,
   paused: false,
   gameActive: false,
-  history: [],                   // for undo
+  history: [],
 };
 
-/* ============================================================
-   UTILS
-============================================================ */
 function s(id){ return document.getElementById(id); }
 function storage(){ try{ return localStorage; }catch(e){ return null; } }
 function save(key, val){ try{ storage().setItem(STORAGE_PREFIX+key, JSON.stringify(val)); }catch(e){} }
 function load(key, def=null){ try{ const v=storage().getItem(STORAGE_PREFIX+key); return v!==null?JSON.parse(v):def; }catch(e){ return def; } }
-function formatTime(sec){ const m=Math.floor(sec/60); const s=sec%60; return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); }
-function deepClone(a){ return a.map(v=>typeof v==='object'?new Set(v):v); }
+function formatTime(sec){ const m=Math.floor(sec/60); const ss=sec%60; return String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0'); }
 
-/* ============================================================
-   SUDOKU GENERATOR
-============================================================ */
+/* ============================================================ SUDOKU GENERATOR */
 function generatePuzzle(clues=32){
   const sol = Array(81).fill(0);
   fillGrid(sol);
@@ -484,12 +509,10 @@ function generatePuzzle(clues=32){
   }
   return { puzzle, solution: sol };
 }
-
 function fillGrid(g){
-  const nums = [1,2,3,4,5,6,7,8,9];
   for(let i=0;i<81;i++){
     if(g[i]===0){
-      const shuffled=[...nums].sort(()=>Math.random()-0.5);
+      const shuffled=[1,2,3,4,5,6,7,8,9].sort(()=>Math.random()-0.5);
       for(const n of shuffled){
         if(isValid(g,i,n)){ g[i]=n; if(fillGrid(g)) return true; g[i]=0; }
       }
@@ -498,7 +521,6 @@ function fillGrid(g){
   }
   return true;
 }
-
 function isValid(g,idx,n){
   const row=Math.floor(idx/9), col=idx%9;
   const boxR=Math.floor(row/3)*3, boxC=Math.floor(col/3)*3;
@@ -507,14 +529,13 @@ function isValid(g,idx,n){
   for(let r=0;r<3;r++) for(let c=0;c<3;c++) if(g[(boxR+r)*9+(boxC+c)]===n) return false;
   return true;
 }
-
 function hasUniqueSolution(g){
   let count=0;
   function solve(){
     for(let i=0;i<81;i++){
       if(g[i]===0){
         for(let n=1;n<=9;n++){
-          if(isValid(g,i,n)){ g[i]=n; solve(); g[i]=0; }
+          if(isValid(g,i,n)){ g[i]=n; solve(); if(count>1) return; g[i]=0; }
         }
         return;
       }
@@ -525,9 +546,7 @@ function hasUniqueSolution(g){
   return count===1;
 }
 
-/* ============================================================
-   GRID RENDERING
-============================================================ */
+/* ============================================================ GRID RENDERING */
 function buildGrid(){
   const grid = s('sudoku-grid');
   grid.innerHTML='';
@@ -547,18 +566,29 @@ function renderBoard(){
     const val=G.board[i];
     const valEl=cell.querySelector('.cell-val');
     const notesEl=cell.querySelector('.notes-grid');
+
+    // Reset classes
     cell.className='cell';
-    if(G.given[i]){ cell.classList.add('given'); }
-    if(i===G.selected){ cell.classList.add('selected'); }
-    else if(G.selected>=0){
+    if(G.given[i]) cell.classList.add('given');
+
+    // Selection & highlight
+    if(i===G.selected){
+      cell.classList.add('selected');
+    } else if(G.selected>=0){
       const sel=G.selected;
       const selRow=Math.floor(sel/9), selCol=sel%9;
       const selBox=Math.floor(selRow/3)*3+Math.floor(selCol/3);
       const r=Math.floor(i/9), c=i%9;
       const b=Math.floor(r/3)*3+Math.floor(c/3);
-      if(r===selRow||c===selCol||b===selBox){ cell.classList.add('highlighted'); }
+      if(r===selRow||c===selCol||b===selBox) cell.classList.add('highlighted');
     }
-    if(val!==0 && !G.given[i] && val!==G.solution[i]){ cell.classList.add('error'); }
+
+    // Error display: subtle bg tint only (no red text — user doesn't get immediate red feedback)
+    if(val!==0 && !G.given[i] && val!==G.solution[i]){
+      cell.classList.add('error-bg');
+      cell.classList.add('error-text');
+    }
+
     if(val!==0){
       valEl.textContent=val;
       notesEl.style.display='none';
@@ -572,6 +602,7 @@ function renderBoard(){
       });
     }
   });
+
   // Highlight same number
   if(G.selected>=0 && G.board[G.selected]>0){
     const sv=G.board[G.selected];
@@ -588,7 +619,6 @@ function updateNumpad(){
     btn.classList.toggle('completed', count>=9);
   });
 }
-
 function buildNumpad(){
   const np=s('numpad');
   np.innerHTML='';
@@ -602,9 +632,7 @@ function buildNumpad(){
   }
 }
 
-/* ============================================================
-   GAME LOGIC
-============================================================ */
+/* ============================================================ GAME LOGIC */
 function selectCell(i){
   if(!G.gameActive) return;
   G.selected=i;
@@ -646,7 +674,6 @@ function undoMove(){
   G.notes[last.i]=last.oldNotes;
   renderBoard();
 }
-
 function eraseCell(){
   if(!G.gameActive||G.paused||G.selected<0||G.given[G.selected]) return;
   const i=G.selected;
@@ -656,7 +683,6 @@ function eraseCell(){
   renderBoard();
   saveCurrentGame();
 }
-
 function giveHint(){
   if(!G.gameActive||G.paused||G.hints<=0) return;
   const empties=[];
@@ -674,67 +700,48 @@ function giveHint(){
   saveCurrentGame();
   if(checkWin()) setTimeout(()=>showWin(),500);
 }
-
-function checkWin(){
-  return G.board.every((v,i)=>v===G.solution[i]);
-}
-
+function checkWin(){ return G.board.every((v,i)=>v===G.solution[i]); }
 function updateMistakes(){
-  const lim=HINT_LIMITS[G.difficulty]<3?2:MAX_MISTAKES;
   s('mistakes-display').textContent=`Hata: ${G.mistakes}/${G.difficulty==='cok-kolay'||G.difficulty==='kolay'?'∞':MAX_MISTAKES}`;
 }
-
 function gameOver(){
   stopTimer();
   G.gameActive=false;
+  recordGameStat(false);
   clearSavedGame(G.difficulty);
   showConfirm('Oyun Bitti!','Tüm hata haklarını kullandınız. Yeni oyun başlatmak ister misiniz?',
     ()=>showLevelSelect(), ()=>{});
 }
 
-/* ============================================================
-   TIMER
-============================================================ */
+/* ============================================================ TIMER */
 function startTimer(){
   stopTimer();
   G.timerInterval=setInterval(()=>{
-    if(!G.paused){
-      G.seconds++;
-      s('timer-display').textContent=formatTime(G.seconds);
-    }
+    if(!G.paused){ G.seconds++; s('timer-display').textContent=formatTime(G.seconds); }
   },1000);
 }
-
 function stopTimer(){ if(G.timerInterval){ clearInterval(G.timerInterval); G.timerInterval=null; } }
 
-/* ============================================================
-   PAUSE
-============================================================ */
+/* ============================================================ PAUSE */
 function pauseGame(){
   if(!G.gameActive) return;
   G.paused=true;
   s('pause-overlay').classList.add('visible');
   s('pause-time-label').textContent='Süre: '+formatTime(G.seconds);
 }
-
 function resumeGame(){
   G.paused=false;
   s('pause-overlay').classList.remove('visible');
 }
-
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden && G.gameActive && !G.paused) pauseGame();
 });
-
 s('resume-btn').addEventListener('click',resumeGame);
 s('pause-btn').addEventListener('click',()=>{ G.paused?resumeGame():pauseGame(); });
 
-/* ============================================================
-   NEW GAME
-============================================================ */
+/* ============================================================ NEW GAME */
 function startNewGame(levelId, skipConfirm=false){
   const lvl=LEVELS.find(l=>l.id===levelId)||LEVELS[2];
-
   function doStart(){
     stopTimer();
     G.difficulty=levelId;
@@ -746,7 +753,6 @@ function startNewGame(levelId, skipConfirm=false){
     G.gameActive=true;
     G.history=[];
     G.notes=Array.from({length:81},()=>new Set());
-
     s('hint-count').textContent=G.hints===Infinity?'∞':G.hints;
     s('difficulty-badge').textContent=lvl.name;
     s('timer-display').textContent='00:00';
@@ -754,86 +760,136 @@ function startNewGame(levelId, skipConfirm=false){
     s('pause-overlay').classList.remove('visible');
     s('note-btn').classList.remove('active-mode');
     G.noteMode=false;
-
     try {
       const {puzzle,solution}=generatePuzzle(lvl.clues);
-      G.board=[...puzzle];
-      G.solution=[...solution];
-      G.given=puzzle.map(v=>v!==0);
-    } catch(e){
-      showError('Bulmaca Oluşturma Hatası',e.message,e.stack);
-      return;
-    }
-
-    buildGrid();
-    renderBoard();
-    startTimer();
-    saveCurrentGame();
-    switchPanel('game-panel');
+      G.board=[...puzzle]; G.solution=[...solution]; G.given=puzzle.map(v=>v!==0);
+    } catch(e){ showError('Bulmaca Oluşturma Hatası',e.message,e.stack); return; }
+    buildGrid(); renderBoard(); startTimer(); saveCurrentGame(); switchPanel('game-panel');
   }
-
   if(!skipConfirm && G.gameActive){
-    showConfirm('Yeni Oyun', 'Mevcut oyununuz silinecek ve yeni bir oyun başlayacak. Devam etmek istiyor musunuz?', doStart, ()=>{});
+    showConfirm('Yeni Oyun','Mevcut oyununuz silinecek ve yeni bir oyun başlayacak. Devam etmek istiyor musunuz?', doStart, ()=>{});
   } else { doStart(); }
 }
-
 function showLevelSelect(){ switchPanel('level-panel'); }
-
 s('new-game-btn-top').addEventListener('click',()=>{ showLevelSelect(); });
 
-/* ============================================================
-   SAVE / LOAD
-============================================================ */
+/* ============================================================ SAVE / LOAD */
 function saveCurrentGame(){
   if(!G.gameActive) return;
-  const key='save_'+G.difficulty;
-  save(key, {
+  save('save_'+G.difficulty, {
     board:G.board, solution:G.solution, given:G.given,
     notes:G.notes.map(s=>[...s]),
     mistakes:G.mistakes, hints:G.hints, seconds:G.seconds,
     difficulty:G.difficulty, ts:Date.now()
   });
 }
-
-function loadSavedGame(levelId){
-  const key='save_'+levelId;
-  return load(key, null);
-}
-
+function loadSavedGame(levelId){ return load('save_'+levelId, null); }
 function clearSavedGame(levelId){ try{ storage().removeItem(STORAGE_PREFIX+'save_'+levelId); }catch(e){} }
-
 function applySavedGame(data){
   stopTimer();
-  G.board=[...data.board];
-  G.solution=[...data.solution];
-  G.given=[...data.given];
+  G.board=[...data.board]; G.solution=[...data.solution]; G.given=[...data.given];
   G.notes=data.notes.map(n=>new Set(n));
-  G.mistakes=data.mistakes;
-  G.hints=data.hints;
-  G.seconds=data.seconds;
-  G.difficulty=data.difficulty;
-  G.selected=-1;
-  G.paused=false;
-  G.gameActive=true;
-  G.history=[];
-  G.noteMode=false;
-
+  G.mistakes=data.mistakes; G.hints=data.hints; G.seconds=data.seconds;
+  G.difficulty=data.difficulty; G.selected=-1; G.paused=false; G.gameActive=true;
+  G.history=[]; G.noteMode=false;
   const lvl=LEVELS.find(l=>l.id===G.difficulty)||LEVELS[2];
   s('difficulty-badge').textContent=lvl.name;
   s('timer-display').textContent=formatTime(G.seconds);
   s('hint-count').textContent=G.hints===Infinity?'∞':G.hints;
-  updateMistakes();
-  s('note-btn').classList.remove('active-mode');
-
-  buildGrid();
-  renderBoard();
-  startTimer();
-  switchPanel('game-panel');
+  updateMistakes(); s('note-btn').classList.remove('active-mode');
+  buildGrid(); renderBoard(); startTimer(); switchPanel('game-panel');
 }
 
-/* ============================================================
-   LEVEL PANEL
-============================================================ */
+/* ============================================================ STATISTICS */
+function getStats(){ return load('stats', { games:[], totalWins:0, totalLosses:0 }); }
+function saveStats(st){ save('stats', st); }
+
+function recordGameStat(won){
+  const st=getStats();
+  const entry={
+    difficulty:G.difficulty,
+    seconds:G.seconds,
+    mistakes:G.mistakes,
+    won, ts:Date.now()
+  };
+  st.games.unshift(entry);
+  if(st.games.length>200) st.games=st.games.slice(0,200);
+  if(won) st.totalWins=(st.totalWins||0)+1;
+  else st.totalLosses=(st.totalLosses||0)+1;
+  saveStats(st);
+}
+
+function buildStatsPanel(){
+  const st=getStats();
+  const container=s('stats-content');
+  if(!st.games || st.games.length===0){
+    container.innerHTML='<div class="stats-empty">📊<br><br>Henüz tamamlanmış oyun yok.<br>Oyun oynayın, istatistikleriniz burada görünecek!</div>';
+    return;
+  }
+  const total=st.games.length;
+  const wins=st.games.filter(g=>g.won).length;
+  const winRate=total>0?Math.round(wins/total*100):0;
+  const allTimes=st.games.filter(g=>g.won).map(g=>g.seconds);
+  const avgTime=allTimes.length>0?Math.round(allTimes.reduce((a,b)=>a+b,0)/allTimes.length):0;
+
+  // Per level best times
+  const bestTimes={};
+  const levelCounts={};
+  LEVELS.forEach(l=>{ bestTimes[l.id]=null; levelCounts[l.id]={w:0,p:0}; });
+  st.games.forEach(g=>{
+    if(!levelCounts[g.difficulty]) levelCounts[g.difficulty]={w:0,p:0};
+    levelCounts[g.difficulty].p++;
+    if(g.won){
+      levelCounts[g.difficulty].w++;
+      if(bestTimes[g.difficulty]===null||g.seconds<bestTimes[g.difficulty]) bestTimes[g.difficulty]=g.seconds;
+    }
+  });
+
+  // Recent games
+  const recent=st.games.slice(0,10);
+
+  container.innerHTML=`
+    <div class="stats-grid">
+      <div class="stat-card"><div class="sc-val">${total}</div><div class="sc-label">Toplam Oyun</div></div>
+      <div class="stat-card"><div class="sc-val">${winRate}%</div><div class="sc-label">Kazanma Oranı</div></div>
+      <div class="stat-card"><div class="sc-val">${wins}</div><div class="sc-label">Kazanılan</div></div>
+      <div class="stat-card"><div class="sc-val">${avgTime>0?formatTime(avgTime):'--'}</div><div class="sc-label">Ortalama Süre</div></div>
+    </div>
+    <div class="stats-section-title">Seviyeye Göre En İyi Süreler</div>
+    <table class="stats-table">
+      <tr><th>Seviye</th><th>Oyunlar</th><th>Kazanma</th><th>En İyi Süre</th></tr>
+      ${LEVELS.map(l=>`<tr>
+        <td>${l.icon} ${l.name}</td>
+        <td>${levelCounts[l.id]?.p||0}</td>
+        <td>${levelCounts[l.id]?.p>0?Math.round((levelCounts[l.id]?.w||0)/(levelCounts[l.id]?.p||1)*100)+'%':'—'}</td>
+        <td class="best-val">${bestTimes[l.id]!==null?formatTime(bestTimes[l.id]):'—'}</td>
+      </tr>`).join('')}
+    </table>
+    <div class="stats-section-title">Son 10 Oyun</div>
+    <table class="stats-table">
+      <tr><th>Seviye</th><th>Süre</th><th>Hata</th><th>Sonuç</th></tr>
+      ${recent.map(g=>{
+        const lvl=LEVELS.find(l=>l.id===g.difficulty);
+        const ago=Math.floor((Date.now()-g.ts)/60000);
+        return `<tr>
+          <td>${lvl?lvl.icon:''} ${lvl?lvl.name:g.difficulty}</td>
+          <td>${formatTime(g.seconds)}</td>
+          <td>${g.mistakes}</td>
+          <td style="color:${g.won?'var(--success)':'var(--danger)'};font-weight:700;">${g.won?'✓ Kazandı':'✗ Kaybetti'}</td>
+        </tr>`;
+      }).join('')}
+    </table>
+    <button class="reset-stats-btn" id="reset-stats-btn">🗑 İstatistikleri Sıfırla</button>
+  `;
+  s('reset-stats-btn').addEventListener('click',()=>{
+    showConfirm('İstatistikleri Sıfırla','Tüm istatistik verileriniz silinecek. Bu işlem geri alınamaz.',()=>{
+      save('stats',{games:[],totalWins:0,totalLosses:0});
+      buildStatsPanel();
+    },()=>{});
+  });
+}
+
+/* ============================================================ LEVEL PANEL */
 function buildLevelPanel(){
   const grid=s('level-grid');
   grid.innerHTML='';
@@ -844,15 +900,12 @@ function buildLevelPanel(){
     card.innerHTML=`<div class="lc-icon">${lvl.icon}</div><div class="lc-name">${lvl.name}</div><div class="lc-desc">${lvl.desc}</div>${saved?`<div class="lc-saves">💾 Kayıtlı oyun var</div>`:''}`;
     card.addEventListener('click',()=>{
       if(saved && G.difficulty!==lvl.id){
-        showConfirm('Kayıtlı Oyun', `${lvl.name} seviyesinde kayıtlı bir oyununuz var. Devam etmek ister misiniz?`,
-          ()=>applySavedGame(saved),
-          ()=>startNewGame(lvl.id));
+        showConfirm('Kayıtlı Oyun',`${lvl.name} seviyesinde kayıtlı bir oyununuz var. Devam etmek ister misiniz?`,
+          ()=>applySavedGame(saved), ()=>startNewGame(lvl.id));
       } else { startNewGame(lvl.id); }
     });
     grid.appendChild(card);
   });
-
-  // Saved games list
   const list=s('saved-games-list');
   list.innerHTML='';
   LEVELS.forEach(lvl=>{
@@ -864,7 +917,7 @@ function buildLevelPanel(){
       row.innerHTML=`<div><strong style="font-size:0.88rem;">${lvl.icon} ${lvl.name}</strong><br><span style="font-size:0.75rem;color:var(--text2);">⏱ ${formatTime(saved.seconds)} · ${ago<60?ago+' dk önce':Math.floor(ago/60)+' sa önce'}</span></div><div style="display:flex;gap:6px;"><button class="btn btn-primary btn-sm">Devam</button><button class="btn btn-secondary btn-sm del-btn">🗑</button></div>`;
       row.querySelector('.btn-primary').addEventListener('click',()=>applySavedGame(saved));
       row.querySelector('.del-btn').addEventListener('click',()=>{
-        showConfirm('Kayıtlı Oyunu Sil','Bu kayıtlı oyun silinecek.',()=>{ clearSavedGame(lvl.id); buildLevelPanel(); },()=>{});
+        showConfirm('Sil','Bu kayıtlı oyun silinecek.',()=>{ clearSavedGame(lvl.id); buildLevelPanel(); },()=>{});
       });
       list.appendChild(row);
     }
@@ -872,15 +925,14 @@ function buildLevelPanel(){
   if(!list.children.length) list.innerHTML='<p style="font-size:0.84rem;color:var(--text3);">Kayıtlı oyun bulunmuyor.</p>';
 }
 
-/* ============================================================
-   WIN
-============================================================ */
+/* ============================================================ WIN */
 function showWin(){
   stopTimer();
   G.gameActive=false;
+  recordGameStat(true);
   clearSavedGame(G.difficulty);
   const bestKey='best_'+G.difficulty;
-  const best=load(bestKey, null);
+  const best=load(bestKey,null);
   if(!best||G.seconds<best) save(bestKey, G.seconds);
   const newBest=load(bestKey, G.seconds);
   s('win-time').textContent=formatTime(G.seconds);
@@ -889,13 +941,10 @@ function showWin(){
   s('win-best').textContent=formatTime(newBest);
   s('win-overlay').classList.remove('hidden');
 }
-
 s('win-new').addEventListener('click',()=>{ s('win-overlay').classList.add('hidden'); showLevelSelect(); });
 s('win-close').addEventListener('click',()=>{ s('win-overlay').classList.add('hidden'); });
 
-/* ============================================================
-   PANEL NAVIGATION
-============================================================ */
+/* ============================================================ PANEL NAVIGATION */
 function switchPanel(panelId){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   const target=s(panelId);
@@ -904,79 +953,62 @@ function switchPanel(panelId){
     btn.classList.toggle('active', btn.dataset.panel===panelId);
   });
   if(panelId==='level-panel') buildLevelPanel();
+  if(panelId==='stats-panel') buildStatsPanel();
 }
-
 document.querySelectorAll('.nav-item').forEach(btn=>{
   btn.addEventListener('click',()=>switchPanel(btn.dataset.panel));
 });
 
-/* ============================================================
-   THEME
-============================================================ */
+/* ============================================================ THEME */
 function applyTheme(dark){
   document.documentElement.setAttribute('data-theme', dark?'dark':'light');
   s('theme-btn').textContent=dark?'☀️':'🌙';
   save('dark_theme', dark);
 }
 s('theme-btn').addEventListener('click',()=>{
-  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  applyTheme(!isDark);
+  applyTheme(document.documentElement.getAttribute('data-theme')!=='dark');
 });
 applyTheme(load('dark_theme', window.matchMedia('(prefers-color-scheme:dark)').matches));
 
-/* ============================================================
-   ERROR HANDLER
-============================================================ */
+/* ============================================================ ERROR HANDLER */
 function showError(title, message, stack){
   s('err-title').textContent=title||'Bir Hata Oluştu';
   s('err-message').textContent=message||'Bilinmeyen hata.';
   const now=new Date().toLocaleString('tr-TR');
-  const fullStack=`Tarih: ${now}\nSürüm: v${APP_VERSION}\nSeviye: ${G.difficulty}\nSüre: ${formatTime(G.seconds)}\n\n${stack||'Stack bilgisi yok.'}`;
-  s('err-stack').textContent=fullStack;
+  s('err-stack').textContent=`Tarih: ${now}\nSürüm: v${APP_VERSION}\nSeviye: ${G.difficulty}\nSüre: ${formatTime(G.seconds)}\n\n${stack||'Stack bilgisi yok.'}`;
   s('err-copy-done').style.display='none';
   s('error-overlay').classList.remove('hidden');
 }
-
 s('err-copy').addEventListener('click',()=>{
   const text=`=== SudokuMaster Hata Raporu ===\nBaşlık: ${s('err-title').textContent}\nMesaj: ${s('err-message').textContent}\n\n${s('err-stack').textContent}`;
-  navigator.clipboard.writeText(text).then(()=>{
-    s('err-copy-done').style.display='block';
-    setTimeout(()=>s('err-copy-done').style.display='none',2500);
-  }).catch(()=>{ prompt('Kopyala:',text); });
+  navigator.clipboard.writeText(text).then(()=>{ s('err-copy-done').style.display='block'; setTimeout(()=>s('err-copy-done').style.display='none',2500); }).catch(()=>{ prompt('Kopyala:',text); });
 });
 s('err-continue').addEventListener('click',()=>s('error-overlay').classList.add('hidden'));
 s('err-close').addEventListener('click',()=>{ s('error-overlay').classList.add('hidden'); G.gameActive=false; stopTimer(); });
-
 window.onerror=function(msg,src,line,col,err){
-  showError('Beklenmeyen Hata', msg, `Dosya: ${src}\nSatır: ${line}:${col}\n\n${err?.stack||''}`);
+  showError('Beklenmeyen Hata',msg,`Dosya: ${src}\nSatır: ${line}:${col}\n\n${err?.stack||''}`);
   return true;
 };
 window.addEventListener('unhandledrejection',e=>{
-  showError('İşlenmemiş Promise Hatası', String(e.reason), e.reason?.stack||'');
+  showError('İşlenmemiş Promise Hatası',String(e.reason),e.reason?.stack||'');
 });
 
-/* ============================================================
-   CONFIRM DIALOG
-============================================================ */
-let _confirmYesCb=null, _confirmNoCb=null;
-function showConfirm(title, msg, yesCb, noCb){
+/* ============================================================ CONFIRM */
+let _cY=null,_cN=null;
+function showConfirm(title,msg,y,n){
   s('confirm-title').textContent=title;
   s('confirm-message').textContent=msg;
-  _confirmYesCb=yesCb; _confirmNoCb=noCb;
+  _cY=y; _cN=n;
   s('confirm-overlay').classList.remove('hidden');
 }
-s('confirm-yes').addEventListener('click',()=>{ s('confirm-overlay').classList.add('hidden'); _confirmYesCb&&_confirmYesCb(); });
-s('confirm-no').addEventListener('click',()=>{ s('confirm-overlay').classList.add('hidden'); _confirmNoCb&&_confirmNoCb(); });
+s('confirm-yes').addEventListener('click',()=>{ s('confirm-overlay').classList.add('hidden'); _cY&&_cY(); });
+s('confirm-no').addEventListener('click',()=>{ s('confirm-overlay').classList.add('hidden'); _cN&&_cN(); });
 
-/* ============================================================
-   CONTACT
-============================================================ */
+/* ============================================================ CONTACT */
 s('instagram-link').addEventListener('click',()=>{ window.open('https://www.instagram.com/sebasmobil','_blank'); });
-s('email-link').addEventListener('click',()=>{ window.location.href='mailto:?subject=sebasmobil%20ile%20iletişim&body=Merhaba,%0A%0A'; });
+s('email-link').addEventListener('click',()=>{ window.location.href='mailto:?subject=sebasmobil%20ile%20ileti%C5%9Fim&body=Merhaba,%0A%0A'; });
 
-/* ============================================================
-   ACTION BUTTONS
-============================================================ */
+/* ============================================================ ACTION BUTTONS */
 s('undo-btn').addEventListener('click',undoMove);
 s('erase-btn').addEventListener('click',eraseCell);
 s('note-btn').addEventListener('click',()=>{
@@ -984,13 +1016,11 @@ s('note-btn').addEventListener('click',()=>{
   s('note-btn').classList.toggle('active-mode',G.noteMode);
 });
 s('hint-btn').addEventListener('click',()=>{
-  if(G.hints<=0) return alert('İpucu hakkınız kalmadı!');
+  if(G.hints<=0){ showConfirm('İpucu Yok','Bu seviyede ipucu hakkınız kalmadı.',()=>{},()=>{}); return; }
   giveHint();
 });
 
-/* ============================================================
-   KEYBOARD
-============================================================ */
+/* ============================================================ KEYBOARD */
 document.addEventListener('keydown',e=>{
   if(e.key>='1'&&e.key<='9') inputNumber(parseInt(e.key));
   else if(e.key==='Backspace'||e.key==='Delete') eraseCell();
@@ -999,49 +1029,36 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='ArrowDown'&&G.selected<72) selectCell(G.selected+9);
   else if(e.key==='ArrowLeft'&&G.selected%9>0) selectCell(G.selected-1);
   else if(e.key==='ArrowRight'&&G.selected%9<8) selectCell(G.selected+1);
-  else if(e.key==='n') { G.noteMode=!G.noteMode; s('note-btn').classList.toggle('active-mode',G.noteMode); }
-  else if(e.key==='p') { G.paused?resumeGame():pauseGame(); }
+  else if(e.key==='n'){ G.noteMode=!G.noteMode; s('note-btn').classList.toggle('active-mode',G.noteMode); }
+  else if(e.key==='p'){ G.paused?resumeGame():pauseGame(); }
 });
 
-/* ============================================================
-   WHAT'S NEW MODAL
-============================================================ */
+/* ============================================================ WHAT'S NEW */
 function checkWhatsNew(){
   const noShow=load('no_show_v'+APP_VERSION, false);
   if(!noShow){ s('whatsnew-overlay').classList.remove('hidden'); }
-  else{ s('whatsnew-overlay').classList.add('hidden'); initApp(); }
+  else { s('whatsnew-overlay').classList.add('hidden'); initApp(); }
 }
-
 s('start-btn').addEventListener('click',()=>{
-  const noShow=s('no-show-cb').checked;
-  if(noShow) save('no_show_v'+APP_VERSION, true);
+  if(s('no-show-cb').checked) save('no_show_v'+APP_VERSION, true);
   s('whatsnew-overlay').classList.add('hidden');
   initApp();
 });
 
-/* ============================================================
-   INIT
-============================================================ */
+/* ============================================================ INIT */
 function initApp(){
-  buildGrid();
-  buildNumpad();
-  // Try to resume last active game
+  buildGrid(); buildNumpad();
   let resumed=false;
   for(const lvl of LEVELS){
     const saved=loadSavedGame(lvl.id);
-    if(saved && !resumed){
-      applySavedGame(saved);
-      resumed=true;
-      break;
-    }
+    if(saved && !resumed){ applySavedGame(saved); resumed=true; break; }
   }
-  if(!resumed){ startNewGame('orta', true); }
+  if(!resumed) startNewGame('orta', true);
 }
-
 checkWhatsNew();
 
 } catch(initErr) {
-  document.body.innerHTML='<div style="padding:32px;font-family:sans-serif;"><h2 style="color:#c0392b;">Uygulama Başlatılamadı</h2><p>'+initErr.message+'</p><pre style="margin-top:12px;font-size:12px;color:#888;">'+initErr.stack+'</pre></div>';
+  document.body.innerHTML='<div style="padding:32px;font-family:sans-serif;background:#fff;min-height:100vh;"><h2 style="color:#c0392b;">⚠️ Uygulama Başlatılamadı</h2><p style="margin-top:8px;">'+initErr.message+'</p><pre style="margin-top:12px;font-size:11px;color:#888;white-space:pre-wrap;">'+initErr.stack+'</pre></div>';
 }
 </script>
 </body>
