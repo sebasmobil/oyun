@@ -394,25 +394,22 @@ a { color:inherit; text-decoration:none; }
 }
 .mob-players {
   display:flex;align-items:center;gap:8px;
-  padding:5px 10px;border-bottom:1px solid var(--border);flex-shrink:0;
+  padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;
 }
 .mob-player { flex:1;min-width:0; }
-.mob-player-lbl { font-size:.6rem;color:var(--txt3);font-family:var(--Fd);letter-spacing:.07em;text-transform:uppercase; }
-.mob-player-cap { display:flex;flex-wrap:wrap;gap:2px;margin-top:1px; }
-.mob-timer { font-family:var(--Fd);font-size:.9rem;color:var(--accent2);padding:0 8px;flex-shrink:0; }
+.mob-player-lbl { font-size:.65rem;color:var(--txt3);font-family:var(--Fd);letter-spacing:.07em;text-transform:uppercase; }
+.mob-player-cap { display:flex;flex-wrap:wrap;gap:2px;margin-top:2px; }
+.mob-timer { font-family:var(--Fd);font-size:1rem;color:var(--accent2);padding:0 8px;flex-shrink:0; }
 .mob-tabs { display:flex;border-bottom:1px solid var(--border);flex-shrink:0; }
 .mob-tab {
-  flex:1;padding:5px 4px;font-size:.7rem;background:transparent;border:none;
+  flex:1;padding:8px 4px;font-size:.72rem;background:transparent;border:none;
   color:var(--txt2);border-bottom:2px solid transparent;font-family:var(--Fd);
   letter-spacing:.04em;transition:all .15s;
 }
 .mob-tab.on { color:var(--accent2);border-bottom-color:var(--accent); }
 .mob-content { display:none;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:var(--border) transparent; }
 .mob-content.on { display:block; }
-.mob-diff-list { display:flex;flex-direction:column;gap:2px;padding:4px 8px; }
-.mob-diff-list .dbtn { padding:3px 8px;font-size:.75rem;min-height:0; }
-#mobPanelBody { overflow:hidden; transition:max-height .25s ease; max-height:300px; }
-#mobPanelBody.collapsed { max-height:0; }
+.mob-diff-list { display:flex;flex-direction:column;gap:4px;padding:8px 10px; }
 .mob-mhist { padding:6px 8px; }
 .mob-stats { display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;padding:9px 10px; }
 .mob-stat { text-align:center;background:var(--surf);border-radius:7px;padding:7px 4px; }
@@ -460,32 +457,31 @@ a { color:inherit; text-decoration:none; }
 
 /* PHONE LANDSCAPE (short screen) */
 @media (orientation:landscape) and (max-height:520px) {
-  :root { --sq: clamp(32px, calc((100dvh - 70px) / 8), 58px); }
-  .sidebar { width:130px; overflow-y:auto; flex-shrink:0; }
-  .sb-right { width:115px; overflow-y:auto; flex-shrink:0; }
-  .sb-sec { padding:6px 8px; }
-  .dbtn { padding:4px 6px;font-size:.74rem; }
-  .timer-disp { font-size:1.1rem;padding:3px 0; }
-  .mhist .mrow { font-size:.70rem; }
-  .pcard { padding:6px 7px; }
-  .pav { width:24px;height:24px;font-size:.85rem; }
-  .topbar { height:38px; }
-  .statbar { height:26px;font-size:.70rem; }
-  .board-area { padding:4px; overflow:visible; }
-  .board-area { align-items:center; justify-content:center; }
-  .garea { overflow:hidden; }
+  :root { --sq: clamp(34px, calc((100dvh - 70px) / 8), 58px); }
+  .sidebar { width:140px; overflow-y:auto; }
+  .sb-right { width:120px; overflow-y:auto; }
+  .sb-sec { padding:7px 9px; }
+  .dbtn { padding:5px 7px;font-size:.76rem; }
+  .timer-disp { font-size:1.2rem;padding:4px 0; }
+  .mhist .mrow { font-size:.72rem; }
+  .pcard { padding:7px 8px; }
+  .pav { width:26px;height:26px;font-size:.9rem; }
+  .topbar { height:40px; }
+  .statbar { height:28px;font-size:.72rem; }
+  .board-area { padding:4px; align-items:center; justify-content:center; }
 }
 
 /* TABLET PORTRAIT — no sidebar */
 @media (min-width:601px) and (max-width:900px) and (orientation:portrait) {
-  :root { --sq: calc((100vw - 50px) / 8); }
+  :root { --sq: min(calc((100vw - 40px) / 8), calc((100dvh - 44px - 28px - 48px - 180px) / 8)); }
   .sidebar { display:none !important; }
-  #mobPanel { display:flex; max-height:170px; }
+  #mobPanel { display:flex; max-height:180px; }
   #phoneBar { display:flex; }
-  .board-area { padding:6px; align-items:flex-start; justify-content:center; }
-  .board-wrap { align-items:center; }
+  .board-area { padding:6px; align-items:center; justify-content:center; }
   .sbcopy { display:none; }
-  .file-labels { padding-left:14px; }
+  .mob-diff-list .dbtn { padding:3px 8px; font-size:.75rem; }
+  .mob-diff-list { gap:2px; padding:4px 8px; }
+  .mob-tab { padding:6px 4px; }
 }
 
 /* PHONE PORTRAIT */
@@ -496,25 +492,45 @@ a { color:inherit; text-decoration:none; }
   .logo { font-size:.82rem; }
   .bico { padding:6px;font-size:.85rem; }
   .sidebar { display:none !important; }
-  /* game area vertical */
-  .garea { flex-direction:column; overflow:hidden; min-height:0; flex:1; }
-  /* board area — fill remaining space */
-  .board-area {
-    flex:1; padding:4px; min-height:0;
-    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  /* garea dikey */
+  .garea { flex-direction:column; overflow:hidden; min-height:0; }
+  /* board: fixed height hesaplı, panel kapalıysa CSS var ile değişir */
+  :root {
+    --panel-h: 195px; /* mob-players(34) + tabs(34) + content(127) */
   }
-  .board-wrap { align-items:center; }
-  /* sq = min of available width and available height */
-  :root { --sq: min(calc((100dvw - 28px) / 8), calc((100dvh - 44px - 28px - 48px - 170px) / 8)); }
-  #mobPanel { display:flex; flex-shrink:0; }
-  .statbar { height:28px;padding:0 10px;font-size:.72rem; flex-shrink:0; }
+  .board-area {
+    flex: 0 0 auto;
+    padding: 4px;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+  }
+  /* kare boyutu: ekran genişliği veya ekran yüksekliği - sabit alanlar, hangisi küçükse */
+  :root { --sq: min(
+    calc((100dvw - 28px) / 8),
+    calc((100dvh - 44px - 28px - 48px - var(--panel-h)) / 8)
+  ); }
+  /* mob panel sabit yükseklikte */
+  #mobPanel { display:flex; flex-shrink:0; height:var(--panel-h); overflow:hidden; }
+  /* panel içeriği kaydırılabilir */
+  .mob-content { overflow-y:auto; }
+  /* zorluk butonları kompakt */
+  .mob-diff-list { gap:2px; padding:4px 8px; }
+  .mob-diff-list .dbtn { padding:3px 8px; font-size:.75rem; }
+  /* tab kompakt */
+  .mob-tab { padding:6px 4px; font-size:.7rem; }
+  /* oyuncu satırı kompakt */
+  .mob-players { padding:5px 10px; }
+  .mob-timer { font-size:.9rem; }
+  /* statbar */
+  .statbar { height:28px; padding:0 10px; font-size:.72rem; flex-shrink:0; }
   .sbcopy { display:none; }
+  /* phone bar */
   #phoneBar { display:flex; flex-shrink:0; }
-  /* coords */
-  .rank-coord { width:14px; font-size:.52rem; }
+  /* koordinatlar */
+  .rank-coord { display:none; }
   .coord { font-size:.52rem; width:var(--sq); }
-  .board-with-ranks { display:flex; }
-  .file-labels { padding-left:14px; }
+  .board-with-ranks { display:block; }
 }
 </style>
 </head>
@@ -805,9 +821,9 @@ a { color:inherit; text-decoration:none; }
         <div class="mob-player-lbl" style="text-align:right;">Siz · ⬜</div>
         <div class="mob-player-cap cap-row" id="capW2" style="justify-content:flex-end;"></div>
       </div>
-      <button id="mobToggleBtn" onclick="toggleMobPanel()" style="margin-left:6px;background:transparent;border:none;color:var(--txt3);font-size:1.1rem;padding:2px 4px;flex-shrink:0;" title="Paneli gizle/göster">▼</button>
+      <button id="mobToggleBtn" onclick="mobPanelToggle()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--txt2);font-size:.75rem;padding:3px 7px;flex-shrink:0;margin-left:6px;">▼</button>
     </div>
-    <div id="mobPanelBody">
+    <div id="mobPanelInner" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
       <div class="mob-tabs">
         <button class="mob-tab on"  id="mTab1" onclick="mTabSwitch(1)">Zorluk</button>
         <button class="mob-tab"     id="mTab2" onclick="mTabSwitch(2)">Hamleler</button>
@@ -1197,23 +1213,24 @@ function mTabSwitch(n){
   });
 }
 
-let _mobPanelOpen = true;
-function toggleMobPanel(){
-  _mobPanelOpen = !_mobPanelOpen;
-  const body = $('mobPanelBody');
-  const btn  = $('mobToggleBtn');
-  if(_mobPanelOpen){
-    body.classList.remove('collapsed');
-    btn.textContent = '▼';
-    document.documentElement.style.setProperty('--sq',
-      'min(calc((100dvw - 28px) / 8), calc((100dvh - 44px - 28px - 48px - 170px) / 8))');
+/* ── MOB PANEL TOGGLE ── */
+let _mobOpen=true;
+function mobPanelToggle(){
+  _mobOpen=!_mobOpen;
+  const inner=$('mobPanelInner');
+  const btn=$('mobToggleBtn');
+  const panel=$('mobPanel');
+  if(_mobOpen){
+    inner.style.display='flex';
+    btn.textContent='▼';
+    panel.style.height='';
   } else {
-    body.classList.add('collapsed');
-    btn.textContent = '▲';
-    // Panel kapandığında tahtaya daha fazla alan ver
-    document.documentElement.style.setProperty('--sq',
-      'min(calc((100dvw - 28px) / 8), calc((100dvh - 44px - 28px - 48px - 36px) / 8))');
+    inner.style.display='none';
+    btn.textContent='▲';
+    panel.style.height='auto';
   }
+  // Tahtayı yeniden boyutlandır
+  if(S.game) renderBoard(S.game);
 }
 
 /* ============================================================
