@@ -394,22 +394,25 @@ a { color:inherit; text-decoration:none; }
 }
 .mob-players {
   display:flex;align-items:center;gap:8px;
-  padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;
+  padding:5px 10px;border-bottom:1px solid var(--border);flex-shrink:0;
 }
 .mob-player { flex:1;min-width:0; }
-.mob-player-lbl { font-size:.65rem;color:var(--txt3);font-family:var(--Fd);letter-spacing:.07em;text-transform:uppercase; }
-.mob-player-cap { display:flex;flex-wrap:wrap;gap:2px;margin-top:2px; }
-.mob-timer { font-family:var(--Fd);font-size:1rem;color:var(--accent2);padding:0 8px;flex-shrink:0; }
+.mob-player-lbl { font-size:.6rem;color:var(--txt3);font-family:var(--Fd);letter-spacing:.07em;text-transform:uppercase; }
+.mob-player-cap { display:flex;flex-wrap:wrap;gap:2px;margin-top:1px; }
+.mob-timer { font-family:var(--Fd);font-size:.9rem;color:var(--accent2);padding:0 8px;flex-shrink:0; }
 .mob-tabs { display:flex;border-bottom:1px solid var(--border);flex-shrink:0; }
 .mob-tab {
-  flex:1;padding:8px 4px;font-size:.72rem;background:transparent;border:none;
+  flex:1;padding:5px 4px;font-size:.7rem;background:transparent;border:none;
   color:var(--txt2);border-bottom:2px solid transparent;font-family:var(--Fd);
   letter-spacing:.04em;transition:all .15s;
 }
 .mob-tab.on { color:var(--accent2);border-bottom-color:var(--accent); }
 .mob-content { display:none;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:var(--border) transparent; }
 .mob-content.on { display:block; }
-.mob-diff-list { display:flex;flex-direction:column;gap:4px;padding:8px 10px; }
+.mob-diff-list { display:flex;flex-direction:column;gap:2px;padding:4px 8px; }
+.mob-diff-list .dbtn { padding:3px 8px;font-size:.75rem;min-height:0; }
+#mobPanelBody { overflow:hidden; transition:max-height .25s ease; max-height:300px; }
+#mobPanelBody.collapsed { max-height:0; }
 .mob-mhist { padding:6px 8px; }
 .mob-stats { display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;padding:9px 10px; }
 .mob-stat { text-align:center;background:var(--surf);border-radius:7px;padding:7px 4px; }
@@ -457,55 +460,61 @@ a { color:inherit; text-decoration:none; }
 
 /* PHONE LANDSCAPE (short screen) */
 @media (orientation:landscape) and (max-height:520px) {
-  :root { --sq: clamp(38px, calc((100dvh - 82px) / 8), 62px); }
-  .sidebar { width:148px; overflow-y:auto; }
-  .sb-right { width:128px; overflow-y:auto; }
-  .sb-sec { padding:7px 9px; }
-  .dbtn { padding:5px 7px;font-size:.76rem; }
-  .timer-disp { font-size:1.2rem;padding:4px 0; }
-  .mhist .mrow { font-size:.72rem; }
-  .pcard { padding:7px 8px; }
-  .pav { width:26px;height:26px;font-size:.9rem; }
-  .topbar { height:40px; }
-  .statbar { height:28px;font-size:.72rem; }
+  :root { --sq: clamp(32px, calc((100dvh - 70px) / 8), 58px); }
+  .sidebar { width:130px; overflow-y:auto; flex-shrink:0; }
+  .sb-right { width:115px; overflow-y:auto; flex-shrink:0; }
+  .sb-sec { padding:6px 8px; }
+  .dbtn { padding:4px 6px;font-size:.74rem; }
+  .timer-disp { font-size:1.1rem;padding:3px 0; }
+  .mhist .mrow { font-size:.70rem; }
+  .pcard { padding:6px 7px; }
+  .pav { width:24px;height:24px;font-size:.85rem; }
+  .topbar { height:38px; }
+  .statbar { height:26px;font-size:.70rem; }
+  .board-area { padding:4px; overflow:visible; }
+  .board-area { align-items:center; justify-content:center; }
+  .garea { overflow:hidden; }
 }
 
 /* TABLET PORTRAIT — no sidebar */
 @media (min-width:601px) and (max-width:900px) and (orientation:portrait) {
-  :root { --sq: calc((100vw - 36px) / 8); }
+  :root { --sq: calc((100vw - 50px) / 8); }
   .sidebar { display:none !important; }
-  #mobPanel { display:flex; max-height:220px; }
+  #mobPanel { display:flex; max-height:170px; }
   #phoneBar { display:flex; }
-  .board-area { padding:6px; align-items:flex-start; }
+  .board-area { padding:6px; align-items:flex-start; justify-content:center; }
+  .board-wrap { align-items:center; }
   .sbcopy { display:none; }
+  .file-labels { padding-left:14px; }
 }
 
 /* PHONE PORTRAIT */
 @media (max-width:600px) and (orientation:portrait) {
-  :root { --sq: calc((100dvw - 16px) / 8); }
   html,body { height:100dvh; }
   #app { height:100dvh; }
   .topbar { height:44px; padding:0 10px; }
   .logo { font-size:.82rem; }
   .bico { padding:6px;font-size:.85rem; }
-  /* hide desktop sidebars */
   .sidebar { display:none !important; }
-  /* board area */
-  .board-area { padding:4px 0 4px 4px; flex:0 0 auto; align-items:center; justify-content:flex-start; overflow:visible; }
   /* game area vertical */
-  .garea { flex-direction:column; overflow:hidden; min-height:0; }
-  /* mob panel visible and takes remaining space */
-  #mobPanel { display:flex; flex:1; min-height:0; }
-  /* status bar */
-  .statbar { height:28px;padding:0 10px;font-size:.72rem; }
+  .garea { flex-direction:column; overflow:hidden; min-height:0; flex:1; }
+  /* board area — fill remaining space */
+  .board-area {
+    flex:1; padding:4px; min-height:0;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .board-wrap { align-items:center; }
+  /* sq = min of available width and available height */
+  :root { --sq: min(calc((100dvw - 28px) / 8), calc((100dvh - 44px - 28px - 48px - 170px) / 8)); }
+  #mobPanel { display:flex; flex-shrink:0; }
+  .statbar { height:28px;padding:0 10px;font-size:.72rem; flex-shrink:0; }
   .sbcopy { display:none; }
-  /* phone bar */
   #phoneBar { display:flex; flex-shrink:0; }
-  /* coords: hide rank labels in portrait to give board full width */
-  .rank-coord { display:none; }
-  .coord { font-size:.52rem; width:calc(var(--sq)); }
-  .board-with-ranks { display:block; }
-  /* recalc sq without rank label (14px) */
+  /* coords */
+  .rank-coord { width:14px; font-size:.52rem; }
+  .coord { font-size:.52rem; width:var(--sq); }
+  .board-with-ranks { display:flex; }
+  .file-labels { padding-left:14px; }
 }
 </style>
 </head>
@@ -796,19 +805,22 @@ a { color:inherit; text-decoration:none; }
         <div class="mob-player-lbl" style="text-align:right;">Siz · ⬜</div>
         <div class="mob-player-cap cap-row" id="capW2" style="justify-content:flex-end;"></div>
       </div>
+      <button id="mobToggleBtn" onclick="toggleMobPanel()" style="margin-left:6px;background:transparent;border:none;color:var(--txt3);font-size:1.1rem;padding:2px 4px;flex-shrink:0;" title="Paneli gizle/göster">▼</button>
     </div>
-    <div class="mob-tabs">
-      <button class="mob-tab on"  id="mTab1" onclick="mTabSwitch(1)">Zorluk</button>
-      <button class="mob-tab"     id="mTab2" onclick="mTabSwitch(2)">Hamleler</button>
-      <button class="mob-tab"     id="mTab3" onclick="mTabSwitch(3)">İstatistik</button>
-    </div>
-    <div class="mob-content on" id="mCnt1"><div class="mob-diff-list" id="diffListM"></div></div>
-    <div class="mob-content"    id="mCnt2"><div class="mob-mhist mhist" id="mhistM"></div></div>
-    <div class="mob-content"    id="mCnt3">
-      <div class="mob-stats">
-        <div class="mob-stat"><div class="mob-stat-n" id="mstMoves">0</div><div class="mob-stat-l">Hamle</div></div>
-        <div class="mob-stat"><div class="mob-stat-n sw" id="mstW">0</div><div class="mob-stat-l">Galibiyet</div></div>
-        <div class="mob-stat"><div class="mob-stat-n sd" id="mstL">0</div><div class="mob-stat-l">Mağlubiyet</div></div>
+    <div id="mobPanelBody">
+      <div class="mob-tabs">
+        <button class="mob-tab on"  id="mTab1" onclick="mTabSwitch(1)">Zorluk</button>
+        <button class="mob-tab"     id="mTab2" onclick="mTabSwitch(2)">Hamleler</button>
+        <button class="mob-tab"     id="mTab3" onclick="mTabSwitch(3)">İstatistik</button>
+      </div>
+      <div class="mob-content on" id="mCnt1"><div class="mob-diff-list" id="diffListM"></div></div>
+      <div class="mob-content"    id="mCnt2"><div class="mob-mhist mhist" id="mhistM"></div></div>
+      <div class="mob-content"    id="mCnt3">
+        <div class="mob-stats">
+          <div class="mob-stat"><div class="mob-stat-n" id="mstMoves">0</div><div class="mob-stat-l">Hamle</div></div>
+          <div class="mob-stat"><div class="mob-stat-n sw" id="mstW">0</div><div class="mob-stat-l">Galibiyet</div></div>
+          <div class="mob-stat"><div class="mob-stat-n sd" id="mstL">0</div><div class="mob-stat-l">Mağlubiyet</div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1183,6 +1195,25 @@ function mTabSwitch(n){
     $('mTab'+i).classList.toggle('on',i===n);
     $('mCnt'+i).classList.toggle('on',i===n);
   });
+}
+
+let _mobPanelOpen = true;
+function toggleMobPanel(){
+  _mobPanelOpen = !_mobPanelOpen;
+  const body = $('mobPanelBody');
+  const btn  = $('mobToggleBtn');
+  if(_mobPanelOpen){
+    body.classList.remove('collapsed');
+    btn.textContent = '▼';
+    document.documentElement.style.setProperty('--sq',
+      'min(calc((100dvw - 28px) / 8), calc((100dvh - 44px - 28px - 48px - 170px) / 8))');
+  } else {
+    body.classList.add('collapsed');
+    btn.textContent = '▲';
+    // Panel kapandığında tahtaya daha fazla alan ver
+    document.documentElement.style.setProperty('--sq',
+      'min(calc((100dvw - 28px) / 8), calc((100dvh - 44px - 28px - 48px - 36px) / 8))');
+  }
 }
 
 /* ============================================================
