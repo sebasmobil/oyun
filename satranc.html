@@ -52,10 +52,11 @@ a { color:inherit; text-decoration:none; }
    OVERLAYS
 ============================================================ */
 .ov {
-  position:fixed; inset:0; z-index:1000;
+  position:fixed; inset:0; z-index:9999;
   display:flex; align-items:center; justify-content:center;
   background:rgba(0,0,0,.85); backdrop-filter:blur(6px);
   animation:ovIn .25s ease;
+  touch-action:none;
 }
 .ov.hidden { display:none; }
 @keyframes ovIn  { from{opacity:0} to{opacity:1} }
@@ -1358,8 +1359,8 @@ function askNewGame(){
 ============================================================ */
 let _cfCb=null;
 function showCF(ttl,msg,cb){ setTxt('cfTitle',ttl);$('cfMsg').textContent=msg;_cfCb=cb;$('ovConfirm').classList.remove('hidden'); }
-function cfClose(){ $('ovConfirm').classList.add('hidden');_cfCb=null; }
-function cfOK(){ cfClose(); if(_cfCb){_cfCb();_cfCb=null;} }
+function cfClose(){ $('ovConfirm').classList.add('hidden'); _cfCb=null; }
+function cfOK(){ const cb=_cfCb; $('ovConfirm').classList.add('hidden'); _cfCb=null; if(cb) cb(); }
 
 /* ============================================================
    PROMOTION
