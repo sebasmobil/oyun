@@ -289,8 +289,11 @@ body {
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   transition: width 0.3s;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 .sidebar.right-side { border-right:none; border-left: 1px solid var(--border); }
 .sidebar-section {
@@ -717,52 +720,154 @@ body {
 .contact-link-title { font-weight:600; }
 .contact-link-sub { font-size:0.78rem; color:var(--text3); }
 
-/* RESPONSIVE */
-/* ===== PHONE PORTRAIT ===== */
-@media (max-width: 640px) and (orientation: portrait) {
-  :root { --sq-size: calc((100vw - 24px) / 8); --board-size: calc((100vw - 24px)); }
-  .sidebar { display:none; }
-  .game-area { flex-direction: column; }
-  .board-container { padding: 8px; flex:0 0 auto; }
-  #phoneBar { display:flex; }
-  .app-topbar { height:46px; }
-  .status-bar { height: 32px; }
-}
-/* ===== PHONE LANDSCAPE ===== */
-@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
-  :root { --sq-size: calc((100vh - 80px) / 8); --board-size: calc(100vh - 80px); }
-  .sidebar { width:160px; }
-  .sidebar.right-side { width:150px; }
-  .board-container { padding:6px; }
-  .sidebar-section { padding:8px; }
-  .diff-btn { padding:5px 8px; font-size:0.78rem; }
-  .timer-display { font-size:1.2rem; }
-  .move-history { font-size:0.75rem; }
-}
-/* ===== TABLET ===== */
-@media (min-width: 641px) and (max-width: 1024px) {
-  :root { --sq-size: calc((100vw - 500px) / 8); --board-size: calc((100vw - 500px)); }
-  .sidebar { width:190px; }
-}
-/* ===== DESKTOP ===== */
-@media (min-width: 1025px) {
-  :root { --sq-size: 72px; --board-size: 576px; }
-}
-@media (min-width: 1400px) {
-  :root { --sq-size: 82px; --board-size: 656px; }
+/* SIDEBAR SCROLL — her zaman kaydırılabilir */
+.sidebar {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
+/* RESPONSIVE */
+
+/* ===== DESKTOP (varsayılan) ===== */
+@media (min-width: 1025px) {
+  :root { --sq-size: 72px; }
+}
+@media (min-width: 1400px) {
+  :root { --sq-size: 82px; }
+}
+
+/* ===== TABLET yatay ve küçük masaüstü ===== */
+@media (min-width: 641px) and (max-width: 1024px) {
+  :root { --sq-size: calc((100vw - 430px) / 8); }
+  .sidebar { width: 180px; }
+  .sidebar.right-side { width: 140px; }
+}
+
+/* ===== TABLET dikey ===== */
+@media (min-width: 641px) and (max-width: 900px) and (orientation: portrait) {
+  :root { --sq-size: calc((100vw - 32px) / 8); }
+  .sidebar { display:none; }
+  .sidebar.right-side { display:none; }
+  #phoneBar { display:flex; }
+  .board-container { padding: 8px; }
+}
+
+/* ===== TELEFON YATAY ===== */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+  :root { --sq-size: calc((100vh - 90px) / 8); }
+  #app { height: 100dvh; }
+  .sidebar { width: 150px; overflow-y: auto; }
+  .sidebar.right-side { width: 130px; overflow-y: auto; }
+  .board-container { padding: 4px; }
+  .sidebar-section { padding: 6px 8px; }
+  .diff-btn { padding: 4px 7px; font-size: 0.76rem; }
+  .timer-display { font-size: 1.1rem; padding: 4px 0; }
+  .move-history { font-size: 0.74rem; }
+  .player-card { padding: 7px; }
+  .player-avatar { width: 26px; height: 26px; font-size: 0.9rem; }
+  .sidebar-label { font-size: 0.6rem; margin-bottom: 5px; }
+  .app-topbar { height: 42px; }
+  .status-bar { height: 28px; font-size: 0.75rem; }
+}
+
+/* ===== TELEFON DİKEY — ANA DÜZELTME ===== */
+@media (max-width: 640px) and (orientation: portrait) {
+  :root { --sq-size: calc((100vw - 16px) / 8); }
+
+  html, body { height: 100dvh; overflow: hidden; }
+
+  #app {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* TopBar kompakt */
+  .app-topbar {
+    height: 46px;
+    padding: 0 10px;
+    flex-shrink: 0;
+  }
+  .app-logo { font-size: 0.85rem; }
+  .btn-icon { padding: 6px; font-size: 0.85rem; }
+
+  /* Sidebar'ları gizle */
+  .sidebar { display: none !important; }
+
+  /* Oyun alanı: dikey */
+  .game-area {
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* Tahta: ekrana tam sığsın, ortalansın */
+  .board-container {
+    flex: 0 0 auto;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Tahta altındaki bilgi paneli */
+  #mobileInfoPanel {
+    display: flex !important;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    flex-direction: column;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  /* Durum çubuğu */
+  .status-bar {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+  .status-copy { display: none; }
+
+  /* Phone bar */
+  #phoneBar {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  /* Koordinat yazıları küçük */
+  .board-label { font-size: 0.55rem; }
+}
+
+/* Phone bar — mobilde alt menü */
 #phoneBar {
-  display:none;
-  position:fixed; bottom:0; left:0; right:0;
+  display: none;
+  position: relative;
+  bottom: auto; left: auto; right: auto;
   background: var(--bg2);
   border-top: 1px solid var(--border);
-  padding: 8px 12px;
-  gap:8px;
+  padding: 6px 8px;
+  gap: 6px;
   z-index: 200;
-  justify-content:space-around;
+  justify-content: space-around;
+  flex-shrink: 0;
 }
-#phoneBar .btn { flex:1; justify-content:center; font-size:0.7rem; padding:9px 6px; }
+#phoneBar .btn {
+  flex: 1;
+  justify-content: center;
+  font-size: 0.68rem;
+  padding: 8px 4px;
+}
+
+/* Mobil bilgi paneli — masaüstünde gizli */
+#mobileInfoPanel { display: none; }
 
 /* SCROLLBAR */
 ::-webkit-scrollbar { width:5px; height:5px; }
@@ -1100,9 +1205,9 @@ body {
         <div class="sidebar-label">Zorluk</div>
         <div class="difficulty-selector" id="diffSelector"></div>
       </div>
-      <div class="sidebar-section" style="flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:0;">
+      <div class="sidebar-section" style="padding-bottom:0;">
         <div class="sidebar-label">Hamle Geçmişi</div>
-        <div class="move-history" id="moveHistory"></div>
+        <div class="move-history" id="moveHistory" style="max-height:200px;overflow-y:auto;"></div>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Beyaz</div>
@@ -1164,21 +1269,63 @@ body {
     </div>
   </div>
 
+  <!-- MOBİL BİLGİ PANELİ (telefon dikey) -->
+  <div id="mobileInfoPanel">
+    <div style="display:flex;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:center;">
+      <div style="flex:1;">
+        <div style="font-size:0.68rem;color:var(--text3);font-family:var(--font-display);letter-spacing:0.08em;text-transform:uppercase;">⬛ Siyah · YZ</div>
+        <div class="captured-pieces" id="capturedByBlack2" style="margin-top:3px;"></div>
+      </div>
+      <div style="font-family:var(--font-display);font-size:1.1rem;color:var(--accent2);padding:0 6px;" id="timerDisplay2">—</div>
+      <div style="flex:1;text-align:right;">
+        <div style="font-size:0.68rem;color:var(--text3);font-family:var(--font-display);letter-spacing:0.08em;text-transform:uppercase;">Siz · ⬜</div>
+        <div class="captured-pieces" id="capturedByWhite2" style="margin-top:3px;display:flex;flex-direction:row-reverse;"></div>
+      </div>
+    </div>
+    <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <button class="mob-tab" id="mobTab1" onclick="switchMobTab(1)" style="flex:1;padding:8px 4px;font-size:0.75rem;background:transparent;border:none;color:var(--accent2);border-bottom:2px solid var(--accent);cursor:pointer;font-family:var(--font-display);">Zorluk</button>
+      <button class="mob-tab" id="mobTab2" onclick="switchMobTab(2)" style="flex:1;padding:8px 4px;font-size:0.75rem;background:transparent;border:none;color:var(--text2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font-display);">Hamleler</button>
+      <button class="mob-tab" id="mobTab3" onclick="switchMobTab(3)" style="flex:1;padding:8px 4px;font-size:0.75rem;background:transparent;border:none;color:var(--text2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font-display);">İstatistik</button>
+    </div>
+    <div id="mobContent1" style="padding:10px 12px;overflow-y:auto;">
+      <div class="difficulty-selector" id="diffSelectorMob"></div>
+    </div>
+    <div id="mobContent2" style="display:none;overflow-y:auto;flex:1;">
+      <div class="move-history" id="moveHistoryMob" style="padding:8px;"></div>
+    </div>
+    <div id="mobContent3" style="display:none;padding:10px 12px;overflow-y:auto;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:8px 4px;">
+          <div style="font-family:var(--font-display);font-size:1.2rem;color:var(--accent2);" id="statMoves2">0</div>
+          <div style="font-size:0.68rem;color:var(--text3);">Hamle</div>
+        </div>
+        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:8px 4px;">
+          <div style="font-family:var(--font-display);font-size:1.2rem;color:var(--success);" id="statWins2">0</div>
+          <div style="font-size:0.68rem;color:var(--text3);">Galibiyet</div>
+        </div>
+        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:8px 4px;">
+          <div style="font-family:var(--font-display);font-size:1.2rem;color:var(--danger2);" id="statLosses2">0</div>
+          <div style="font-size:0.68rem;color:var(--text3);">Mağlup</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- STATUS BAR -->
   <div class="status-bar">
     <div class="status-text" id="statusText">Oyuna hoş geldiniz! Hamle yapmak için taşa tıklayın.</div>
     <div class="status-spacer"></div>
     <div class="status-copy">© SebasMobil · AGPL v3.0</div>
   </div>
-</div>
 
-<!-- PHONE BOTTOM BAR -->
-<div id="phoneBar">
-  <button class="btn btn-ghost" onclick="undoMove()">↩ Geri</button>
-  <button class="btn btn-primary" onclick="pauseGame()">⏸ Duraklat</button>
-  <button class="btn btn-ghost" onclick="showNewGameConfirm()">↺ Yeni</button>
-  <button class="btn btn-ghost" onclick="openSaveLoad()">💾</button>
-  <button class="btn btn-ghost" onclick="openSettings()">⚙️</button>
+  <!-- PHONE BOTTOM BAR -->
+  <div id="phoneBar">
+    <button class="btn btn-ghost" onclick="undoMove()">↩ Geri</button>
+    <button class="btn btn-primary" onclick="pauseGame()">⏸ Duraklat</button>
+    <button class="btn btn-ghost" onclick="showNewGameConfirm()">↺ Yeni</button>
+    <button class="btn btn-ghost" onclick="openSaveLoad()">💾</button>
+    <button class="btn btn-ghost" onclick="openSettings()">⚙️</button>
+  </div>
 </div>
 
 <script>
@@ -1796,11 +1943,11 @@ function renderCoords() {
 }
 
 function renderCaptured(board) {
-  const cw = document.getElementById('capturedByWhite');
-  const cb = document.getElementById('capturedByBlack');
-  cw.innerHTML = board.capturedW.map(p=>`<span class="cp">${pieceStr(p)}</span>`).join('');
-  cb.innerHTML = board.capturedB.map(p=>`<span class="cp">${pieceStr(p)}</span>`).join('');
-  document.getElementById('statCaptured').textContent = board.capturedW.length + board.capturedB.length;
+  const cpW = board.capturedW.map(p=>`<span class="cp">${pieceStr(p)}</span>`).join('');
+  const cpB = board.capturedB.map(p=>`<span class="cp">${pieceStr(p)}</span>`).join('');
+  ['capturedByWhite','capturedByWhite2'].forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML=cpW; });
+  ['capturedByBlack','capturedByBlack2'].forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML=cpB; });
+  const sc = document.getElementById('statCaptured'); if(sc) sc.textContent = board.capturedW.length + board.capturedB.length;
 }
 
 function renderMoveHistory(board) {
@@ -1817,7 +1964,10 @@ function renderMoveHistory(board) {
   }
   mh.innerHTML = html;
   mh.scrollTop = mh.scrollHeight;
-  document.getElementById('statMoves').textContent = moves.length;
+  const mh2 = document.getElementById('moveHistoryMob');
+  if(mh2) { mh2.innerHTML = html; mh2.scrollTop = mh2.scrollHeight; }
+  const sm = document.getElementById('statMoves'); if(sm) sm.textContent = moves.length;
+  const sm2 = document.getElementById('statMoves2'); if(sm2) sm2.textContent = moves.length;
 }
 
 function updateEval(board) {
@@ -1968,10 +2118,11 @@ function newGameFromOverlay() {
 }
 
 function updateStats() {
-  document.getElementById('statGames').textContent = state.scores.games;
-  document.getElementById('statWins').textContent = state.scores.w;
-  document.getElementById('statLosses').textContent = state.scores.b;
-  document.getElementById('statDraws').textContent = state.scores.d;
+  const set = (id, val) => { const e=document.getElementById(id); if(e) e.textContent=val; };
+  set('statGames', state.scores.games);
+  set('statWins', state.scores.w);   set('statWins2', state.scores.w);
+  set('statLosses', state.scores.b); set('statLosses2', state.scores.b);
+  set('statDraws', state.scores.d);
 }
 
 // ===========================
@@ -2008,9 +2159,9 @@ function startTimer() {
 function stopTimer() { if(timerInterval){clearInterval(timerInterval);timerInterval=null;} }
 function updateTimerDisplay() {
   const m=Math.floor(timerSeconds/60), s=timerSeconds%60;
-  const el=document.getElementById('timerDisplay');
-  el.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  el.classList.toggle('low', timerSeconds<30);
+  const txt=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const el=document.getElementById('timerDisplay'); if(el){ el.textContent=txt; el.classList.toggle('low',timerSeconds<30); }
+  const el2=document.getElementById('timerDisplay2'); if(el2) el2.textContent=txt;
 }
 
 // ===========================
@@ -2194,11 +2345,14 @@ const DIFFICULTIES = ['Çok Kolay','Kolay','Orta','Zor','Çok Zor','Grandmaster'
 const DIFF_COLORS = { 'Çok Kolay':'#27ae60','Kolay':'#2ecc71','Orta':'#f39c12','Zor':'#e67e22','Çok Zor':'#e74c3c','Grandmaster':'#8e44ad' };
 
 function buildDiffSelector() {
-  const el = document.getElementById('diffSelector');
-  el.innerHTML = DIFFICULTIES.map(d => `
+  const html = DIFFICULTIES.map(d => `
     <button class="diff-btn ${d===state.currentDiff?'active':''}" onclick="setDifficulty('${d}')" id="diff-${d.replace(/\s/g,'_')}">
       <div class="diff-dot" style="background:${DIFF_COLORS[d]}"></div>${d}
     </button>`).join('');
+  const el = document.getElementById('diffSelector');
+  if(el) el.innerHTML = html;
+  const el2 = document.getElementById('diffSelectorMob');
+  if(el2) el2.innerHTML = html.replace(/id="diff-/g, 'id="diffm-');
 }
 function setDifficulty(d) {
   state.currentDiff = d;
@@ -2208,8 +2362,23 @@ function setDifficulty(d) {
 }
 function updateDiffButtons() {
   DIFFICULTIES.forEach(d => {
-    const btn = document.getElementById('diff-'+d.replace(/\s/g,'_'));
-    if(btn) btn.classList.toggle('active', d===state.currentDiff);
+    ['diff-','diffm-'].forEach(pfx => {
+      const btn = document.getElementById(pfx+d.replace(/\s/g,'_'));
+      if(btn) btn.classList.toggle('active', d===state.currentDiff);
+    });
+  });
+}
+
+// MOBİL SEKME GEÇİŞİ
+function switchMobTab(n) {
+  [1,2,3].forEach(i => {
+    const tab = document.getElementById('mobTab'+i);
+    const cnt = document.getElementById('mobContent'+i);
+    if(!tab||!cnt) return;
+    const active = i===n;
+    tab.style.color = active ? 'var(--accent2)' : 'var(--text2)';
+    tab.style.borderBottom = active ? '2px solid var(--accent)' : '2px solid transparent';
+    cnt.style.display = active ? (i===2?'flex':'block') : 'none';
   });
 }
 
