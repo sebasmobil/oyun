@@ -145,8 +145,8 @@ body{background:var(--bg);color:var(--text);transition:background var(--transiti
 .cell.given .cell-val{color:var(--cell-given-text);font-weight:800;}
 /* user entered cells: green */
 .cell-val{font-size:clamp(14px,3.5vw,22px);font-weight:700;color:var(--cell-user-text);line-height:1;}
-.cell .notes-grid{position:absolute;inset:1px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);}
-.cell .notes-grid span{display:flex;align-items:center;justify-content:center;font-size:clamp(6px,1.5vw,9px);color:var(--cell-note);font-weight:600;line-height:1;}
+.cell .notes-grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:1px;}
+.cell .notes-grid span{display:flex;align-items:center;justify-content:center;font-size:clamp(9px,2.4vw,15px);color:var(--cell-note);font-weight:700;line-height:1;}
 
 /* ===== CONTROLS — numpad FIRST, action buttons SECOND ===== */
 #controls{width:100%;max-width:520px;display:flex;flex-direction:column;gap:7px;}
@@ -238,6 +238,7 @@ body{background:var(--bg);color:var(--text);transition:background var(--transiti
   #game-area{padding:16px;}
   #grid-wrapper{max-width:480px;}
   .cell .cell-val{font-size:24px;}
+  .cell .notes-grid span{font-size:13px;}
   #numpad{max-width:480px;margin:0 auto;}
 }
 @media(min-width:1024px){
