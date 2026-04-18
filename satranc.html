@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Satranç v1.0</title>
+<title>Satranç v1.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 [data-theme="dark"]{--bg:#0f0e0c;--sur:#1a1916;--sur2:#231f1a;--brd:rgba(255,255,255,.09);--brd2:rgba(255,255,255,.18);--gold:#c9a84c;--gold2:#e8c97a;--tx:#e8dcc8;--tx2:#7a7060;--tx3:#3a342a;--bb:#1f1c18;--ob:rgba(0,0,0,.82);}
@@ -146,7 +146,7 @@ footer{margin-top:16px;font-size:11px;color:var(--tx3);letter-spacing:.06em;text
 
 <!-- HEADER -->
 <div class="hdr">
-  <div class="logo">♔ Satranç <span style="font-size:11px;font-family:'DM Sans',sans-serif;font-weight:400;color:var(--tx3);letter-spacing:.06em;vertical-align:middle;">v1.0</span></div>
+  <div class="logo">♔ Satranç <span style="font-size:11px;font-family:'DM Sans',sans-serif;font-weight:400;color:var(--tx3);letter-spacing:.06em;vertical-align:middle;">v1.1</span></div>
   <div class="hdr-r">
     <button class="icn" id="btn-sound" title="Ses">🔊</button>
     <button class="icn" id="btn-theme" title="Tema">☀</button>
@@ -224,7 +224,7 @@ footer{margin-top:16px;font-size:11px;color:var(--tx3);letter-spacing:.06em;text
 
 <!-- MOVE LOG -->
 <div id="log"></div>
-<footer>Rok · En passant · Terfi · Tüm kurallar geçerli · v1.0</footer>
+<footer>Rok · En passant · Terfi · Tüm kurallar geçerli · v1.1</footer>
 
 <!-- CONFIRM DIALOG -->
 <div id="conf">
@@ -404,120 +404,257 @@ function doMv(r,f,m,sim=false){
 
 /* ───── AI VIA WEB WORKER ───── */
 const WORKER_CODE = `
-const VAL={P:1,N:3,B:3.15,R:5,Q:9,K:100};
-function at(b,r,f){return(r>=0&&r<8&&f>=0&&f<8)?b[r][f]:null;}
-function col(p){return p?p[0]:null;}
-function getLeg(board,r,f,ep,cast,ck=true){
-  const p=at(board,r,f);if(!p)return[];
-  const c=col(p),t=p[1];let mv=[];
-  const add=(nr,nf,s)=>{if(nr>=0&&nr<8&&nf>=0&&nf<8)mv.push({r:nr,f:nf,...(s||{})});};
-  if(t==='P'){
-    const d=c==='w'?-1:1,sr=c==='w'?6:1;
-    if(!at(board,r+d,f)){add(r+d,f);if(r===sr&&!at(board,r+2*d,f))add(r+2*d,f,{dp:1});}
-    for(const df of[-1,1])if(f+df>=0&&f+df<8){
-      if(col(at(board,r+d,f+df))&&col(at(board,r+d,f+df))!==c)add(r+d,f+df);
-      else if(ep&&ep[0]===r+d&&ep[1]===f+df)add(r+d,f+df,{ep:1});
+// ── Piece values + piece-square tables ──
+const PV={P:100,N:320,B:330,R:500,Q:900,K:20000};
+const PST={
+  P:[[ 0, 0, 0, 0, 0, 0, 0, 0],
+     [50,50,50,50,50,50,50,50],
+     [10,10,20,30,30,20,10,10],
+     [ 5, 5,10,25,25,10, 5, 5],
+     [ 0, 0, 0,20,20, 0, 0, 0],
+     [ 5,-5,-10, 0, 0,-10,-5, 5],
+     [ 5,10,10,-20,-20,10,10, 5],
+     [ 0, 0, 0, 0, 0, 0, 0, 0]],
+  N:[[-50,-40,-30,-30,-30,-30,-40,-50],
+     [-40,-20,  0,  0,  0,  0,-20,-40],
+     [-30,  0, 10, 15, 15, 10,  0,-30],
+     [-30,  5, 15, 20, 20, 15,  5,-30],
+     [-30,  0, 15, 20, 20, 15,  0,-30],
+     [-30,  5, 10, 15, 15, 10,  5,-30],
+     [-40,-20,  0,  5,  5,  0,-20,-40],
+     [-50,-40,-30,-30,-30,-30,-40,-50]],
+  B:[[-20,-10,-10,-10,-10,-10,-10,-20],
+     [-10,  0,  0,  0,  0,  0,  0,-10],
+     [-10,  0,  5, 10, 10,  5,  0,-10],
+     [-10,  5,  5, 10, 10,  5,  5,-10],
+     [-10,  0, 10, 10, 10, 10,  0,-10],
+     [-10, 10, 10, 10, 10, 10, 10,-10],
+     [-10,  5,  0,  0,  0,  0,  5,-10],
+     [-20,-10,-10,-10,-10,-10,-10,-20]],
+  R:[[ 0, 0, 0, 0, 0, 0, 0, 0],
+     [ 5,10,10,10,10,10,10, 5],
+     [-5, 0, 0, 0, 0, 0, 0,-5],
+     [-5, 0, 0, 0, 0, 0, 0,-5],
+     [-5, 0, 0, 0, 0, 0, 0,-5],
+     [-5, 0, 0, 0, 0, 0, 0,-5],
+     [-5, 0, 0, 0, 0, 0, 0,-5],
+     [ 0, 0, 0, 5, 5, 0, 0, 0]],
+  Q:[[-20,-10,-10,-5,-5,-10,-10,-20],
+     [-10,  0,  0, 0, 0,  0,  0,-10],
+     [-10,  0,  5, 5, 5,  5,  0,-10],
+     [ -5,  0,  5, 5, 5,  5,  0, -5],
+     [  0,  0,  5, 5, 5,  5,  0, -5],
+     [-10,  5,  5, 5, 5,  5,  0,-10],
+     [-10,  0,  5, 0, 0,  0,  0,-10],
+     [-20,-10,-10,-5,-5,-10,-10,-20]],
+  K:[[-30,-40,-40,-50,-50,-40,-40,-30],
+     [-30,-40,-40,-50,-50,-40,-40,-30],
+     [-30,-40,-40,-50,-50,-40,-40,-30],
+     [-30,-40,-40,-50,-50,-40,-40,-30],
+     [-20,-30,-30,-40,-40,-30,-30,-20],
+     [-10,-20,-20,-20,-20,-20,-20,-10],
+     [ 20, 20,  0,  0,  0,  0, 20, 20],
+     [ 20, 30, 10,  0,  0, 10, 30, 20]]
+};
+
+const at=(b,r,f)=>(r>=0&&r<8&&f>=0&&f<8)?b[r][f]:null;
+const col=p=>p?p[0]:null;
+
+// ── Generate pseudo-legal moves (fast, no check validation) ──
+function genMoves(board,c,ep,cast){
+  const mv=[];
+  for(let r=0;r<8;r++)for(let f=0;f<8;f++){
+    const p=at(board,r,f);if(!p||p[0]!==c)continue;
+    const t=p[1];
+    if(t==='P'){
+      const d=c==='w'?-1:1,sr=c==='w'?6:1;
+      if(!at(board,r+d,f)){mv.push({r,f,nr:r+d,nf:f});if(r===sr&&!at(board,r+2*d,f))mv.push({r,f,nr:r+2*d,nf:f,dp:1});}
+      for(const df of[-1,1]){if(f+df<0||f+df>7)continue;const tp=at(board,r+d,f+df);if(tp&&tp[0]!==c)mv.push({r,f,nr:r+d,nf:f+df,cap:tp});else if(ep&&ep[0]===r+d&&ep[1]===f+df)mv.push({r,f,nr:r+d,nf:f+df,ep:1});}
+    }else if(t==='N'){
+      for(const[a,b]of[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]){const nr=r+a,nf=f+b;if(nr<0||nr>7||nf<0||nf>7)continue;const tp=at(board,nr,nf);if(!tp||tp[0]!==c)mv.push({r,f,nr,nf,cap:tp||null});}
+    }else if(t==='K'){
+      for(const[a,b]of[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]){const nr=r+a,nf=f+b;if(nr<0||nr>7||nf<0||nf>7)continue;const tp=at(board,nr,nf);if(!tp||tp[0]!==c)mv.push({r,f,nr,nf,cap:tp||null});}
+      const row=c==='w'?7:0;
+      if(r===row&&f===4){
+        if(cast[c+'K']&&!at(board,row,5)&&!at(board,row,6))mv.push({r,f,nr:row,nf:6,cas:'K'});
+        if(cast[c+'Q']&&!at(board,row,3)&&!at(board,row,2)&&!at(board,row,1))mv.push({r,f,nr:row,nf:2,cas:'Q'});
+      }
+    }else{
+      const dirs=t==='R'?[[0,1],[0,-1],[1,0],[-1,0]]:t==='B'?[[1,1],[1,-1],[-1,1],[-1,-1]]:[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+      for(const[a,b]of dirs){let nr=r+a,nf=f+b;while(nr>=0&&nr<8&&nf>=0&&nf<8){const tp=at(board,nr,nf);if(!tp){mv.push({r,f,nr,nf});}else{if(tp[0]!==c)mv.push({r,f,nr,nf,cap:tp});break;}nr+=a;nf+=b;}}
     }
-  }else if(t==='N'){
-    for(const[a,b]of[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]){const nr=r+a,nf=f+b;if(nr>=0&&nr<8&&nf>=0&&nf<8&&col(at(board,nr,nf))!==c)add(nr,nf);}
-  }else if(t==='K'){
-    for(const[a,b]of[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]){const nr=r+a,nf=f+b;if(nr>=0&&nr<8&&nf>=0&&nf<8&&col(at(board,nr,nf))!==c)add(nr,nf);}
-    const row=c==='w'?7:0;
-    if(r===row&&f===4){
-      if(cast[c+'K']&&!at(board,row,5)&&!at(board,row,6)&&!atk(board,row,4,c,ep,cast)&&!atk(board,row,5,c,ep,cast))add(row,6,{cas:'K'});
-      if(cast[c+'Q']&&!at(board,row,3)&&!at(board,row,2)&&!at(board,row,1)&&!atk(board,row,4,c,ep,cast)&&!atk(board,row,3,c,ep,cast))add(row,2,{cas:'Q'});
-    }
-  }else{
-    const dirs=t==='R'?[[0,1],[0,-1],[1,0],[-1,0]]:t==='B'?[[1,1],[1,-1],[-1,1],[-1,-1]]:[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
-    for(const[a,b]of dirs){let nr=r+a,nf=f+b;while(nr>=0&&nr<8&&nf>=0&&nf<8){const x=at(board,nr,nf);if(!x)add(nr,nf);else{if(col(x)!==c)add(nr,nf);break;}nr+=a;nf+=b;}}
   }
-  if(ck)mv=mv.filter(m=>!lCheck(board,r,f,m,c,ep,cast));
   return mv;
 }
-function atk(board,r,f,by,ep,cast){
+
+// ── Apply move, return undo info ──
+function applyMv(board,m,cast,ep){
+  const p=board[m.r][m.f],c=p[0];
+  const undo={r:m.r,f:m.f,nr:m.nr,nf:m.nf,p,captured:board[m.nr][m.nf],epOld:ep,castOld:{...cast},promoted:false,epPawn:null};
+  if(m.ep){board[m.r][m.nf]=null;undo.epPawn=[m.r,m.nf];}
+  if(m.cas==='K'){board[m.nr][5]=board[m.nr][7];board[m.nr][7]=null;}
+  if(m.cas==='Q'){board[m.nr][3]=board[m.nr][0];board[m.nr][0]=null;}
+  board[m.nr][m.nf]=p;board[m.r][m.f]=null;
+  if(p[1]==='K'){cast[c+'K']=0;cast[c+'Q']=0;}
+  if(p==='wR'&&m.r===7){if(m.f===0)cast.wQ=0;if(m.f===7)cast.wK=0;}
+  if(p==='bR'&&m.r===0){if(m.f===0)cast.bQ=0;if(m.f===7)cast.bK=0;}
+  if(p[1]==='P'&&(m.nr===0||m.nr===7)){board[m.nr][m.nf]=c+'Q';undo.promoted=true;}
+  return undo;
+}
+function undoMv(board,undo,cast){
+  const{r,f,nr,nf,p,captured,epOld,castOld,promoted,epPawn}=undo;
+  board[r][f]=p;board[nr][nf]=captured;
+  if(epPawn)board[epPawn[0]][epPawn[1]]=(p[0]==='w'?'b':'w')+'P';
+  const c=p[0];
+  if(p[1]==='K'||p==='wR'||p==='bR')Object.assign(cast,castOld);
+  if(undo.cas==='K'){const row=c==='w'?7:0;board[row][7]=board[row][5];board[row][5]=null;}
+  if(undo.cas==='Q'){const row=c==='w'?7:0;board[row][0]=board[row][3];board[row][3]=null;}
+}
+
+// ── Is square attacked by opp? ──
+function sqAtk(board,r,f,by){
   const o=by==='w'?'b':'w';
-  for(let rr=0;rr<8;rr++)for(let ff=0;ff<8;ff++){const p=at(board,rr,ff);if(col(p)===o){const ms=getLeg(board,rr,ff,ep,cast,false);if(ms.some(m=>m.r===r&&m.f===f))return true;}}
+  // pawns
+  const d=by==='w'?1:-1;
+  for(const df of[-1,1]){const p=at(board,r+d,f+df);if(p===o+'P')return true;}
+  // knights
+  for(const[a,b]of[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]){const p=at(board,r+a,f+b);if(p===o+'N')return true;}
+  // kings
+  for(const[a,b]of[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]){const p=at(board,r+a,f+b);if(p===o+'K')return true;}
+  // rooks/queens
+  for(const[a,b]of[[0,1],[0,-1],[1,0],[-1,0]]){let nr=r+a,nf=f+b;while(nr>=0&&nr<8&&nf>=0&&nf<8){const p=at(board,nr,nf);if(p){if(p===o+'R'||p===o+'Q')return true;break;}nr+=a;nf+=b;}}
+  // bishops/queens
+  for(const[a,b]of[[1,1],[1,-1],[-1,1],[-1,-1]]){let nr=r+a,nf=f+b;while(nr>=0&&nr<8&&nf>=0&&nf<8){const p=at(board,nr,nf);if(p){if(p===o+'B'||p===o+'Q')return true;break;}nr+=a;nf+=b;}}
   return false;
 }
-function lCheck(board,r,f,m,c,ep,cast){
-  const sb=board.map(x=>[...x]),se=ep;
-  doMv(sb,r,f,m,{...cast},true);
-  let kr,kf;outer:for(let a=0;a<8;a++)for(let b=0;b<8;b++){if(at(sb,a,b)===c+'K'){kr=a;kf=b;break outer;}}
-  return atk(sb,kr,kf,c,se,cast);
+function kingAtk(board,c){
+  for(let r=0;r<8;r++)for(let f=0;f<8;f++){if(board[r][f]===c+'K')return sqAtk(board,r,f,c);}
+  return false;
 }
-function doMv(board,r,f,m,cast,sim=false){
-  const p=board[r][f],c=col(p);
-  if(m.ep)board[r][m.f]=null;
-  if(m.cas==='K'){board[m.r][5]=board[m.r][7];board[m.r][7]=null;}
-  if(m.cas==='Q'){board[m.r][3]=board[m.r][0];board[m.r][0]=null;}
-  board[m.r][m.f]=p;board[r][f]=null;
-  if(!sim){
-    if(p[1]==='K'){cast[c+'K']=0;cast[c+'Q']=0;}
-    if(p==='wR'){if(r===7&&f===0)cast.wQ=0;if(r===7&&f===7)cast.wK=0;}
-    if(p==='bR'){if(r===0&&f===0)cast.bQ=0;if(r===0&&f===7)cast.bK=0;}
-    if(p[1]==='P'&&(m.r===0||m.r===7))board[m.r][m.f]=c+'Q';
+
+// ── Legal move filter ──
+function legalMoves(board,c,ep,cast){
+  const pseudo=genMoves(board,c,ep,cast);
+  const legal=[];
+  for(const m of pseudo){
+    const undo=applyMv(board,m,cast,ep);
+    // check castling legality (king not passing through attacked square)
+    let ok=!kingAtk(board,c);
+    if(ok&&m.cas){
+      const row=c==='w'?7:0;
+      const mid=m.cas==='K'?5:3;
+      if(sqAtk(board,row,4,c)||sqAtk(board,row,mid,c))ok=false;
+    }
+    undoMv(board,undo,cast);Object.assign(cast,undo.castOld);
+    if(ok)legal.push(m);
   }
+  return legal;
 }
-function evl(board){
-  let s=0;
+
+// ── Evaluation ──
+function evaluate(board){
+  let score=0;
   for(let r=0;r<8;r++)for(let f=0;f<8;f++){
-    const p=at(board,r,f);if(!p)continue;
-    const v=VAL[p[1]]||0;let b=0;
-    if(p[1]==='N'||p[1]==='B')b=Math.max(0,.15-(Math.abs(r-3.5)+Math.abs(f-3.5))*.03);
-    if(p[1]==='P')b=(p[0]==='w'?(6-r):(r-1))*.05;
-    s+=(p[0]==='w'?1:-1)*(v+b);
+    const p=board[r][f];if(!p)continue;
+    const c=p[0],t=p[1];
+    const pv=PV[t]||0;
+    const row=c==='w'?r:7-r;
+    const ps=(PST[t]&&PST[t][row])?PST[t][row][f]:0;
+    score+=(c==='w'?1:-1)*(pv+ps);
   }
+  return score;
+}
+
+// ── Move ordering score (captures first, then by PST gain) ──
+function mvScore(m,board){
+  let s=0;
+  if(m.cap){const at=PV[m.cap[1]]||0,ag=PV[board[m.r][m.f][1]]||0;s+=10*at-ag+1000;}
+  if(m.cas)s+=50;
+  if(m.dp)s+=10;
   return s;
 }
-function inChk(board,c,ep,cast){
-  let kr,kf;outer:for(let r=0;r<8;r++)for(let f=0;f<8;f++){if(at(board,r,f)===c+'K'){kr=r;kf=f;break outer;}}
-  return atk(board,kr,kf,c,ep,cast);
-}
-function mm(board,dep,a,b,mx,ep,cast){
-  const c=mx?'w':'b';
-  if(dep===0)return evl(board);
-  const mv=[];
-  for(let r=0;r<8;r++)for(let f=0;f<8;f++){if(col(at(board,r,f))===c)for(const m of getLeg(board,r,f,ep,cast))mv.push({r,f,m});}
-  if(!mv.length)return inChk(board,c,ep,cast)?(mx?-100:100):0;
-  mv.sort(()=>Math.random()-.5);
-  if(mx){
-    let best=-Infinity;
-    for(const{r,f,m}of mv){
-      const sb=board.map(x=>[...x]),sc={...cast},se=ep;
-      const nep=m.dp?[r+(c==='w'?-1:1),f]:null;
-      doMv(sb,r,f,m,sc);
-      const v=mm(sb,dep-1,a,b,false,nep,sc);
-      best=Math.max(best,v);a=Math.max(a,best);if(b<=a)break;
-    }
-    return best;
-  }else{
-    let best=Infinity;
-    for(const{r,f,m}of mv){
-      const sb=board.map(x=>[...x]),sc={...cast},se=ep;
-      const nep=m.dp?[r+(c==='w'?-1:1),f]:null;
-      doMv(sb,r,f,m,sc);
-      const v=mm(sb,dep-1,a,b,true,nep,sc);
-      best=Math.min(best,v);b=Math.min(b,best);if(b<=a)break;
-    }
-    return best;
+function sortMoves(mvs,board){mvs.sort((a,b)=>mvScore(b,board)-mvScore(a,board));}
+
+// ── Quiescence search (captures only) ──
+function quiesce(board,a,b,c,ep,cast,depth){
+  const stand=c==='w'?evaluate(board):-evaluate(board);
+  if(depth<=0)return stand;
+  if(stand>=b)return b;
+  if(stand>a)a=stand;
+  const caps=genMoves(board,c,ep,cast).filter(m=>m.cap||m.ep||m.promoted);
+  sortMoves(caps,board);
+  for(const m of caps){
+    const undo=applyMv(board,m,cast,ep);
+    if(kingAtk(board,c)){undoMv(board,undo,cast);Object.assign(cast,undo.castOld);continue;}
+    const nep=m.dp?[m.r+(c==='w'?-1:1),m.f]:null;
+    const score=-quiesce(board,-(b),-( a),c==='w'?'b':'w',nep,cast,depth-1);
+    undoMv(board,undo,cast);Object.assign(cast,undo.castOld);
+    if(score>=b)return b;
+    if(score>a)a=score;
   }
+  return a;
 }
+
+// ── Negamax with alpha-beta ──
+const DEADLINE=200; // ms per depth iteration
+let startTime;
+function negamax(board,depth,a,b,c,ep,cast){
+  if(Date.now()-startTime>DEADLINE)return null; // timeout
+  const mvs=legalMoves(board,c,ep,cast);
+  if(!mvs.length)return kingAtk(board,c)?-19000+depth:0; // mate or stalemate
+  if(depth===0)return quiesce(board,a,b,c,ep,cast,4);
+  sortMoves(mvs,board);
+  for(const m of mvs){
+    const undo=applyMv(board,m,cast,ep);
+    const nep=m.dp?[m.r+(c==='w'?-1:1),m.f]:null;
+    const score=negamax(board,depth-1,-b,-a,c==='w'?'b':'w',nep,cast);
+    undoMv(board,undo,cast);Object.assign(cast,undo.castOld);
+    if(score===null)return null;
+    const s=-score;
+    if(s>=b)return b;
+    if(s>a)a=s;
+  }
+  return a;
+}
+
+// ── Iterative deepening root search ──
 self.onmessage=function(e){
-  const {board,ep,cast,diff}=e.data;
-  const mv=[];
-  for(let r=0;r<8;r++)for(let f=0;f<8;f++){if(col(at(board,r,f))==='b')for(const m of getLeg(board,r,f,ep,cast))mv.push({r,f,m});}
-  let best=null,bv=Infinity;
-  for(const x of mv.sort(()=>Math.random()-.5)){
-    const sb=board.map(a=>[...a]),sc={...cast};
-    const nep=x.m.dp?[x.r+(col(at(board,x.r,x.f))==='w'?-1:1),x.f]:null;
-    doMv(sb,x.r,x.f,x.m,sc);
-    const v=mm(sb,diff-1,-Infinity,Infinity,true,nep,sc);
-    if(v<bv){bv=v;best=x;}
+  const{board,ep,cast,diff}=e.data;
+  const c='b';
+  const maxDepth=[2,3,5][diff-1];
+  const timeLimits=[400,800,1500][diff-1];
+  startTime=Date.now();
+  let bestMove=null;
+  const rootMvs=legalMoves(board,c,ep,cast);
+  if(!rootMvs.length){self.postMessage(null);return;}
+  if(rootMvs.length===1){self.postMessage(rootMvs[0]);return;}
+  sortMoves(rootMvs,board);
+
+  for(let depth=1;depth<=maxDepth;depth++){
+    if(Date.now()-startTime>timeLimits)break;
+    let best=null,bv=-Infinity;
+    for(const m of rootMvs){
+      if(Date.now()-startTime>timeLimits)break;
+      const undo=applyMv(board,m,cast,ep);
+      const nep=m.dp?[m.r+(c==='w'?-1:1),m.f]:null;
+      const score=negamax(board,depth-1,-Infinity,Infinity,'w',nep,cast);
+      undoMv(board,undo,cast);Object.assign(cast,undo.castOld);
+      if(score===null)continue;
+      const s=-score;
+      if(s>bv){bv=s;best=m;}
+    }
+    if(best)bestMove=best;
   }
-  self.postMessage(best);
+  self.postMessage(bestMove||rootMvs[0]);
 };
 `;
-
+let aiWorker = null;
+function getWorker(){
+  if(aiWorker){aiWorker.terminate();}
+  const blob = new Blob([WORKER_CODE], {type:'application/javascript'});
+  aiWorker = new Worker(URL.createObjectURL(blob));
+  return aiWorker;
+}
 let aiWorker = null;
 function getWorker(){
   if(aiWorker) return aiWorker;
@@ -647,17 +784,38 @@ function aiMv(){
     if(paused||over){thinking=false;render();return;}
     const mv=e.data;
     if(mv){
-      const cap=at(mv.m.r,mv.m.f);if(cap)cB.push(cap[1]);if(mv.m.ep)cB.push('P');
+      // new worker returns {r,f,nr,nf,cap,ep,cas,dp}
+      const cap=at(mv.nr,mv.nf);if(cap)cB.push(cap[1]);if(mv.ep)cB.push('P');
       hist.push({board:board.map(x=>[...x]),ep,cast:{...cast}});
-      const n=notn(mv.r,mv.f,mv.m.r,mv.m.f,mv.m);
-      doMv(mv.r,mv.f,mv.m);lf=[mv.r,mv.f];lt=[mv.m.r,mv.m.f];
+      const n=notn2(mv);
+      doMv2(mv);lf=[mv.r,mv.f];lt=[mv.nr,mv.nf];
       addLog(n,'b');updCap();
-      const wasCap=!!cap||!!mv.m.ep,wasCas=!!mv.m.cas;
+      const wasCap=!!cap||!!mv.ep,wasCas=!!mv.cas;
       chkSt('w',wasCap,wasCas);
     }
     thinking=false;render();
   };
   w.postMessage({board:board.map(r=>[...r]),ep,cast:{...cast},diff});
+}
+
+/* ───── MOVE HELPERS (new format: {r,f,nr,nf,...}) ───── */
+function doMv2(m){
+  const p=board[m.r][m.f],c=p[0];
+  if(m.ep)board[m.r][m.nf]=null;
+  if(m.cas==='K'){board[m.nr][5]=board[m.nr][7];board[m.nr][7]=null;}
+  if(m.cas==='Q'){board[m.nr][3]=board[m.nr][0];board[m.nr][0]=null;}
+  board[m.nr][m.nf]=p;board[m.r][m.f]=null;
+  ep=m.dp?[m.r+(c==='w'?-1:1),m.f]:null;
+  if(p[1]==='K'){cast[c+'K']=0;cast[c+'Q']=0;}
+  if(p==='wR'){if(m.r===7&&m.f===0)cast.wQ=0;if(m.r===7&&m.f===7)cast.wK=0;}
+  if(p==='bR'){if(m.r===0&&m.f===0)cast.bQ=0;if(m.r===0&&m.f===7)cast.bK=0;}
+  if(p[1]==='P'&&(m.nr===0||m.nr===7))board[m.nr][m.nf]=c+'Q';
+}
+function notn2(m){
+  const p=board[m.r][m.f]||'';const t=p[1]||'';
+  const cap=m.ep||at(m.nr,m.nf)?'x':'';const dst=FILES[m.nf]+(8-m.nr);
+  if(m.cas==='K')return 'O-O';if(m.cas==='Q')return 'O-O-O';
+  return t==='P'?(cap?FILES[m.f]+'x':'')+dst:t+cap+dst;
 }
 
 /* ───── SVG PIECES ───── */
