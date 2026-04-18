@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MathStar – Matematik Macerası</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1b2a;
+    --bg2: #1a2f4a;
+    --card: #162236;
+    --card2: #1e3050;
+    --accent: #ffd166;
+    --accent2: #06d6a0;
+    --accent3: #ef476f;
+    --accent4: #118ab2;
+    --text: #e8f4fd;
+    --text2: #8ab4cc;
+    --shadow: rgba(0,0,0,0.4);
+    --star: #ffd166;
+    --correct: #06d6a0;
+    --wrong: #ef476f;
+    --btn-text: #0d1b2a;
+    --progress-bg: rgba(255,255,255,0.1);
+  }
+  [data-theme="light"] {
+    --bg: #fff8ee;
+    --bg2: #ffefd5;
+    --card: #ffffff;
+    --card2: #fff3e0;
+    --accent: #ff9800;
+    --accent2: #00bfa5;
+    --accent3: #e91e63;
+    --accent4: #1976d2;
+    --text: #1a1a2e;
+    --text2: #5a6a7a;
+    --shadow: rgba(0,0,0,0.15);
+    --star: #ff9800;
+    --correct: #00bfa5;
+    --wrong: #e91e63;
+    --btn-text: #ffffff;
+    --progress-bg: rgba(0,0,0,0.1);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background 0.4s, color 0.4s;
+  }
+  /* ---- STARS BG ---- */
+  #stars-canvas {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    pointer-events: none; z-index: 0;
+    opacity: 1; transition: opacity 0.4s;
+  }
+  [data-theme="light"] #stars-canvas { opacity: 0; }
+
+  /* ---- MAIN LAYOUT ---- */
+  .app { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; padding: 16px 12px 40px; }
+
+  /* ---- TOP BAR ---- */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 18px; background: var(--card); border-radius: 20px;
+    box-shadow: 0 4px 20px var(--shadow); margin-bottom: 20px;
+    transition: background 0.4s;
+  }
+  .logo { font-family: 'Baloo 2', cursive; font-size: 1.6rem; color: var(--accent); letter-spacing: 1px; }
+  .logo span { color: var(--accent2); }
+  .topbar-controls { display: flex; gap: 10px; align-items: center; }
+  .icon-btn {
+    background: var(--card2); border: none; border-radius: 12px;
+    width: 42px; height: 42px; cursor: pointer; font-size: 1.3rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; color: var(--text);
+  }
+  .icon-btn:hover { transform: scale(1.12); background: var(--accent); color: var(--btn-text); }
+
+  /* ---- SCORE BAR ---- */
+  .scorebar {
+    display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .score-pill {
+    background: var(--card); border-radius: 14px; padding: 8px 16px;
+    display: flex; align-items: center; gap: 7px;
+    font-weight: 700; font-size: 0.95rem;
+    box-shadow: 0 2px 12px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.08);
+    border: 2px solid var(--card2);
+    transition: background 0.4s; flex: 1; min-width: 90px; justify-content: center;
+  }
+  .score-pill .label { color: var(--text); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px; opacity: 0.7; }
+  .score-pill .val { color: var(--accent); font-family: 'Baloo 2', cursive; font-size: 1.3rem; line-height: 1; }
+  .score-pill .emoji { font-size: 1.1rem; }
+
+  /* ---- SCREEN MANAGEMENT ---- */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(20px);} to {opacity:1; transform:translateY(0);} }
+
+  /* ---- HOME SCREEN ---- */
+  .home-hero {
+    text-align: center; padding: 30px 10px 20px;
+  }
+  .home-title {
+    font-family: 'Baloo 2', cursive;
+    font-size: clamp(2rem, 7vw, 3.2rem);
+    color: var(--accent); line-height: 1.1; margin-bottom: 8px;
+    text-shadow: 0 3px 15px rgba(255,209,102,0.3);
+  }
+  .home-sub { color: var(--text2); font-size: 1rem; margin-bottom: 30px; }
+  .character { font-size: clamp(4rem, 12vw, 7rem); display: block; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
+
+  /* ---- DIFFICULTY ---- */
+  .section-title {
+    font-family: 'Baloo 2', cursive; font-size: 1.2rem;
+    color: var(--text2); text-align: center; margin: 20px 0 12px; letter-spacing: 1px;
+  }
+  .diff-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 24px; }
+  .diff-card {
+    background: var(--card); border-radius: 18px; padding: 18px 10px;
+    text-align: center; cursor: pointer; border: 3px solid transparent;
+    transition: all 0.25s; box-shadow: 0 4px 15px var(--shadow);
+  }
+  .diff-card:hover { transform: translateY(-5px); }
+  .diff-card.selected { border-color: var(--accent); background: var(--card2); }
+  .diff-card .diff-emoji { font-size: 2.2rem; display: block; margin-bottom: 8px; }
+  .diff-card .diff-name { font-family: 'Baloo 2', cursive; font-size: 1rem; }
+  .diff-card .diff-desc { font-size: 0.75rem; color: var(--text2); margin-top: 4px; }
+  .diff-card[data-diff="easy"] .diff-name { color: var(--accent2); }
+  .diff-card[data-diff="medium"] .diff-name { color: var(--accent); }
+  .diff-card[data-diff="hard"] .diff-name { color: var(--accent3); }
+
+  /* ---- OPS ---- */
+  .ops-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 28px; }
+  .op-btn {
+    background: var(--card); border-radius: 16px; padding: 14px 6px;
+    text-align: center; cursor: pointer; border: 3px solid transparent;
+    transition: all 0.22s; box-shadow: 0 3px 12px var(--shadow); font-size: 0.85rem;
+    font-weight: 700; color: var(--text2);
+  }
+  .op-btn:hover { transform: scale(1.07); }
+  .op-btn.selected { border-color: var(--accent4); background: var(--card2); color: var(--accent4); }
+  .op-btn .op-sym { font-size: 1.8rem; display: block; margin-bottom: 4px; }
+
+  .mixed-btn-wrap { margin-bottom: 16px; }
+  .mixed-btn {
+    display: block; width: 100%; padding: 14px; border-radius: 16px;
+    border: 3px dashed var(--accent2); background: transparent;
+    color: var(--accent2); font-family: 'Baloo 2', cursive; font-size: 1.05rem;
+    cursor: pointer; letter-spacing: 0.5px; transition: all 0.25s;
+    font-weight: 700;
+  }
+  .mixed-btn:hover { background: rgba(6,214,160,0.1); transform: scale(1.02); }
+  .mixed-btn.active {
+    background: linear-gradient(135deg, #06d6a0, #118ab2);
+    border-color: transparent; color: white;
+    box-shadow: 0 5px 20px rgba(6,214,160,0.35);
+  }
+  .ops-grid.disabled .op-btn {
+    opacity: 0.35; pointer-events: none;
+  }
+
+  .start-btn {
+    display: block; width: 100%; padding: 16px; border-radius: 18px; border: none;
+    background: linear-gradient(135deg, var(--accent), #ff9a3c);
+    color: #1a1a1a; font-family: 'Baloo 2', cursive; font-size: 1.4rem;
+    cursor: pointer; letter-spacing: 1px; box-shadow: 0 6px 25px rgba(255,209,102,0.4);
+    transition: all 0.2s; margin-top: 4px;
+  }
+  .start-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(255,209,102,0.5); }
+  .start-btn:active { transform: translateY(0); }
+
+  /* ---- GAME SCREEN ---- */
+  .progress-wrap { margin-bottom: 16px; }
+  .progress-bar-bg {
+    background: var(--progress-bg); border-radius: 99px; height: 10px; overflow: hidden; margin-bottom: 6px;
+  }
+  .progress-bar-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width 0.5s ease; width: 0%;
+  }
+  .progress-label { font-size: 0.8rem; color: var(--text2); text-align: right; }
+
+  .question-card {
+    background: var(--card); border-radius: 28px; padding: 36px 24px;
+    text-align: center; box-shadow: 0 8px 40px var(--shadow);
+    margin-bottom: 20px; position: relative; overflow: hidden;
+    transition: background 0.4s;
+  }
+  .question-card::before {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 130px; height: 130px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,209,102,0.12), transparent);
+    pointer-events: none;
+  }
+  .op-badge {
+    display: inline-block; background: var(--accent4); color: white;
+    font-family: 'Baloo 2', cursive; padding: 4px 14px; border-radius: 99px;
+    font-size: 0.85rem; margin-bottom: 18px; letter-spacing: 1px;
+  }
+  .question-text {
+    font-family: 'Baloo 2', cursive;
+    font-size: clamp(2.2rem, 9vw, 4rem);
+    color: var(--text); margin-bottom: 8px;
+    line-height: 1.15;
+  }
+  .question-text .num { color: var(--accent); }
+  .question-text .operator { color: var(--accent2); margin: 0 8px; }
+  .question-text .num2 { color: var(--accent4); }
+  .question-text .eq { color: var(--text2); margin: 0 8px; }
+
+  .timer-ring-wrap { display: flex; justify-content: center; margin: 10px 0 0; }
+  .timer-ring { position: relative; width: 60px; height: 60px; }
+  .timer-ring svg { transform: rotate(-90deg); }
+  .timer-ring circle { transition: stroke-dashoffset 1s linear; }
+  .timer-val {
+    position: absolute; top:50%; left:50%; transform: translate(-50%,-50%);
+    font-family: 'Baloo 2', cursive; font-size: 1.1rem; color: var(--accent);
+  }
+
+  .answers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ans-btn {
+    background: var(--card); border: 3px solid var(--card2); border-radius: 20px;
+    padding: 18px 12px; font-family: 'Baloo 2', cursive; font-size: 1.6rem;
+    color: var(--text); cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 15px var(--shadow); position: relative; overflow: hidden;
+  }
+  .ans-btn:hover:not(:disabled) { transform: scale(1.04); border-color: var(--accent); color: var(--accent); }
+  .ans-btn.correct { background: var(--correct); border-color: var(--correct); color: white; animation: popIn 0.3s ease; }
+  .ans-btn.wrong { background: var(--wrong); border-color: var(--wrong); color: white; animation: shake 0.4s ease; }
+  .ans-btn:disabled { cursor: default; }
+  @keyframes popIn { 0%{transform:scale(0.9)} 60%{transform:scale(1.08)} 100%{transform:scale(1)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+  /* ---- FEEDBACK OVERLAY ---- */
+  .feedback-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; pointer-events: none; opacity: 0; transition: opacity 0.25s;
+    background: rgba(0,0,0,0.45);
+  }
+  [data-theme="light"] .feedback-overlay { background: rgba(0,0,0,0.25); }
+  .feedback-overlay.show { opacity: 1; }
+  .feedback-bubble {
+    font-family: 'Baloo 2', cursive; font-size: clamp(2.2rem,9vw,5rem);
+    text-align: center; animation: burstIn 0.4s ease forwards;
+    padding: 22px 40px; border-radius: 28px;
+    background: var(--card);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    border: 3px solid currentColor;
+    line-height: 1.3;
+  }
+  @keyframes burstIn {
+    0%{transform:scale(0) rotate(-10deg); opacity:0}
+    60%{transform:scale(1.2) rotate(5deg); opacity:1}
+    100%{transform:scale(1) rotate(0deg); opacity:1}
+  }
+
+  /* ---- RESULT SCREEN ---- */
+  .result-card {
+    background: var(--card); border-radius: 28px; padding: 36px 24px;
+    text-align: center; box-shadow: 0 8px 40px var(--shadow); margin-bottom: 20px;
+  }
+  .result-title { font-family: 'Baloo 2', cursive; font-size: 2.2rem; color: var(--accent); margin-bottom: 6px; }
+  .result-sub { color: var(--text2); font-size: 0.95rem; margin-bottom: 24px; }
+  .stars-display { font-size: 2.8rem; margin-bottom: 20px; letter-spacing: 4px; }
+  .result-stats {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 28px;
+  }
+  .stat-box {
+    background: var(--card2); border-radius: 16px; padding: 16px 8px; text-align: center;
+  }
+  .stat-box .stat-val { font-family: 'Baloo 2', cursive; font-size: 1.8rem; color: var(--accent); }
+  .stat-box .stat-lbl { font-size: 0.75rem; color: var(--text2); margin-top: 4px; }
+  .btn-row { display: flex; gap: 12px; }
+  .btn-secondary {
+    flex: 1; padding: 14px; border-radius: 16px; border: 3px solid var(--accent4);
+    background: transparent; color: var(--accent4); font-family: 'Baloo 2', cursive;
+    font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: var(--accent4); color: white; }
+  .btn-primary {
+    flex: 1; padding: 14px; border-radius: 16px; border: none;
+    background: linear-gradient(135deg, var(--accent), #ff9a3c);
+    color: #1a1a1a; font-family: 'Baloo 2', cursive;
+    font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(255,209,102,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-2px); }
+
+  /* ---- HIGH SCORES ---- */
+  .hs-list { list-style: none; }
+  .hs-item {
+    background: var(--card); border-radius: 14px; padding: 12px 18px;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 3px 12px var(--shadow);
+  }
+  .hs-rank { font-family: 'Baloo 2', cursive; font-size: 1.3rem; width: 30px; text-align: center; }
+  .hs-rank.gold { color: #ffd700; }
+  .hs-rank.silver { color: #c0c0c0; }
+  .hs-rank.bronze { color: #cd7f32; }
+  .hs-info { flex: 1; }
+  .hs-name { font-weight: 700; font-size: 0.95rem; }
+  .hs-meta { font-size: 0.75rem; color: var(--text2); }
+  .hs-score { font-family: 'Baloo 2', cursive; font-size: 1.3rem; color: var(--accent); }
+
+  /* ---- CONFETTI ---- */
+  .confetti-container {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    pointer-events:none; z-index:200; overflow:hidden;
+  }
+  .confetti-piece {
+    position: absolute; width: 10px; height: 10px; border-radius: 2px;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity:1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity:0; }
+  }
+
+  /* ---- PARTICLES ---- */
+  .particle {
+    position: fixed; pointer-events:none; z-index: 150;
+    font-size: 1.4rem; animation: particleFly 0.8s ease forwards;
+  }
+  @keyframes particleFly {
+    0%{ transform: translate(0,0) scale(1); opacity:1; }
+    100%{ transform: translate(var(--dx), var(--dy)) scale(0); opacity:0; }
+  }
+
+  /* ---- TOAST ---- */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--card); color: var(--text); padding: 12px 24px;
+    border-radius: 16px; box-shadow: 0 6px 24px var(--shadow);
+    font-weight: 700; font-size: 0.95rem; z-index:300; transition: transform 0.3s ease;
+    border-left: 4px solid var(--accent);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .back-btn {
+    background: none; border: none; color: var(--text2); cursor: pointer;
+    font-size: 0.9rem; font-family: 'Nunito', sans-serif; font-weight: 700;
+    display: flex; align-items: center; gap: 6px; padding: 8px 0; margin-bottom: 10px;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--accent); }
+
+  .best-badge {
+    display: inline-block; background: linear-gradient(135deg, #ffd700, #ff9a3c);
+    color: #1a1a1a; border-radius: 99px; padding: 3px 12px;
+    font-size: 0.8rem; font-weight: 800; margin-bottom: 16px;
+  }
+
+  @media (max-width: 420px) {
+    .diff-grid { grid-template-columns: 1fr 1fr; }
+    .ops-grid { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars-canvas"></canvas>
+<div class="confetti-container" id="confetti-container"></div>
+<div class="feedback-overlay" id="feedback-overlay">
+  <div class="feedback-bubble" id="feedback-bubble"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="app">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">Math<span>Star</span> ⭐</div>
+    <div class="topbar-controls">
+      <button class="icon-btn" id="sound-btn" title="Ses">🔊</button>
+      <button class="icon-btn" id="theme-btn" title="Tema">🌙</button>
+      <button class="icon-btn" id="hs-btn" title="Skor Tablosu">🏆</button>
+    </div>
+  </div>
+
+  <!-- SCORE BAR -->
+  <div class="scorebar" id="scorebar">
+    <div class="score-pill"><span class="emoji">⭐</span><div><div class="label">PUAN</div><div class="val" id="score-display">0</div></div></div>
+    <div class="score-pill"><span class="emoji">🔥</span><div><div class="label">SERİ</div><div class="val" id="streak-display">0</div></div></div>
+    <div class="score-pill"><span class="emoji">🏅</span><div><div class="label">EN İYİ</div><div class="val" id="best-display">0</div></div></div>
+  </div>
+
+  <!-- HOME SCREEN -->
+  <div class="screen active" id="home-screen">
+    <div class="home-hero">
+      <span class="character" id="character">🦄</span>
+      <div class="home-title">Matematik<br>Macerası!</div>
+      <div class="home-sub">Sorular çöz, yıldız kazan, şampiyon ol! 🚀</div>
+    </div>
+
+    <div class="section-title">⚡ ZORLUK SEVİYESİ</div>
+    <div class="diff-grid">
+      <div class="diff-card" data-diff="easy">
+        <span class="diff-emoji">🌱</span>
+        <div class="diff-name">Kolay</div>
+        <div class="diff-desc">1–10 arası<br>30 sn</div>
+      </div>
+      <div class="diff-card selected" data-diff="medium">
+        <span class="diff-emoji">🔥</span>
+        <div class="diff-name">Orta</div>
+        <div class="diff-desc">1–20 arası<br>20 sn</div>
+      </div>
+      <div class="diff-card" data-diff="hard">
+        <span class="diff-emoji">💎</span>
+        <div class="diff-name">Zor</div>
+        <div class="diff-desc">1–50 arası<br>12 sn</div>
+      </div>
+    </div>
+
+    <div class="section-title">➕ İŞLEM TÜRÜ</div>
+    <div class="ops-grid" id="ops-grid">
+      <div class="op-btn selected" data-op="add"><span class="op-sym">➕</span>Toplama</div>
+      <div class="op-btn" data-op="sub"><span class="op-sym">➖</span>Çıkarma</div>
+      <div class="op-btn" data-op="mul"><span class="op-sym">✖️</span>Çarpma</div>
+      <div class="op-btn" data-op="div"><span class="op-sym">➗</span>Bölme</div>
+    </div>
+    <div class="mixed-btn-wrap">
+      <button class="mixed-btn" id="mixed-btn">🎲 KARIŞIK MOD — Hepsini Karıştır!</button>
+    </div>
+
+    <button class="start-btn" id="start-btn">🚀 OYUNU BAŞLAT!</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen" id="game-screen">
+    <div class="progress-wrap">
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <div class="progress-label" id="progress-label">Soru 0 / 10</div>
+    </div>
+    <div class="question-card">
+      <div class="op-badge" id="op-badge">TOPLAMA</div>
+      <div class="question-text" id="question-text">
+        <span class="num" id="q-num1">5</span>
+        <span class="operator" id="q-op">+</span>
+        <span class="num2" id="q-num2">3</span>
+        <span class="eq">= ?</span>
+      </div>
+      <div class="timer-ring-wrap">
+        <div class="timer-ring">
+          <svg width="60" height="60" viewBox="0 0 60 60">
+            <circle cx="30" cy="30" r="26" fill="none" stroke="var(--progress-bg)" stroke-width="5"/>
+            <circle id="timer-circle" cx="30" cy="30" r="26" fill="none"
+              stroke="var(--accent)" stroke-width="5"
+              stroke-dasharray="163.36" stroke-dashoffset="0"
+              stroke-linecap="round"/>
+          </svg>
+          <div class="timer-val" id="timer-val">30</div>
+        </div>
+      </div>
+    </div>
+    <div class="answers-grid" id="answers-grid"></div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div class="screen" id="result-screen">
+    <div class="result-card">
+      <div class="result-title" id="result-title">Harika! 🎉</div>
+      <div class="result-sub" id="result-sub">Muhteşem bir performans!</div>
+      <div class="stars-display" id="stars-display">⭐⭐⭐</div>
+      <div class="result-stats">
+        <div class="stat-box"><div class="stat-val" id="stat-score">0</div><div class="stat-lbl">Puan</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-correct">0</div><div class="stat-lbl">Doğru</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-time">0s</div><div class="stat-lbl">Ort. Süre</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-secondary" id="retry-btn">🔄 Tekrar</button>
+        <button class="btn-primary" id="home-btn">🏠 Ana Menü</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HIGH SCORES SCREEN -->
+  <div class="screen" id="hs-screen">
+    <button class="back-btn" id="hs-back">← Geri Dön</button>
+    <div class="result-card">
+      <div class="result-title">🏆 Skor Tablosu</div>
+      <div class="result-sub">En yüksek 10 skorun</div>
+      <ul class="hs-list" id="hs-list"></ul>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== SETTINGS ====================
+const DEFAULT_SETTINGS = { theme: 'dark', sound: true, difficulty: 'medium', operation: 'add' };
+let settings = { ...DEFAULT_SETTINGS };
+let highScores = [];
+
+function saveSettings() {
+  try { localStorage.setItem('mathstar_settings', JSON.stringify(settings)); } catch(e){}
+}
+function loadSettings() {
+  try {
+    const s = localStorage.getItem('mathstar_settings');
+    if (s) settings = { ...DEFAULT_SETTINGS, ...JSON.parse(s) };
+  } catch(e){}
+  try {
+    const h = localStorage.getItem('mathstar_highscores');
+    if (h) highScores = JSON.parse(h);
+  } catch(e){}
+}
+function saveHighScore(score, correct, total, diff, op) {
+  highScores.push({ score, correct, total, diff, op, date: new Date().toLocaleDateString('tr-TR') });
+  highScores.sort((a,b)=>b.score-a.score);
+  highScores = highScores.slice(0, 10);
+  try { localStorage.setItem('mathstar_highscores', JSON.stringify(highScores)); } catch(e){}
+}
+
+// ==================== AUDIO ====================
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let ctx;
+function getCtx() { if (!ctx) ctx = new AudioCtx(); return ctx; }
+
+function playTone(freq, type='sine', dur=0.15, vol=0.3) {
+  if (!settings.sound) return;
+  try {
+    const c = getCtx();
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.connect(gain); gain.connect(c.destination);
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, c.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+    osc.start(c.currentTime); osc.stop(c.currentTime + dur);
+  } catch(e){}
+}
+function playCorrect() {
+  playTone(523, 'sine', 0.1, 0.25);
+  setTimeout(()=>playTone(659, 'sine', 0.1, 0.25), 100);
+  setTimeout(()=>playTone(784, 'sine', 0.2, 0.3), 200);
+}
+function playWrong() {
+  playTone(200, 'sawtooth', 0.3, 0.25);
+  setTimeout(()=>playTone(150, 'sawtooth', 0.3, 0.2), 150);
+}
+function playTick() { playTone(880, 'sine', 0.06, 0.08); }
+function playStart() {
+  [261,329,392,523].forEach((f,i) => setTimeout(()=>playTone(f,'triangle',0.2,0.2), i*120));
+}
+function playFinish() {
+  [523,659,784,1046].forEach((f,i) => setTimeout(()=>playTone(f,'sine',0.25,0.3), i*100));
+}
+
+// ==================== STARS BG ====================
+const canvas = document.getElementById('stars-canvas');
+const sctx = canvas.getContext('2d');
+let stars = [];
+function initStars() {
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  stars = Array.from({length: 120}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+    r: Math.random()*1.8+0.4, speed: Math.random()*0.4+0.1,
+    opacity: Math.random()*0.7+0.2, twinkleSpeed: Math.random()*0.02+0.005
+  }));
+}
+function animateStars() {
+  sctx.clearRect(0,0,canvas.width,canvas.height);
+  stars.forEach(s => {
+    s.opacity += Math.sin(Date.now()*s.twinkleSpeed)*0.003;
+    s.opacity = Math.max(0.1, Math.min(0.9, s.opacity));
+    sctx.beginPath();
+    sctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    sctx.fillStyle = `rgba(255,255,255,${s.opacity})`;
+    sctx.fill();
+  });
+  requestAnimationFrame(animateStars);
+}
+window.addEventListener('resize', initStars);
+initStars(); animateStars();
+
+// ==================== THEME ====================
+function applyTheme() {
+  document.body.setAttribute('data-theme', settings.theme);
+  document.getElementById('theme-btn').textContent = settings.theme === 'dark' ? '☀️' : '🌙';
+}
+document.getElementById('theme-btn').addEventListener('click', () => {
+  settings.theme = settings.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(); saveSettings();
+  showToast(settings.theme === 'dark' ? '🌙 Karanlık tema' : '☀️ Aydınlık tema');
+});
+
+// ==================== SOUND TOGGLE ====================
+function applySoundUI() {
+  document.getElementById('sound-btn').textContent = settings.sound ? '🔊' : '🔇';
+}
+document.getElementById('sound-btn').addEventListener('click', () => {
+  settings.sound = !settings.sound;
+  applySoundUI(); saveSettings();
+  if (settings.sound) playTone(523,'sine',0.2,0.2);
+  showToast(settings.sound ? '🔊 Ses açık' : '🔇 Ses kapalı');
+});
+
+// ==================== DIFFICULTY ====================
+let selectedDiff = 'medium';
+let selectedOps = new Set(['add']);
+let mixedMode = false;
+
+document.querySelectorAll('.diff-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.diff-card').forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedDiff = card.dataset.diff;
+    settings.difficulty = selectedDiff; saveSettings();
+    playTone(440,'sine',0.1,0.15);
+    updateCharacter();
+  });
+});
+
+document.querySelectorAll('.op-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (mixedMode) return; // karışık moddayken tekil seçim yapılamaz
+    const op = btn.dataset.op;
+    if (selectedOps.has(op) && selectedOps.size===1) return;
+    if (selectedOps.has(op)) { selectedOps.delete(op); btn.classList.remove('selected'); }
+    else { selectedOps.add(op); btn.classList.add('selected'); }
+    settings.operation = [...selectedOps].join(','); saveSettings();
+    playTone(392,'sine',0.1,0.15);
+  });
+});
+
+document.getElementById('mixed-btn').addEventListener('click', () => {
+  mixedMode = !mixedMode;
+  const btn = document.getElementById('mixed-btn');
+  const grid = document.getElementById('ops-grid');
+  if (mixedMode) {
+    btn.classList.add('active');
+    grid.classList.add('disabled');
+    // tüm işlemleri seç ama görselde soluk göster
+    selectedOps = new Set(['add','sub','mul','div']);
+    settings.operation = 'mixed'; saveSettings();
+    playTone(523,'sine',0.12,0.2);
+    setTimeout(()=>playTone(659,'sine',0.12,0.2),120);
+    showToast('🎲 Karışık mod aktif!');
+  } else {
+    btn.classList.remove('active');
+    grid.classList.remove('disabled');
+    // sadece toplama'ya dön
+    selectedOps = new Set(['add']);
+    document.querySelectorAll('.op-btn').forEach(b=>{
+      b.classList.toggle('selected', b.dataset.op==='add');
+    });
+    settings.operation = 'add'; saveSettings();
+    playTone(392,'sine',0.12,0.15);
+    showToast('Karışık mod kapatıldı');
+  }
+});
+
+function updateCharacter() {
+  const chars = { easy: '🐣', medium: '🦄', hard: '🔥' };
+  document.getElementById('character').textContent = chars[selectedDiff] || '🦄';
+}
+
+function applySelections() {
+  // diff
+  document.querySelectorAll('.diff-card').forEach(c=>c.classList.remove('selected'));
+  const dc = document.querySelector(`.diff-card[data-diff="${settings.difficulty}"]`);
+  if (dc) { dc.classList.add('selected'); selectedDiff = settings.difficulty; }
+  // ops
+  if (settings.operation === 'mixed') {
+    mixedMode = true;
+    selectedOps = new Set(['add','sub','mul','div']);
+    document.getElementById('mixed-btn').classList.add('active');
+    document.getElementById('ops-grid').classList.add('disabled');
+    document.querySelectorAll('.op-btn').forEach(b=>b.classList.remove('selected'));
+  } else {
+    mixedMode = false;
+    selectedOps = new Set(settings.operation ? settings.operation.split(',') : ['add']);
+    document.getElementById('mixed-btn').classList.remove('active');
+    document.getElementById('ops-grid').classList.remove('disabled');
+    document.querySelectorAll('.op-btn').forEach(b=>{
+      if (selectedOps.has(b.dataset.op)) b.classList.add('selected');
+      else b.classList.remove('selected');
+    });
+  }
+  updateCharacter();
+}
+
+// ==================== SCREEN NAV ====================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id+'-screen').classList.add('active');
+}
+
+// ==================== HIGH SCORES SCREEN ====================
+document.getElementById('hs-btn').addEventListener('click', () => {
+  renderHighScores(); showScreen('hs');
+});
+document.getElementById('hs-back').addEventListener('click', () => showScreen('home'));
+
+function renderHighScores() {
+  const list = document.getElementById('hs-list');
+  if (!highScores.length) { list.innerHTML = '<li style="text-align:center;color:var(--text2);padding:20px">Henüz skor yok. Oyna! 🎮</li>'; return; }
+  const diffName = {easy:'Kolay', medium:'Orta', hard:'Zor'};
+  const opName = {add:'Toplama',sub:'Çıkarma',mul:'Çarpma',div:'Bölme',mixed:'Karışık'};
+  list.innerHTML = highScores.map((h,i) => {
+    const rankClass = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    const rankIcon = i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
+    const ops = h.op === 'mixed' ? '🎲 Karışık Mod' : h.op.split(',').map(o=>opName[o]||o).join(', ');
+    return `<li class="hs-item">
+      <span class="hs-rank ${rankClass}">${rankIcon}</span>
+      <div class="hs-info">
+        <div class="hs-name">${diffName[h.diff]||h.diff} · ${ops}</div>
+        <div class="hs-meta">${h.correct}/${h.total} doğru · ${h.date}</div>
+      </div>
+      <span class="hs-score">${h.score}</span>
+    </li>`;
+  }).join('');
+}
+
+// ==================== GAME LOGIC ====================
+const TOTAL_QUESTIONS = 10;
+const DIFF_CONFIG = {
+  easy:   { max: 10, time: 30 },
+  medium: { max: 20, time: 20 },
+  hard:   { max: 50, time: 12 },
+};
+const OP_SYMBOLS = { add:'+', sub:'−', mul:'×', div:'÷' };
+const OP_NAMES = { add:'TOPLAMA', sub:'ÇIKARMA', mul:'ÇARPMA', div:'BÖLME' };
+
+let gameState = {};
+let timerInterval = null;
+
+function startGame() {
+  const ops = [...selectedOps];
+  gameState = {
+    score: 0, streak: 0, currentQ: 0,
+    correct: 0, totalTime: 0,
+    diff: selectedDiff, ops,
+    config: DIFF_CONFIG[selectedDiff],
+    answers: []
+  };
+  showScreen('game');
+  playStart();
+  nextQuestion();
+}
+
+function pickOp(ops) {
+  return ops[Math.floor(Math.random()*ops.length)];
+}
+
+function generateQuestion(op, config) {
+  const max = config.max;
+  let a, b, answer, display;
+  if (op === 'add') {
+    a = rand(1, max); b = rand(1, max); answer = a+b; display = `${a} + ${b}`;
+  } else if (op === 'sub') {
+    a = rand(2, max); b = rand(1, a); answer = a-b; display = `${a} − ${b}`;
+  } else if (op === 'mul') {
+    const mmax = Math.min(max, 12);
+    a = rand(1, mmax); b = rand(1, mmax); answer = a*b; display = `${a} × ${b}`;
+  } else { // div
+    b = rand(1, Math.min(max,12)); answer = rand(1, Math.floor(max/b)||1); a = b*answer;
+    display = `${a} ÷ ${b}`;
+  }
+  return { a, b, answer, display, op };
+}
+
+function rand(min, max) { return Math.floor(Math.random()*(max-min+1))+min; }
+
+function generateChoices(correct, op) {
+  const choices = new Set([correct]);
+  while (choices.size < 4) {
+    const offset = rand(-Math.max(5,Math.ceil(correct*0.4)), Math.max(5,Math.ceil(correct*0.4)));
+    const val = correct + offset;
+    if (val !== correct && val >= 0) choices.add(val);
+  }
+  return [...choices].sort(()=>Math.random()-0.5);
+}
+
+function nextQuestion() {
+  if (gameState.currentQ >= TOTAL_QUESTIONS) { endGame(); return; }
+  gameState.currentQ++;
+  const op = pickOp(gameState.ops);
+  const q = generateQuestion(op, gameState.config);
+  gameState.currentQuestion = q;
+  gameState.questionStart = Date.now();
+
+  // Progress
+  const pct = ((gameState.currentQ-1)/TOTAL_QUESTIONS)*100;
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-label').textContent = `Soru ${gameState.currentQ} / ${TOTAL_QUESTIONS}`;
+
+  // Question display
+  document.getElementById('op-badge').textContent = mixedMode ? ('🎲 ' + OP_NAMES[op]) : OP_NAMES[op];
+  const parts = q.display.split(' ');
+  document.getElementById('q-num1').textContent = parts[0];
+  document.getElementById('q-op').textContent = parts[1];
+  document.getElementById('q-num2').textContent = parts[2];
+
+  // Choices
+  const choices = generateChoices(q.answer, op);
+  const grid = document.getElementById('answers-grid');
+  grid.innerHTML = '';
+  choices.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'ans-btn';
+    btn.textContent = choice;
+    btn.addEventListener('click', () => handleAnswer(choice, btn));
+    grid.appendChild(btn);
+  });
+
+  // Timer
+  startTimer(gameState.config.time);
+}
+
+function startTimer(seconds) {
+  clearInterval(timerInterval);
+  let remaining = seconds;
+  const circum = 163.36;
+  const circle = document.getElementById('timer-circle');
+  const valEl = document.getElementById('timer-val');
+
+  function updateTimer() {
+    valEl.textContent = remaining;
+    const pct = remaining/seconds;
+    circle.style.strokeDashoffset = circum*(1-pct);
+    circle.style.stroke = pct > 0.5 ? 'var(--accent2)' : pct > 0.25 ? 'var(--accent)' : 'var(--accent3)';
+    if (remaining <= 5 && remaining > 0) playTick();
+  }
+  updateTimer();
+  timerInterval = setInterval(() => {
+    remaining--;
+    updateTimer();
+    if (remaining <= 0) { clearInterval(timerInterval); handleAnswer(null, null); }
+  }, 1000);
+}
+
+function handleAnswer(chosen, btn) {
+  clearInterval(timerInterval);
+  const correct = gameState.currentQuestion.answer;
+  const elapsed = (Date.now() - gameState.questionStart) / 1000;
+  gameState.totalTime += elapsed;
+
+  // Disable all buttons
+  document.querySelectorAll('.ans-btn').forEach(b=>b.disabled=true);
+
+  if (chosen === correct) {
+    if (btn) btn.classList.add('correct');
+    gameState.correct++;
+    gameState.streak++;
+    const bonus = Math.floor(gameState.streak > 1 ? gameState.streak * 5 : 0);
+    const timeBonus = Math.max(0, Math.floor((gameState.config.time - elapsed) * 2));
+    const pts = 10 + bonus + timeBonus;
+    gameState.score += pts;
+    playCorrect();
+    showFeedback(gameState.streak >= 3 ? `🔥 ${gameState.streak} SERİ! +${pts}` : `✅ +${pts}`, true);
+    spawnParticles(btn);
+    updateScoreUI();
+  } else {
+    if (btn) btn.classList.add('wrong');
+    // Show correct answer
+    document.querySelectorAll('.ans-btn').forEach(b => {
+      if (parseInt(b.textContent) === correct) b.classList.add('correct');
+    });
+    gameState.streak = 0;
+    playWrong();
+    showFeedback(chosen === null ? '⏰ Süre doldu!' : '❌ Yanlış!', false);
+    updateScoreUI();
+  }
+
+  setTimeout(() => { nextQuestion(); }, 1200);
+}
+
+function updateScoreUI() {
+  document.getElementById('score-display').textContent = gameState.score;
+  document.getElementById('streak-display').textContent = gameState.streak;
+  const best = highScores[0]?.score || 0;
+  document.getElementById('best-display').textContent = Math.max(best, gameState.score);
+  // Seri pill'ini parlat
+  const streakPill = document.getElementById('streak-display').closest('.score-pill');
+  if (gameState.streak >= 3) {
+    streakPill.style.background = 'linear-gradient(135deg, #ff6b35, #ef476f)';
+    streakPill.style.borderColor = '#ef476f';
+    streakPill.style.boxShadow = '0 2px 16px rgba(239,71,111,0.5)';
+  } else if (gameState.streak >= 1) {
+    streakPill.style.background = 'linear-gradient(135deg, #ff9a3c44, #ffd16622)';
+    streakPill.style.borderColor = 'var(--accent)';
+    streakPill.style.boxShadow = '';
+  } else {
+    streakPill.style.background = '';
+    streakPill.style.borderColor = '';
+    streakPill.style.boxShadow = '';
+  }
+}
+
+function showFeedback(msg, isGood) {
+  const overlay = document.getElementById('feedback-overlay');
+  const bubble = document.getElementById('feedback-bubble');
+  bubble.textContent = msg;
+  bubble.style.color = isGood ? 'var(--correct)' : 'var(--wrong)';
+  overlay.classList.add('show');
+  setTimeout(()=>overlay.classList.remove('show'), 900);
+}
+
+function spawnParticles(btn) {
+  if (!btn) return;
+  const rect = btn.getBoundingClientRect();
+  const emojis = ['⭐','✨','🌟','💫','🎉'];
+  for (let i=0; i<6; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    const dx = (Math.random()-0.5)*120 + 'px';
+    const dy = (Math.random()*-100 - 30) + 'px';
+    p.style.setProperty('--dx', dx);
+    p.style.setProperty('--dy', dy);
+    p.style.left = (rect.left + rect.width/2) + 'px';
+    p.style.top = (rect.top + rect.height/2) + 'px';
+    p.style.animationDelay = (Math.random()*0.2)+'s';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 1000);
+  }
+}
+
+// ==================== END GAME ====================
+function endGame() {
+  clearInterval(timerInterval);
+  const { score, correct, totalTime, diff, ops } = gameState;
+  const pct = correct / TOTAL_QUESTIONS;
+  saveHighScore(score, correct, TOTAL_QUESTIONS, diff, mixedMode ? 'mixed' : ops.join(','));
+  const best = highScores[0]?.score || 0;
+  document.getElementById('best-display').textContent = best;
+
+  // Stars
+  let stars = pct >= 0.9 ? 3 : pct >= 0.6 ? 2 : 1;
+  document.getElementById('stars-display').textContent = '⭐'.repeat(stars) + '☆'.repeat(3-stars);
+
+  // Titles
+  const titles = [
+    [0.9, 'Süper Kahraman! 🦸', 'Mükemmel bir performans!'],
+    [0.6, 'Harika! 🎉', 'Çok iyi gidiyorsun!'],
+    [0, 'Devam Et! 💪', 'Pratik yaparak daha iyisi olacaksın!']
+  ];
+  const [,title, sub] = titles.find(([t])=>pct>=t);
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-sub').textContent = sub;
+  document.getElementById('stat-score').textContent = score;
+  document.getElementById('stat-correct').textContent = `${correct}/${TOTAL_QUESTIONS}`;
+  document.getElementById('stat-time').textContent = totalTime ? (totalTime/TOTAL_QUESTIONS).toFixed(1)+'s' : '–';
+
+  showScreen('result');
+  playFinish();
+  if (stars === 3) spawnConfetti();
+}
+
+function spawnConfetti() {
+  const container = document.getElementById('confetti-container');
+  const colors = ['#ffd166','#06d6a0','#ef476f','#118ab2','#ffffff','#ff9a3c'];
+  for (let i=0; i<60; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.cssText = `
+      left:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      width:${6+Math.random()*8}px; height:${6+Math.random()*8}px;
+      border-radius:${Math.random()>0.5?'50%':'2px'};
+      animation-duration:${2+Math.random()*2}s;
+      animation-delay:${Math.random()*0.8}s;
+    `;
+    container.appendChild(p);
+    setTimeout(()=>p.remove(), 4000);
+  }
+}
+
+// ==================== TOAST ====================
+let toastTimeout;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(()=>t.classList.remove('show'), 2000);
+}
+
+// ==================== BUTTONS ====================
+document.getElementById('start-btn').addEventListener('click', startGame);
+document.getElementById('retry-btn').addEventListener('click', startGame);
+document.getElementById('home-btn').addEventListener('click', ()=>showScreen('home'));
+
+// ==================== INIT ====================
+loadSettings();
+applyTheme();
+applySoundUI();
+applySelections();
+
+const bestScore = highScores[0]?.score || 0;
+document.getElementById('best-display').textContent = bestScore;
+document.getElementById('score-display').textContent = 0;
+document.getElementById('streak-display').textContent = 0;
+</script>
+</body>
+</html>
