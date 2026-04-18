@@ -117,6 +117,7 @@ tr.editing-row td{background:rgba(224,92,48,.05)}
 /* SCORE CELL */
 .sc-wrap{display:flex;flex-direction:column;align-items:center;gap:3px}
 .sc-val{font-size:14px;font-weight:500}
+.finish-badge{font-size:10px;background:rgba(63,160,104,.18);color:#3fa068;border-radius:5px;padding:1px 6px;font-weight:500}
 .ceza-badge{font-size:10px;background:rgba(208,69,69,.15);color:#e06060;border-radius:5px;padding:1px 6px}
 
 /* INPUT CELL */
@@ -166,6 +167,8 @@ tr.editing-row td{background:rgba(224,92,48,.05)}
 .fade-in{animation:fadeIn .25s ease}
 
 /* DETAIL TABLE */
+.row-edit-btn{background:transparent;border:none;color:var(--text3);cursor:pointer;padding:2px 4px;border-radius:5px;display:inline-flex;align-items:center;transition:color .15s,background .15s}
+.row-edit-btn:hover{color:var(--accent);background:rgba(224,92,48,.1)}
 .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);cursor:pointer;margin-bottom:14px;padding:6px 10px;border-radius:var(--radius);border:1px solid var(--border)}
 .back-btn:hover{background:var(--surface2);color:var(--text)}
 </style>
@@ -333,7 +336,7 @@ function renderGame(){
   const {players,mode,rounds,partners,pairs,scoreUnits,scores}=g;
 
   /* Total per unit */
-  function unitTotal(ui){return scores[ui].reduce((s,r)=>s+(r.val||0)+r.penalties.reduce((a,p)=>a+p.amount,0),0)}
+  function unitTotal(ui){return scores[ui].reduce((s,r)=>s+(r.val||0)+r.penalties.reduce((a,p)=>a+p.amount,0)+(r.finish?-(r.finishAmt||101):0),0)}
   /* Display label for unit */
   function unitLabel(ui){
     const u=scoreUnits[ui];
@@ -366,14 +369,25 @@ function renderGame(){
     for(let r=0;r<rounds;r++){
       const filled=scores[0][r].val!==null;
       const editing=editingRound===r;
-      h+=`<tr class="${editing?'editing-row':''}"><td class="lft">${r+1}. el</td>`;
+      const editBtn=filled&&editingRound===null?`<button class="row-edit-btn" data-r="${r}" title="Düzenle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`:'';
+      h+=`<tr class="${editing?'editing-row':''}"><td class="lft"><span style="display:flex;align-items:center;gap:5px">${r+1}. el${editBtn}</span></td>`;
       scoreUnits.forEach((_,ui)=>{
         const sc=scores[ui][r];
         if(editing){
           const pv=pending[ui]!==undefined?pending[ui].val:'';
           const cezalar=pending[ui]?pending[ui].penalties:[];
+          const fin=pending[ui]?pending[ui].finish:false;
+          const finAmt=pending[ui]?pending[ui].finishAmt:101;
           h+=`<td><div class="inp-cell">
             <input class="sc-inp" type="number" inputmode="numeric" pattern="[0-9]*" data-ui="${ui}" value="${pv}" placeholder="puan"/>
+            <div class="finish-row" style="display:flex;align-items:center;gap:5px;margin-top:3px;padding:4px 7px;border-radius:7px;border:1px dashed ${fin?'var(--green)':'var(--border)'};background:${fin?'rgba(63,160,104,.1)':'transparent'}">
+              <input type="checkbox" class="fin-chk" data-ui="${ui}" ${fin?'checked':''} style="width:14px;height:14px;accent-color:var(--green);cursor:pointer"/>
+              <span style="font-size:11px;color:${fin?'var(--green)':'var(--text3)'}">Bitirdi</span>
+              <select class="fin-amt" data-ui="${ui}" style="width:58px;padding:2px 4px;font-size:11px;border:1px solid var(--border2);border-radius:5px;background:var(--surface3);color:var(--text);opacity:${fin?1:.4};pointer-events:${fin?'auto':'none'}">
+                <option value="101"${finAmt===101?' selected':''}>-101</option>
+                <option value="100"${finAmt===100?' selected':''}>-100</option>
+              </select>
+            </div>
             <div class="ceza-list" id="cl_${ui}">
               ${cezalar.map((c,ci)=>`<div class="ceza-item">
                 <select class="ceza-sel" data-ui="${ui}" data-ci="${ci}">
@@ -388,7 +402,8 @@ function renderGame(){
           </div></td>`;
         } else if(filled){
           const pen=sc.penalties.reduce((a,p)=>a+p.amount,0);
-          h+=`<td><div class="sc-wrap"><span class="sc-val">${sc.val}</span>${sc.penalties.length?`<span class="ceza-badge">+${pen}</span>`:''}</div></td>`;
+          const finBadge=sc.finish?`<span class="finish-badge">-${sc.finishAmt||101}</span>`:'';
+          h+=`<td><div class="sc-wrap"><span class="sc-val">${sc.val}</span>${finBadge}${sc.penalties.length?`<span class="ceza-badge">+${pen}</span>`:''}</div></td>`;
         } else {
           h+=`<td><span style="color:var(--text3)">—</span></td>`;
         }
@@ -415,7 +430,6 @@ function renderGame(){
     const nextEmpty=scores[0].findIndex(r=>r.val===null);
     let a='';
     if(nextEmpty>=0)a+=`<button class="btn btn-primary" id="addRound">${nextEmpty+1}. eli gir</button>`;
-    if(fc>0)a+=`<button class="btn btn-sm" id="editRound">El düzenle</button>`;
     if(fc>0)a+=`<button class="btn btn-sm btn-danger" id="endSet">Seti bitir &amp; kaydet</button>`;
     return a;
   }
@@ -427,6 +441,16 @@ function renderGame(){
   }
 
   function bindEvents(){
+    /* finish checkbox */
+    view.querySelectorAll('.fin-chk').forEach(chk=>{
+      const ui=+chk.dataset.ui;
+      chk.onchange=()=>{pending[ui].finish=chk.checked;rerender()};
+    });
+    /* finish amount */
+    view.querySelectorAll('.fin-amt').forEach(sel=>{
+      const ui=+sel.dataset.ui;
+      sel.onchange=()=>{pending[ui].finishAmt=+sel.value};
+    });
     /* score inputs */
     view.querySelectorAll('.sc-inp').forEach(inp=>{
       const ui=+inp.dataset.ui;
@@ -451,7 +475,7 @@ function renderGame(){
       let ok=true;
       scoreUnits.forEach((_,ui)=>{if(!pending[ui]||pending[ui].val==='')ok=false});
       if(!ok){alert('Tüm '+( mode==='esli'?'çiftler':'oyuncular')+' için puan girin!');return}
-      scoreUnits.forEach((_,ui)=>{scores[ui][editingRound]={val:+pending[ui].val,penalties:[...pending[ui].penalties]}});
+      scoreUnits.forEach((_,ui)=>{scores[ui][editingRound]={val:+pending[ui].val,penalties:[...pending[ui].penalties],finish:pending[ui].finish||false,finishAmt:pending[ui].finishAmt||101}});
       editingRound=null;pending={};S.current.scores=scores;save(S);rerender();
     };
     const cancelBtn=document.getElementById('cancelRound');
@@ -464,20 +488,18 @@ function renderGame(){
     const addBtn=document.getElementById('addRound');
     if(addBtn)addBtn.onclick=()=>{
       editingRound=scores[0].findIndex(r=>r.val===null);
-      pending={};scoreUnits.forEach((_,ui)=>{pending[ui]={val:'',penalties:[]}});rerender();
+      pending={};scoreUnits.forEach((_,ui)=>{pending[ui]={val:'',penalties:[],finish:false,finishAmt:101}});rerender();
     };
-    const editBtn=document.getElementById('editRound');
-    if(editBtn)editBtn.onclick=()=>{
-      const filled=scores[0].reduce((a,r,i)=>{if(r.val!==null)a.push(i);return a;},[]);
-      const labels=filled.map(i=>`${i+1}. el`).join(', ');
-      const ans=prompt(`Hangi eli düzenlemek istiyorsunuz?\nMevcut: ${labels}\n\nEl numarası girin:`);
-      if(!ans)return;const n=parseInt(ans)-1;
-      if(!filled.includes(n)){alert('Geçersiz el numarası!');return}
-      editingRound=n;
-      pending={};
-      scoreUnits.forEach((_,ui)=>{pending[ui]={val:scores[ui][n].val,penalties:[...scores[ui][n].penalties]}});
-      rerender();
-    };
+    /* per-row edit buttons */
+    view.querySelectorAll('.row-edit-btn').forEach(btn=>{
+      btn.onclick=()=>{
+        const r=+btn.dataset.r;
+        editingRound=r;
+        pending={};
+        scoreUnits.forEach((_,ui)=>{pending[ui]={val:scores[ui][r].val,penalties:[...scores[ui][r].penalties],finish:scores[ui][r].finish||false,finishAmt:scores[ui][r].finishAmt||101}});
+        rerender();
+      };
+    });
     const endBtn=document.getElementById('endSet');
     if(endBtn)endBtn.onclick=()=>{
       if(!confirm('Seti bitirip geçmişe kaydetmek istiyor musunuz?'))return;
@@ -590,7 +612,8 @@ function renderHistDetail(hi){
         ${Array.from({length:rounds},(_,r)=>`<tr><td class="lft">${r+1}. el</td>${
           scoreUnits.map((_,ui)=>{
             const sc=scores[ui][r];const pen=sc.penalties.reduce((a,p)=>a+p.amount,0);
-            return `<td><div class="sc-wrap"><span class="sc-val">${sc.val!==null?sc.val:'—'}</span>${sc.penalties.length?`<span class="ceza-badge">+${pen}</span>`:''}</div></td>`;
+            const finBadge=sc.finish?`<span class="finish-badge">-${sc.finishAmt||101}</span>`:'';
+            return `<td><div class="sc-wrap"><span class="sc-val">${sc.val!==null?sc.val:'—'}</span>${finBadge}${sc.penalties.length?`<span class="ceza-badge">+${pen}</span>`:''}</div></td>`;
           }).join('')
         }</tr>`).join('')}
         <tr class="total-row"><td class="lft">Toplam</td>${scoreUnits.map((_,ui)=>{
