@@ -71,11 +71,9 @@ body{
   flex:1 1 auto;
   min-height:0;
   margin:0 10px;
-  border-radius:6px;
   padding:0;
-  border:2px solid #333;
-  background:#0d1117;
-  overflow:hidden;
+  border:none;
+  background:transparent;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -83,6 +81,10 @@ body{
 #sscreen{
   position:relative;
   flex-shrink:0;
+  border-radius:6px;
+  overflow:hidden;
+  border:2px solid #333;
+  line-height:0;
 }
 canvas{display:block;}
 #overlay{
@@ -249,8 +251,8 @@ function applyTheme(name) {
   thsel.style.background = t.selBg; thsel.style.borderColor = t.selBorder; thsel.style.color = t.selText;
   var sndbtn = document.getElementById('sndbtn');
   sndbtn.style.background = t.btnBg; sndbtn.style.borderColor = t.btnBorder; sndbtn.style.color = t.btnText;
-  document.getElementById('sborder').style.borderColor = t.canBorder;
-  document.getElementById('sborder').style.background = t.bg;
+  document.getElementById('sscreen').style.borderColor = t.canBorder;
+  document.getElementById('sborder').style.background = 'transparent';
   var dps = document.querySelectorAll('.dp');
   for (var i=0;i<dps.length;i++){dps[i].style.background=t.btnBg;dps[i].style.borderColor=t.btnBorder;dps[i].style.color=t.btnText;}
   // * and # keep their fixed colors regardless of theme
