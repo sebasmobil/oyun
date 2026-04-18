@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Satranç</title>
+<title>Satranç v1.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 [data-theme="dark"]{--bg:#0f0e0c;--sur:#1a1916;--sur2:#231f1a;--brd:rgba(255,255,255,.09);--brd2:rgba(255,255,255,.18);--gold:#c9a84c;--gold2:#e8c97a;--tx:#e8dcc8;--tx2:#7a7060;--tx3:#3a342a;--bb:#1f1c18;--ob:rgba(0,0,0,.82);}
@@ -146,7 +146,7 @@ footer{margin-top:16px;font-size:11px;color:var(--tx3);letter-spacing:.06em;text
 
 <!-- HEADER -->
 <div class="hdr">
-  <div class="logo">♔ Satranç</div>
+  <div class="logo">♔ Satranç <span style="font-size:11px;font-family:'DM Sans',sans-serif;font-weight:400;color:var(--tx3);letter-spacing:.06em;vertical-align:middle;">v1.0</span></div>
   <div class="hdr-r">
     <button class="icn" id="btn-sound" title="Ses">🔊</button>
     <button class="icn" id="btn-theme" title="Tema">☀</button>
@@ -224,7 +224,7 @@ footer{margin-top:16px;font-size:11px;color:var(--tx3);letter-spacing:.06em;text
 
 <!-- MOVE LOG -->
 <div id="log"></div>
-<footer>Rok · En passant · Terfi · Tüm kurallar geçerli</footer>
+<footer>Rok · En passant · Terfi · Tüm kurallar geçerli · v1.0</footer>
 
 <!-- CONFIRM DIALOG -->
 <div id="conf">
@@ -402,11 +402,66 @@ function doMv(r,f,m,sim=false){
   }
 }
 
-/* ───── AI ───── */
-function evl(){
+/* ───── AI VIA WEB WORKER ───── */
+const WORKER_CODE = `
+const VAL={P:1,N:3,B:3.15,R:5,Q:9,K:100};
+function at(b,r,f){return(r>=0&&r<8&&f>=0&&f<8)?b[r][f]:null;}
+function col(p){return p?p[0]:null;}
+function getLeg(board,r,f,ep,cast,ck=true){
+  const p=at(board,r,f);if(!p)return[];
+  const c=col(p),t=p[1];let mv=[];
+  const add=(nr,nf,s)=>{if(nr>=0&&nr<8&&nf>=0&&nf<8)mv.push({r:nr,f:nf,...(s||{})});};
+  if(t==='P'){
+    const d=c==='w'?-1:1,sr=c==='w'?6:1;
+    if(!at(board,r+d,f)){add(r+d,f);if(r===sr&&!at(board,r+2*d,f))add(r+2*d,f,{dp:1});}
+    for(const df of[-1,1])if(f+df>=0&&f+df<8){
+      if(col(at(board,r+d,f+df))&&col(at(board,r+d,f+df))!==c)add(r+d,f+df);
+      else if(ep&&ep[0]===r+d&&ep[1]===f+df)add(r+d,f+df,{ep:1});
+    }
+  }else if(t==='N'){
+    for(const[a,b]of[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]){const nr=r+a,nf=f+b;if(nr>=0&&nr<8&&nf>=0&&nf<8&&col(at(board,nr,nf))!==c)add(nr,nf);}
+  }else if(t==='K'){
+    for(const[a,b]of[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]){const nr=r+a,nf=f+b;if(nr>=0&&nr<8&&nf>=0&&nf<8&&col(at(board,nr,nf))!==c)add(nr,nf);}
+    const row=c==='w'?7:0;
+    if(r===row&&f===4){
+      if(cast[c+'K']&&!at(board,row,5)&&!at(board,row,6)&&!atk(board,row,4,c,ep,cast)&&!atk(board,row,5,c,ep,cast))add(row,6,{cas:'K'});
+      if(cast[c+'Q']&&!at(board,row,3)&&!at(board,row,2)&&!at(board,row,1)&&!atk(board,row,4,c,ep,cast)&&!atk(board,row,3,c,ep,cast))add(row,2,{cas:'Q'});
+    }
+  }else{
+    const dirs=t==='R'?[[0,1],[0,-1],[1,0],[-1,0]]:t==='B'?[[1,1],[1,-1],[-1,1],[-1,-1]]:[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+    for(const[a,b]of dirs){let nr=r+a,nf=f+b;while(nr>=0&&nr<8&&nf>=0&&nf<8){const x=at(board,nr,nf);if(!x)add(nr,nf);else{if(col(x)!==c)add(nr,nf);break;}nr+=a;nf+=b;}}
+  }
+  if(ck)mv=mv.filter(m=>!lCheck(board,r,f,m,c,ep,cast));
+  return mv;
+}
+function atk(board,r,f,by,ep,cast){
+  const o=by==='w'?'b':'w';
+  for(let rr=0;rr<8;rr++)for(let ff=0;ff<8;ff++){const p=at(board,rr,ff);if(col(p)===o){const ms=getLeg(board,rr,ff,ep,cast,false);if(ms.some(m=>m.r===r&&m.f===f))return true;}}
+  return false;
+}
+function lCheck(board,r,f,m,c,ep,cast){
+  const sb=board.map(x=>[...x]),se=ep;
+  doMv(sb,r,f,m,{...cast},true);
+  let kr,kf;outer:for(let a=0;a<8;a++)for(let b=0;b<8;b++){if(at(sb,a,b)===c+'K'){kr=a;kf=b;break outer;}}
+  return atk(sb,kr,kf,c,se,cast);
+}
+function doMv(board,r,f,m,cast,sim=false){
+  const p=board[r][f],c=col(p);
+  if(m.ep)board[r][m.f]=null;
+  if(m.cas==='K'){board[m.r][5]=board[m.r][7];board[m.r][7]=null;}
+  if(m.cas==='Q'){board[m.r][3]=board[m.r][0];board[m.r][0]=null;}
+  board[m.r][m.f]=p;board[r][f]=null;
+  if(!sim){
+    if(p[1]==='K'){cast[c+'K']=0;cast[c+'Q']=0;}
+    if(p==='wR'){if(r===7&&f===0)cast.wQ=0;if(r===7&&f===7)cast.wK=0;}
+    if(p==='bR'){if(r===0&&f===0)cast.bQ=0;if(r===0&&f===7)cast.bK=0;}
+    if(p[1]==='P'&&(m.r===0||m.r===7))board[m.r][m.f]=c+'Q';
+  }
+}
+function evl(board){
   let s=0;
   for(let r=0;r<8;r++)for(let f=0;f<8;f++){
-    const p=at(r,f);if(!p)continue;
+    const p=at(board,r,f);if(!p)continue;
     const v=VAL[p[1]]||0;let b=0;
     if(p[1]==='N'||p[1]==='B')b=Math.max(0,.15-(Math.abs(r-3.5)+Math.abs(f-3.5))*.03);
     if(p[1]==='P')b=(p[0]==='w'?(6-r):(r-1))*.05;
@@ -414,22 +469,86 @@ function evl(){
   }
   return s;
 }
-function mm(dep,a,b,mx){
-  const c=mx?'w':'b';
-  if(dep===0)return evl();
-  const mv=[];for(let r=0;r<8;r++)for(let f=0;f<8;f++){if(col(at(r,f))===c)for(const m of getLeg(r,f))mv.push({r,f,m});}
-  if(!mv.length)return inChk(c)?(mx?-100:100):0;
-  mv.sort(()=>Math.random()-.5);
-  if(mx){let best=-Infinity;for(const{r,f,m}of mv){const sb=board.map(x=>[...x]),se=ep,sc={...cast};doMv(r,f,m);const v=mm(dep-1,a,b,false);board=sb;ep=se;Object.assign(cast,sc);best=Math.max(best,v);a=Math.max(a,best);if(b<=a)break;}return best;}
-  else{let best=Infinity;for(const{r,f,m}of mv){const sb=board.map(x=>[...x]),se=ep,sc={...cast};doMv(r,f,m);const v=mm(dep-1,a,b,true);board=sb;ep=se;Object.assign(cast,sc);best=Math.min(best,v);b=Math.min(b,best);if(b<=a)break;}return best;}
+function inChk(board,c,ep,cast){
+  let kr,kf;outer:for(let r=0;r<8;r++)for(let f=0;f<8;f++){if(at(board,r,f)===c+'K'){kr=r;kf=f;break outer;}}
+  return atk(board,kr,kf,c,ep,cast);
 }
-function bestMv(c){
-  const mv=[];for(let r=0;r<8;r++)for(let f=0;f<8;f++){if(col(at(r,f))===c)for(const m of getLeg(r,f))mv.push({r,f,m});}
-  let best=null,bv=c==='b'?Infinity:-Infinity;
+function mm(board,dep,a,b,mx,ep,cast){
+  const c=mx?'w':'b';
+  if(dep===0)return evl(board);
+  const mv=[];
+  for(let r=0;r<8;r++)for(let f=0;f<8;f++){if(col(at(board,r,f))===c)for(const m of getLeg(board,r,f,ep,cast))mv.push({r,f,m});}
+  if(!mv.length)return inChk(board,c,ep,cast)?(mx?-100:100):0;
+  mv.sort(()=>Math.random()-.5);
+  if(mx){
+    let best=-Infinity;
+    for(const{r,f,m}of mv){
+      const sb=board.map(x=>[...x]),sc={...cast},se=ep;
+      const nep=m.dp?[r+(c==='w'?-1:1),f]:null;
+      doMv(sb,r,f,m,sc);
+      const v=mm(sb,dep-1,a,b,false,nep,sc);
+      best=Math.max(best,v);a=Math.max(a,best);if(b<=a)break;
+    }
+    return best;
+  }else{
+    let best=Infinity;
+    for(const{r,f,m}of mv){
+      const sb=board.map(x=>[...x]),sc={...cast},se=ep;
+      const nep=m.dp?[r+(c==='w'?-1:1),f]:null;
+      doMv(sb,r,f,m,sc);
+      const v=mm(sb,dep-1,a,b,true,nep,sc);
+      best=Math.min(best,v);b=Math.min(b,best);if(b<=a)break;
+    }
+    return best;
+  }
+}
+self.onmessage=function(e){
+  const {board,ep,cast,diff}=e.data;
+  const mv=[];
+  for(let r=0;r<8;r++)for(let f=0;f<8;f++){if(col(at(board,r,f))==='b')for(const m of getLeg(board,r,f,ep,cast))mv.push({r,f,m});}
+  let best=null,bv=Infinity;
   for(const x of mv.sort(()=>Math.random()-.5)){
-    const sb=board.map(a=>[...a]),se=ep,sc={...cast};doMv(x.r,x.f,x.m);
-    const v=mm(diff-1,-Infinity,Infinity,c==='w');board=sb;ep=se;Object.assign(cast,sc);
-    if(c==='b'&&v<bv){bv=v;best=x;}if(c==='w'&&v>bv){bv=v;best=x;}
+    const sb=board.map(a=>[...a]),sc={...cast};
+    const nep=x.m.dp?[x.r+(col(at(board,x.r,x.f))==='w'?-1:1),x.f]:null;
+    doMv(sb,x.r,x.f,x.m,sc);
+    const v=mm(sb,diff-1,-Infinity,Infinity,true,nep,sc);
+    if(v<bv){bv=v;best=x;}
+  }
+  self.postMessage(best);
+};
+`;
+
+let aiWorker = null;
+function getWorker(){
+  if(aiWorker) return aiWorker;
+  const blob = new Blob([WORKER_CODE], {type:'application/javascript'});
+  aiWorker = new Worker(URL.createObjectURL(blob));
+  return aiWorker;
+}
+
+/* quick local eval for hints (depth 1, no freeze) */
+function evlLocal(){
+  const VAL2={P:1,N:3,B:3.15,R:5,Q:9,K:100};
+  let s=0;
+  for(let r=0;r<8;r++)for(let f=0;f<8;f++){
+    const p=at(r,f);if(!p)continue;
+    const v=VAL2[p[1]]||0;let b=0;
+    if(p[1]==='N'||p[1]==='B')b=Math.max(0,.15-(Math.abs(r-3.5)+Math.abs(f-3.5))*.03);
+    if(p[1]==='P')b=(p[0]==='w'?(6-r):(r-1))*.05;
+    s+=(p[0]==='w'?1:-1)*(v+b);
+  }
+  return s;
+}
+function hintMv(){
+  const mv=[];
+  for(let r=0;r<8;r++)for(let f=0;f<8;f++){if(col(at(r,f))==='w')for(const m of getLeg(r,f))mv.push({r,f,m});}
+  let best=null,bv=-Infinity;
+  for(const x of mv.sort(()=>Math.random()-.5)){
+    const sb=board.map(a=>[...a]),se=ep,sc={...cast};
+    doMv(x.r,x.f,x.m);
+    const v=evlLocal();
+    board=sb;ep=se;Object.assign(cast,sc);
+    if(v>bv){bv=v;best=x;}
   }
   return best;
 }
@@ -519,12 +638,14 @@ function hClick(r,f){
   render();
 }
 
-/* ───── AI MOVE ───── */
+/* ───── AI MOVE (Web Worker) ───── */
 function aiMv(){
   if(paused){setTimeout(()=>{if(!paused&&!over)aiMv();},300);return;}
   thinking=true;setSt();render();
-  setTimeout(()=>{
-    const mv=bestMv('b');
+  const w=getWorker();
+  w.onmessage=function(e){
+    if(paused||over){thinking=false;render();return;}
+    const mv=e.data;
     if(mv){
       const cap=at(mv.m.r,mv.m.f);if(cap)cB.push(cap[1]);if(mv.m.ep)cB.push('P');
       hist.push({board:board.map(x=>[...x]),ep,cast:{...cast}});
@@ -535,7 +656,8 @@ function aiMv(){
       chkSt('w',wasCap,wasCas);
     }
     thinking=false;render();
-  },40);
+  };
+  w.postMessage({board:board.map(r=>[...r]),ep,cast:{...cast},diff});
 }
 
 /* ───── SVG PIECES ───── */
@@ -646,7 +768,7 @@ document.getElementById('btn-undo').addEventListener('click',()=>{
 
 document.getElementById('btn-hint').addEventListener('click',()=>{
   if(over||thinking||paused||turn!=='w')return;
-  const mv=bestMv('w');if(mv){sel=[mv.r,mv.f];leg=getLeg(mv.r,mv.f);render();}
+  const mv=hintMv();if(mv){sel=[mv.r,mv.f];leg=getLeg(mv.r,mv.f);render();}
 });
 
 document.getElementById('btn-theme').addEventListener('click',()=>applyTheme(curTheme==='dark'?'light':'dark'));
