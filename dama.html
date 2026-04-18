@@ -189,6 +189,42 @@
   }
   .diff-btn.active::before { opacity: 0; }
 
+  /* Mode buttons — same look as diff-btn but separate class to avoid event conflicts */
+  .mode-btn {
+    position: relative;
+    padding: 0.7rem 1.4rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.25s;
+    overflow: hidden;
+    min-width: 130px;
+  }
+  .mode-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .mode-btn:hover { color: var(--text); border-color: var(--accent); transform: translateY(-2px); }
+  .mode-btn:hover::before { opacity: 0.1; }
+  .mode-btn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #1a1000;
+    border-color: var(--accent2);
+    box-shadow: 0 0 20px var(--glow);
+    transform: translateY(-2px);
+  }
+  .mode-btn.active::before { opacity: 0; }
+
   .diff-icons { font-size: 1rem; display: block; margin-bottom: 0.2rem; }
 
   /* Menu buttons */
@@ -531,22 +567,35 @@
   .piece:hover { transform: scale(1.08) translateY(-2px); }
   .piece.selected-piece { transform: scale(1.12) translateY(-4px); }
 
-  /* Crown */
+  /* Crown — çok daha belirgin */
   .piece.king::after {
-    content: '♛';
+    content: '★';
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 45%;
-    color: var(--crown);
-    text-shadow: 0 0 8px #ffd70088;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));
+    font-size: 55%;
+    color: #ffd700;
+    text-shadow:
+      0 0 6px #fff,
+      0 0 12px #ffd700,
+      0 0 20px #ffa500;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.9));
+    z-index: 3;
   }
   .piece.king {
     box-shadow:
-      0 4px 8px rgba(0,0,0,0.5),
-      0 0 16px rgba(255, 215, 0, 0.4),
-      inset 0 2px 4px rgba(255,255,255,0.3);
+      0 4px 10px rgba(0,0,0,0.6),
+      0 0 18px rgba(255, 215, 0, 0.7),
+      0 0 32px rgba(255, 165, 0, 0.4),
+      inset 0 2px 4px rgba(255,255,255,0.35);
+    border-color: #ffd700 !important;
+    border-width: 2.5px !important;
+  }
+  .piece.light-piece.king {
+    background: radial-gradient(circle at 35% 30%, #fffbe8, #e8d890, #c8a840);
+  }
+  .piece.dark-piece.king {
+    background: radial-gradient(circle at 35% 30%, #f0a840, #b06010, #7a3a08);
   }
 
   /* ── STATUS BAR ── */
@@ -883,6 +932,37 @@
     white-space: nowrap;
   }
   .move-tag.capture-tag { color: var(--danger); border-color: rgba(220,80,60,0.3); }
+  /* ── DÜZ DAMA TAHTASI — çizgili desen, tüm kareler eşit ── */
+  #board.kurdish-board .cell {
+    background: #b8956a !important;
+    border: none;
+    position: relative;
+  }
+  /* Yatay şerit deseni — her satır alternatif ton */
+  #board.kurdish-board .cell.row-even {
+    background: #c4a478 !important;
+  }
+  #board.kurdish-board .cell.row-odd {
+    background: #a8845c !important;
+  }
+  /* Dama bölgesi — üst (row 0, siyahın dama bölgesi) */
+  #board.kurdish-board .cell.kurdish-promo-top {
+    background: linear-gradient(180deg, #1a2a0a 0%, #2a4010 100%) !important;
+    border-bottom: 2px solid #4a8020;
+  }
+  /* Dama bölgesi — alt (row 7, beyazın dama bölgesi) */
+  #board.kurdish-board .cell.kurdish-promo-bot {
+    background: linear-gradient(180deg, #1a1a3a 0%, #0a0a28 100%) !important;
+    border-top: 2px solid #4040a0;
+  }
+  /* Dikey ince çizgiler — her hücreye sağ kenar */
+  #board.kurdish-board .cell::after {
+    content: none !important; /* valid-move ::after ile çakışmasın, JS ile halledelim */
+  }
+  #board.kurdish-board .cell.valid-move::after,
+  #board.kurdish-board .cell.valid-capture::after {
+    content: '' !important;
+  }
 </style>
 </head>
 <body>
@@ -900,8 +980,23 @@
   <div class="screen active" id="menu-screen">
     <div class="logo-wrapper">
       <div class="logo-title">DAMA</div>
-      <div class="logo-sub">Türk Dama · Klasik Strateji</div>
+      <div class="logo-sub">Klasik Strateji</div>
       <div class="version-badge">VERSİYON 1.0</div>
+    </div>
+
+    <div>
+      <div class="section-label">Oyun Modu</div>
+      <div class="difficulty-grid">
+        <button class="mode-btn active" data-mode="turkish">
+          <span class="diff-icons">↗</span>Çapraz Dama
+        </button>
+        <button class="mode-btn" data-mode="kurdish">
+          <span class="diff-icons">➕</span>Düz Dama
+        </button>
+      </div>
+      <div id="mode-desc" style="text-align:center;font-size:0.72rem;color:var(--text-dim);margin-top:0.6rem;letter-spacing:0.05em;max-width:300px;">
+        Çapraz hareket · 12 taş · Zorunlu yeme
+      </div>
     </div>
 
     <div>
@@ -934,8 +1029,9 @@
   <!-- ══ GAME SCREEN ══ -->
   <div class="screen" id="game-screen">
     <div class="game-header">
-      <div class="game-title">DAMA</div>
+      <div class="game-title" id="game-title-text">DAMA</div>
       <div class="game-info-row">
+        <div class="info-chip" id="mode-chip">↗ Çapraz</div>
         <div class="info-chip" id="diff-chip">Orta</div>
         <div class="info-chip highlight" id="move-count-chip">Hamle: 0</div>
         <div class="game-top-bar">
@@ -1000,21 +1096,33 @@
       <div style="font-family:'Cinzel',serif; font-size:1.8rem; font-weight:700; color:var(--accent); margin-bottom:2rem; text-align:center; letter-spacing:0.2em;">NASIL OYNANIR?</div>
 
       <div class="howto-card">
-        <h3>🎯 Temel Kurallar</h3>
+        <h3>↗ Çapraz Dama — Temel Kurallar</h3>
         <ul>
-          <li>Beyaz taşları siz oynarsınız, siyah taşları yapay zeka oynar.</li>
-          <li>Taşlar yalnızca çapraz ileri yönde hareket eder.</li>
-          <li>Rakip taşı atlayarak yenebilirsiniz — zorunlu yeme kuralı uygulanır.</li>
+          <li>8×8 tahta, her oyuncuda <b>12 taş</b>.</li>
+          <li>Taşlar yalnızca <b>çapraz ileri</b> yönde hareket eder.</li>
+          <li>Rakip taşı atlayarak yenebilirsiniz — <b>zorunlu yeme</b> uygulanır.</li>
           <li>Birden fazla yeme zinciri yapılabilir.</li>
         </ul>
       </div>
 
       <div class="howto-card" style="margin-top:1rem;">
-        <h3>👑 Dama (Vezir)</h3>
+        <h3>➕ Düz Dama — Temel Kurallar</h3>
         <ul>
-          <li>Rakip tarafın son sırasına ulaşan taş <b>Dama</b> olur.</li>
-          <li>Dama, tüm çapraz yönlerde istediği kadar ilerleyebilir.</li>
+          <li>8×8 tahta, her oyuncuda <b>16 taş</b>.</li>
+          <li>Son satır boş bırakılır; 2. ve 3. sıralara taşlar dizilir.</li>
+          <li>Taşlar yalnızca <b>düz</b> (yukarı/aşağı/sol/sağ) hareket eder — çapraz gitmez.</li>
+          <li>Yeme düz atlayarak yapılır ve <b>zorunludur</b>.</li>
+          <li>Rakibin boş bıraktığı son sıraya ulaşan taş <b>Dama</b> olur.</li>
+          <li>Dama <b>sadece düz</b> (↑↓←→) istediği kadar gider — çapraz gidemez.</li>
+        </ul>
+      </div>
+
+      <div class="howto-card" style="margin-top:1rem;">
+        <h3>👑 Dama (Her İki Modda)</h3>
+        <ul>
           <li>Dama çok daha güçlüdür — onu koruyun!</li>
+          <li>Çapraz Dama'da dama 4 çapraz yöne sürünür.</li>
+          <li>Düz Dama'da dama sadece düz 4 yöne (↑↓←→) sürünür — çapraz gidemez.</li>
         </ul>
       </div>
 
@@ -1027,13 +1135,13 @@
       </div>
 
       <div class="howto-card" style="margin-top:1rem;">
-        <h3>⭐ Zorluk Seviyeleri</h3>
+        <h3>⚡ Zorluk Seviyeleri</h3>
         <ul>
-          <li><b>Acemi:</b> Rastgele hamleler, öğrenmek için ideal.</li>
-          <li><b>Kolay:</b> Temel strateji, yeni başlayanlar için.</li>
-          <li><b>Orta:</b> Dengeli oyun, orta seviye oyuncular için.</li>
-          <li><b>Zor:</b> İleri strateji, deneyimli oyuncular için.</li>
-          <li><b>Usta:</b> Maksimum derinlik, sadece en iyiler için!</li>
+          <li><b>🌱 Acemi:</b> Rastgele hamleler — öğrenmek için ideal.</li>
+          <li><b>⚔️ Kolay:</b> Temel strateji — yeni başlayanlar için.</li>
+          <li><b>🔥 Orta:</b> Dengeli oyun — orta seviye oyuncular için.</li>
+          <li><b>💎 Zor:</b> İleri strateji — deneyimli oyuncular için.</li>
+          <li><b>👑 Usta:</b> Maksimum derinlik — sadece en iyiler için!</li>
         </ul>
       </div>
 
@@ -1066,7 +1174,6 @@
 const EMPTY = 0, WHITE = 1, BLACK = 2, WHITE_KING = 3, BLACK_KING = 4;
 
 const DIFFICULTY_NAMES = ['', 'Acemi', 'Kolay', 'Orta', 'Zor', 'Usta'];
-const DIFFICULTY_DEPTH = [0, 1, 2, 3, 5, 7];
 
 let state = {
   board: [],
@@ -1074,17 +1181,19 @@ let state = {
   selectedCell: null,
   validMoves: [],
   difficulty: 3,
+  mode: 'turkish',   // 'turkish' | 'kurdish'
   playerScore: 0,
   aiScore: 0,
   playerPieces: 12,
   aiPieces: 12,
+  startPieces: 12,
   moveCount: 0,
   moveHistory: [],
   lastMove: null,
   gameOver: false,
   soundEnabled: true,
   theme: 'dark',
-  history: [],   // for undo
+  history: [],
   mustCapture: [],
   chainCapture: null
 };
@@ -1153,6 +1262,7 @@ function playSound(type) {
 
 // ── BOARD INIT ────────────────────────────────────────────────
 function initBoard() {
+  if (state.mode === 'kurdish') return initBoardKurdish();
   const b = Array(8).fill(null).map(() => Array(8).fill(EMPTY));
   for (let r = 0; r < 3; r++)
     for (let c = 0; c < 8; c++)
@@ -1160,6 +1270,23 @@ function initBoard() {
   for (let r = 5; r < 8; r++)
     for (let c = 0; c < 8; c++)
       if ((r + c) % 2 === 1) b[r][c] = WHITE;
+  return b;
+}
+
+function initBoardKurdish() {
+  // 8x8, 16 taş her oyuncu — tüm kareler kullanılır
+  // Row 0: BOŞ — siyahın dama bölgesi (beyaz buraya ulaşırsa dama olur)
+  // Row 1,2: SİYAH taşlar (16 taş = 8+8)
+  // Row 3,4: BOŞ (orta)
+  // Row 5,6: BEYAZ taşlar (16 taş = 8+8)
+  // Row 7: BOŞ — beyazın dama bölgesi (siyah buraya ulaşırsa dama olur)
+  const b = Array(8).fill(null).map(() => Array(8).fill(EMPTY));
+  for (let c = 0; c < 8; c++) {
+    b[1][c] = BLACK;
+    b[2][c] = BLACK;
+    b[5][c] = WHITE;
+    b[6][c] = WHITE;
+  }
   return b;
 }
 
@@ -1173,7 +1300,9 @@ function isBlack(p) { return p === BLACK || p === BLACK_KING; }
 function isKing(p)  { return p === WHITE_KING || p === BLACK_KING; }
 function isSameColor(a, b) { return (isWhite(a) && isWhite(b)) || (isBlack(a) && isBlack(b)); }
 
+// ── TURKISH MODE moves ─────────────────────────────────────────
 function getCaptures(board, r, c) {
+  if (state.mode === 'kurdish') return getCapturesKurdish(board, r, c);
   const p = board[r][c];
   if (!p) return [];
   const captures = [];
@@ -1209,6 +1338,7 @@ function getCaptures(board, r, c) {
 }
 
 function getSimpleMoves(board, r, c) {
+  if (state.mode === 'kurdish') return getSimpleMovesKurdish(board, r, c);
   const p = board[r][c];
   if (!p) return [];
   const moves = [];
@@ -1224,6 +1354,77 @@ function getSimpleMoves(board, r, c) {
       }
     }
   } else {
+    for (const [dr, dc] of dirs) {
+      const nr = r + dr, nc = c + dc;
+      if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && board[nr][nc] === EMPTY) {
+        moves.push({ from: [r,c], to: [nr,nc] });
+      }
+    }
+  }
+  return moves;
+}
+
+// ── DÜZ DAMA moves ────────────────────────────────────────────
+// Normal taş: sadece düz (↑↓←→), 1 adım
+// Yeme: düz atlayarak, zorunlu
+// Dama: SADECE düz (↑↓←→), sürünür — ÇAPRAZ GİDEMEZ
+function getCapturesKurdish(board, r, c) {
+  const p = board[r][c];
+  if (!p) return [];
+  const captures = [];
+  // Her iki taş türü de sadece düz 4 yön — Dama da dahil
+  const dirs4 = [[-1,0],[1,0],[0,-1],[0,1]];
+
+  if (isKing(p)) {
+    // Dama: düz 4 yön, sürünür — düşmanı atlayıp karşısına geçer
+    for (const [dr, dc] of dirs4) {
+      let nr = r + dr, nc = c + dc;
+      while (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && board[nr][nc] === EMPTY) {
+        nr += dr; nc += dc;
+      }
+      if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && board[nr][nc] !== EMPTY && !isSameColor(p, board[nr][nc])) {
+        let lr = nr + dr, lc = nc + dc;
+        while (lr >= 0 && lr < 8 && lc >= 0 && lc < 8 && board[lr][lc] === EMPTY) {
+          captures.push({ from: [r,c], over: [nr,nc], to: [lr,lc] });
+          lr += dr; lc += dc;
+        }
+      }
+    }
+  } else {
+    // Normal taş: düz 4 yön, 1 adım atla
+    for (const [dr, dc] of dirs4) {
+      const mr = r + dr, mc = c + dc;
+      const tr = r + 2*dr, tc = c + 2*dc;
+      if (tr >= 0 && tr < 8 && tc >= 0 && tc < 8 &&
+          board[mr][mc] !== EMPTY && !isSameColor(p, board[mr][mc]) &&
+          board[tr][tc] === EMPTY) {
+        captures.push({ from: [r,c], over: [mr,mc], to: [tr,tc] });
+      }
+    }
+  }
+  return captures;
+}
+
+function getSimpleMovesKurdish(board, r, c) {
+  const p = board[r][c];
+  if (!p) return [];
+  const moves = [];
+
+  if (isKing(p)) {
+    // Dama: düz 4 yön sürünür — ÇAPRAZ YOK
+    const dirs4 = [[-1,0],[1,0],[0,-1],[0,1]];
+    for (const [dr, dc] of dirs4) {
+      let nr = r + dr, nc = c + dc;
+      while (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && board[nr][nc] === EMPTY) {
+        moves.push({ from: [r,c], to: [nr,nc] });
+        nr += dr; nc += dc;
+      }
+    }
+  } else {
+    // Normal taş: ileri (rakibe doğru) + yana, GERİ GİDEMEZ
+    // Beyaz yukarı gider (row azalır: dr=-1), siyah aşağı (dr=+1)
+    const fwd = isWhite(p) ? -1 : 1;
+    const dirs = [[fwd, 0], [0, -1], [0, 1]]; // ileri + sol + sağ
     for (const [dr, dc] of dirs) {
       const nr = r + dr, nc = c + dc;
       if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && board[nr][nc] === EMPTY) {
@@ -1279,90 +1480,335 @@ function applyMove(board, move) {
 
   // Promotion
   let promoted = false;
-  if (nb[move.to[0]][move.to[1]] === WHITE && move.to[0] === 0) {
-    nb[move.to[0]][move.to[1]] = WHITE_KING; promoted = true;
-  }
-  if (nb[move.to[0]][move.to[1]] === BLACK && move.to[0] === 7) {
-    nb[move.to[0]][move.to[1]] = BLACK_KING; promoted = true;
+  if (state.mode === 'kurdish') {
+    // White reaches row 0 (BLACK's empty back row), Black reaches row 7 (WHITE's empty back row)
+    if (nb[move.to[0]][move.to[1]] === WHITE && move.to[0] === 0) {
+      nb[move.to[0]][move.to[1]] = WHITE_KING; promoted = true;
+    }
+    if (nb[move.to[0]][move.to[1]] === BLACK && move.to[0] === 7) {
+      nb[move.to[0]][move.to[1]] = BLACK_KING; promoted = true;
+    }
+  } else {
+    if (nb[move.to[0]][move.to[1]] === WHITE && move.to[0] === 0) {
+      nb[move.to[0]][move.to[1]] = WHITE_KING; promoted = true;
+    }
+    if (nb[move.to[0]][move.to[1]] === BLACK && move.to[0] === 7) {
+      nb[move.to[0]][move.to[1]] = BLACK_KING; promoted = true;
+    }
   }
 
   return { board: nb, captured, promoted };
 }
 
-// ── EVALUATION (AI) ───────────────────────────────────────────
-function evaluate(board) {
-  let score = 0;
+// ════════════════════════════════════════════════════════════════
+//  GÜÇLENDİRİLMİŞ AI MOTORU
+//  - İteratif derinleşme (Iterative Deepening)
+//  - Hamle sıralama (Move Ordering) — yemeler önce
+//  - Sessizlik araması (Quiescence Search)
+//  - Gelişmiş pozisyon değerlendirmesi
+//  - Transposition Table (Hash tablosu)
+// ════════════════════════════════════════════════════════════════
+
+const DIFFICULTY_DEPTH = [0, 1, 2, 4, 6, 9];
+
+// Transposition table
+const ttMap = new Map();
+const TT_EXACT = 0, TT_LOWER = 1, TT_UPPER = 2;
+
+function boardHash(board) {
+  let h = '';
   for (let r = 0; r < 8; r++)
+    for (let c = 0; c < 8; c++)
+      h += board[r][c];
+  return h;
+}
+
+// ── GELIŞMIŞ DEĞERLENDİRME ────────────────────────────────────
+function evaluate(board) {
+  const isKurdish = state.mode === 'kurdish';
+
+  let whitePieces = 0, blackPieces = 0;
+  let whiteKings = 0, blackKings = 0;
+  let score = 0;
+
+  // Pozisyon tabloları — Çapraz Dama
+  const PAWN_TABLE_WHITE = [
+    [0,  0,  0,  0,  0,  0,  0,  0],
+    [4,  4,  4,  4,  4,  4,  4,  4],
+    [3,  3,  3,  3,  3,  3,  3,  3],
+    [2,  2,  2,  2,  2,  2,  2,  2],
+    [1,  2,  2,  3,  3,  2,  2,  1],
+    [0,  1,  1,  2,  2,  1,  1,  0],
+    [0,  0,  0,  0,  0,  0,  0,  0],
+    [0,  0,  0,  0,  0,  0,  0,  0],
+  ];
+
+  for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
       const p = board[r][c];
       if (!p) continue;
-      let v = 0;
-      if (p === WHITE)      v = 10 + (7 - r) * 0.5;
-      else if (p === BLACK) v = -(10 + r * 0.5);
-      else if (p === WHITE_KING) v = 18;
-      else if (p === BLACK_KING) v = -18;
 
-      // Center bonus
-      const cr = Math.abs(r - 3.5), cc = Math.abs(c - 3.5);
-      v += (isWhite(p) ? 1 : -1) * (3 - cr + 3 - cc) * 0.15;
-
-      // Back row defense
-      if (p === WHITE && r === 7) v += 1.5;
-      if (p === BLACK && r === 0) v -= 1.5;
-
-      score += v;
+      if (isKurdish) {
+        // ── DÜZ DAMA değerlendirmesi ──
+        if (p === WHITE) {
+          whitePieces++;
+          let v = 100;
+          v += (6 - r) * 12;          // Row 0'a yakınlık (beyaz yukarı gider)
+          v += Math.min(c, 7-c) * 2;  // Kenardan uzak ol
+          if (r === 1) v += 20;        // Dama'ya bir adım
+          score += v;
+        } else if (p === BLACK) {
+          blackPieces++;
+          let v = 100;
+          v += (r - 1) * 12;           // Row 7'ye yakınlık
+          v += Math.min(c, 7-c) * 2;
+          if (r === 6) v += 20;
+          score -= v;
+        } else if (p === WHITE_KING) {
+          whiteKings++;
+          let v = 280;
+          // Merkeze yakınlık
+          v += (3 - Math.abs(r - 3.5)) * 5;
+          v += (3 - Math.abs(c - 3.5)) * 5;
+          score += v;
+        } else if (p === BLACK_KING) {
+          blackKings++;
+          let v = 280;
+          v += (3 - Math.abs(r - 3.5)) * 5;
+          v += (3 - Math.abs(c - 3.5)) * 5;
+          score -= v;
+        }
+      } else {
+        // ── ÇAPRAZ DAMA değerlendirmesi ──
+        if (p === WHITE) {
+          whitePieces++;
+          let v = 100;
+          v += PAWN_TABLE_WHITE[r][c] * 3;
+          // Çapraz karelerde kontrol
+          if (c > 0 && c < 7) v += 1;
+          // Geri satır savunması
+          if (r === 7) v += 8;
+          // Geçiş koruması — ön taşı var mı
+          score += v;
+        } else if (p === BLACK) {
+          blackPieces++;
+          let v = 100;
+          v += PAWN_TABLE_WHITE[7-r][7-c] * 3;
+          if (c > 0 && c < 7) v += 1;
+          if (r === 0) v += 8;
+          score -= v;
+        } else if (p === WHITE_KING) {
+          whiteKings++;
+          let v = 320;
+          // Kral merkez kontrolü
+          v += (3 - Math.abs(r - 3.5)) * 8;
+          v += (3 - Math.abs(c - 3.5)) * 8;
+          score += v;
+        } else if (p === BLACK_KING) {
+          blackKings++;
+          let v = 320;
+          v += (3 - Math.abs(r - 3.5)) * 8;
+          v += (3 - Math.abs(c - 3.5)) * 8;
+          score -= v;
+        }
+      }
     }
+  }
+
+  const totalPieces = whitePieces + blackPieces + whiteKings + blackKings;
+
+  // ── STRATEJİK BONUS'LAR ──
+
+  // Taş farkı avantajı — oyun ilerledikçe daha önemli
+  const pieceDiff = (whitePieces + whiteKings * 2.5) - (blackPieces + blackKings * 2.5);
+  score += pieceDiff * (totalPieces < 10 ? 15 : 5);
+
+  // Endgame: az taş varken kral pozisyonu çok önemli
+  if (totalPieces <= 8) {
+    // Kazanan taraf karşıyı köşeye sıkıştır
+    if (whiteKings > 0 && blackPieces + blackKings === 0) score += 500;
+    if (blackKings > 0 && whitePieces + whiteKings === 0) score -= 500;
+  }
+
+  if (!isKurdish) {
+    // ── ÇAPRAZ DAMA özel stratejiler ──
+    // Çift köşe avantajı
+    if (board[7][0] === WHITE) score += 4;
+    if (board[7][6] === WHITE) score += 4;
+    if (board[0][1] === BLACK) score -= 4;
+    if (board[0][7] === BLACK) score -= 4;
+
+    // Hamle yapabilme sayısı (mobility)
+    const whiteMoves = getAllMoves(board, WHITE).length;
+    const blackMoves = getAllMoves(board, BLACK).length;
+    score += (whiteMoves - blackMoves) * 0.5;
+  }
+
   return score;
 }
 
-function minimax(board, depth, alpha, beta, maximizing) {
-  const moves = getAllMoves(board, maximizing ? BLACK : WHITE);
-  if (depth === 0 || moves.length === 0) return evaluate(board);
+// ── SESSIZLIK ARAMASI (Quiescence Search) ─────────────────────
+// Sadece yeme hamlelerini araştırır, "sessiz" pozisyona kadar
+function quiescence(board, alpha, beta, maximizing, depth) {
+  const standPat = evaluate(board);
+
+  if (depth <= 0) return standPat;
 
   if (maximizing) {
-    let max = -Infinity;
-    for (const m of moves) {
+    if (standPat >= beta) return beta;
+    alpha = Math.max(alpha, standPat);
+
+    const allMoves = getAllMoves(board, BLACK);
+    const captures = allMoves.filter(m => m.over);
+    if (!captures.length) return standPat;
+
+    for (const m of captures) {
       const { board: nb } = applyMove(board, m);
-      const v = minimax(nb, depth - 1, alpha, beta, false);
-      max = Math.max(max, v);
+      const v = quiescence(nb, alpha, beta, false, depth - 1);
       alpha = Math.max(alpha, v);
       if (beta <= alpha) break;
     }
-    return max;
+    return alpha;
   } else {
-    let min = Infinity;
-    for (const m of moves) {
+    if (standPat <= alpha) return alpha;
+    beta = Math.min(beta, standPat);
+
+    const allMoves = getAllMoves(board, WHITE);
+    const captures = allMoves.filter(m => m.over);
+    if (!captures.length) return standPat;
+
+    for (const m of captures) {
       const { board: nb } = applyMove(board, m);
-      const v = minimax(nb, depth - 1, alpha, beta, true);
-      min = Math.min(min, v);
+      const v = quiescence(nb, alpha, beta, true, depth - 1);
       beta = Math.min(beta, v);
       if (beta <= alpha) break;
     }
-    return min;
+    return beta;
   }
 }
 
+// ── HAMLE SIRALAMA (Move Ordering) ────────────────────────────
+// Yemeler önce, sonra ilerleyici hamleler, sonra diğerleri
+function orderMoves(moves, board, maximizing) {
+  return moves.slice().sort((a, b) => {
+    let sa = 0, sb = 0;
+    // Yeme hamlesi önceliği
+    if (a.over) sa += 1000;
+    if (b.over) sb += 1000;
+    // Dama promotion önceliği
+    const pa = board[a.from[0]][a.from[1]];
+    const pb = board[b.from[0]][b.from[1]];
+    if (maximizing) {
+      if (pa === BLACK && a.to[0] === 7) sa += 500;
+      if (pb === BLACK && b.to[0] === 7) sb += 500;
+      // İlerleme bonusu
+      sa += a.to[0] * 2;
+      sb += b.to[0] * 2;
+    } else {
+      if (pa === WHITE && a.to[0] === 0) sa += 500;
+      if (pb === WHITE && b.to[0] === 0) sb += 500;
+      sa += (7 - a.to[0]) * 2;
+      sb += (7 - b.to[0]) * 2;
+    }
+    return sb - sa;
+  });
+}
+
+// ── MINIMAX + ALPHA-BETA ───────────────────────────────────────
+function minimax(board, depth, alpha, beta, maximizing) {
+  // Transposition table lookup
+  const hash = boardHash(board);
+  const ttEntry = ttMap.get(hash);
+  if (ttEntry && ttEntry.depth >= depth) {
+    if (ttEntry.flag === TT_EXACT) return ttEntry.value;
+    if (ttEntry.flag === TT_LOWER) alpha = Math.max(alpha, ttEntry.value);
+    if (ttEntry.flag === TT_UPPER) beta = Math.min(beta, ttEntry.value);
+    if (alpha >= beta) return ttEntry.value;
+  }
+
+  const moves = getAllMoves(board, maximizing ? BLACK : WHITE);
+
+  if (depth === 0 || moves.length === 0) {
+    return quiescence(board, alpha, beta, maximizing, 4);
+  }
+
+  const ordered = orderMoves(moves, board, maximizing);
+  let origAlpha = alpha;
+  let best = maximizing ? -Infinity : Infinity;
+
+  if (maximizing) {
+    for (const m of ordered) {
+      const { board: nb } = applyMove(board, m);
+      // Zincir yeme varsa derinliği artır
+      const ext = (m.over && getCapturesForPiece(nb, m.to[0], m.to[1]).length > 0) ? 1 : 0;
+      const v = minimax(nb, depth - 1 + ext, alpha, beta, false);
+      best = Math.max(best, v);
+      alpha = Math.max(alpha, v);
+      if (beta <= alpha) break;
+    }
+  } else {
+    for (const m of ordered) {
+      const { board: nb } = applyMove(board, m);
+      const ext = (m.over && getCapturesForPiece(nb, m.to[0], m.to[1]).length > 0) ? 1 : 0;
+      const v = minimax(nb, depth - 1 + ext, alpha, beta, true);
+      best = Math.min(best, v);
+      beta = Math.min(beta, v);
+      if (beta <= alpha) break;
+    }
+  }
+
+  // TT kayıt
+  const flag = best <= origAlpha ? TT_UPPER : (best >= beta ? TT_LOWER : TT_EXACT);
+  ttMap.set(hash, { value: best, depth, flag });
+  if (ttMap.size > 100000) ttMap.clear(); // Bellek temizle
+
+  return best;
+}
+
+// ── EN İYİ HAMLE — İTERATİF DERİNLEŞME ──────────────────────
 function getBestMove(board, difficulty) {
-  const depth = DIFFICULTY_DEPTH[difficulty];
+  const maxDepth = DIFFICULTY_DEPTH[difficulty];
   const moves = getAllMoves(board, BLACK);
   if (!moves.length) return null;
 
-  // Level 1: random
+  // Seviye 1: Tamamen rastgele
   if (difficulty === 1) return moves[Math.floor(Math.random() * moves.length)];
 
-  // Level 2: one-step best
+  // Seviye 2: Yeme varsa ye, yoksa rastgele
   if (difficulty === 2) {
-    // 30% random
-    if (Math.random() < 0.3) return moves[Math.floor(Math.random() * moves.length)];
+    const captures = moves.filter(m => m.over);
+    if (captures.length) return captures[Math.floor(Math.random() * captures.length)];
+    return moves[Math.floor(Math.random() * moves.length)];
   }
 
-  let best = null, bestVal = -Infinity;
-  for (const m of moves) {
-    const { board: nb } = applyMove(board, m);
-    const v = minimax(nb, depth - 1, -Infinity, Infinity, false);
-    if (v > bestVal) { bestVal = v; best = m; }
+  ttMap.clear();
+  const ordered = orderMoves(moves, board, true);
+
+  let best = null;
+  let bestVal = -Infinity;
+
+  // İteratif derinleşme: 2'den maxDepth'e kadar
+  for (let d = 2; d <= maxDepth; d++) {
+    let iterBest = null, iterVal = -Infinity;
+
+    for (const m of ordered) {
+      const { board: nb } = applyMove(board, m);
+      const v = minimax(nb, d - 1, -Infinity, Infinity, false);
+      if (v > iterVal) {
+        iterVal = v;
+        iterBest = m;
+      }
+    }
+
+    if (iterBest) {
+      best = iterBest;
+      bestVal = iterVal;
+      // Kesin kazanç bulduysa dur
+      if (bestVal > 5000) break;
+    }
   }
-  return best || moves[0];
+
+  return best || ordered[0];
 }
 
 // ── RENDER ────────────────────────────────────────────────────
@@ -1376,7 +1822,19 @@ function render() {
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
       const cell = document.createElement('div');
-      cell.className = 'cell ' + ((r + c) % 2 === 0 ? 'light' : 'dark');
+
+      if (state.mode === 'kurdish') {
+        // Düz Dama: tüm kareler kullanılır, yatay çizgili desen
+        if (r === 0) {
+          cell.className = 'cell kurdish-promo-top';
+        } else if (r === 7) {
+          cell.className = 'cell kurdish-promo-bot';
+        } else {
+          cell.className = 'cell ' + (r % 2 === 0 ? 'row-even' : 'row-odd');
+        }
+      } else {
+        cell.className = 'cell ' + ((r + c) % 2 === 0 ? 'light' : 'dark');
+      }
       cell.dataset.r = r; cell.dataset.c = c;
 
       // Last move highlight
@@ -1440,14 +1898,15 @@ function renderDots() {
   const pd = document.getElementById('player-dots');
   const ad = document.getElementById('ai-dots');
   pd.innerHTML = ''; ad.innerHTML = '';
-  for (let i = 0; i < 12; i++) {
+  const total = state.startPieces || 12;
+  for (let i = 0; i < total; i++) {
     const d = document.createElement('div');
     d.className = 'piece-dot';
     d.style.background = '#e8d8b0';
     if (i >= state.playerPieces) d.classList.add('captured');
     pd.appendChild(d);
   }
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < total; i++) {
     const d = document.createElement('div');
     d.className = 'piece-dot';
     d.style.background = '#c8701a';
@@ -1591,7 +2050,7 @@ function doAIMove() {
   const thinkEl = document.getElementById('ai-thinking');
   thinkEl.classList.add('visible');
 
-  const thinkTime = 300 + DIFFICULTY_DEPTH[state.difficulty] * 150 + Math.random() * 300;
+  const thinkTime = [0, 300, 400, 600, 900, 1400][state.difficulty] + Math.random() * 300;
 
   setTimeout(() => {
     thinkEl.classList.remove('visible');
@@ -1737,8 +2196,8 @@ function checkGameOver() {
   state.playerPieces = whitePieces;
   state.aiPieces = blackPieces;
 
-  if (blackPieces === 0) { endGame(WHITE, 'Tüm siyah taşları yediniz!'); return true; }
-  if (whitePieces === 0) { endGame(BLACK, 'Tüm beyaz taşlar yenildi!'); return true; }
+  if (blackPieces === 0) { endGame(WHITE, 'Tüm rakip taşları yediniz!'); return true; }
+  if (whitePieces === 0) { endGame(BLACK, 'Tüm taşlarınız yenildi!'); return true; }
 
   const whiteCanMove = getAllMoves(state.board, WHITE).length > 0;
   const blackCanMove = getAllMoves(state.board, BLACK).length > 0;
@@ -1845,23 +2304,32 @@ function showHint() {
 
 // ── GAME SETUP ────────────────────────────────────────────────
 function startGame() {
+  const isKurdish = state.mode === 'kurdish';
+  const startPieces = isKurdish ? 16 : 12;
+
   state.board = initBoard();
   state.currentTurn = WHITE;
   state.selectedCell = null;
   state.validMoves = [];
   state.playerScore = 0;
   state.aiScore = 0;
-  state.playerPieces = 12;
-  state.aiPieces = 12;
+  state.playerPieces = startPieces;
+  state.aiPieces = startPieces;
   state.moveCount = 0;
   state.moveHistory = [];
   state.lastMove = null;
   state.gameOver = false;
   state.history = [];
   state.chainCapture = null;
+  state.startPieces = startPieces;
 
-  document.getElementById('move-history').innerHTML = '';
+  // Board class
+  document.getElementById('board').className = isKurdish ? 'kurdish-board' : '';
+
+  // UI labels
+  document.getElementById('mode-chip').textContent = isKurdish ? '➕ Düz' : '↗ Çapraz';
   document.getElementById('diff-chip').textContent = DIFFICULTY_NAMES[state.difficulty];
+  document.getElementById('move-history').innerHTML = '';
   document.getElementById('status-text').textContent = 'Hamlenizi yapın';
 
   showScreen('game-screen');
@@ -1899,6 +2367,21 @@ function toggleSound() {
 document.getElementById('start-btn').onclick = startGame;
 document.getElementById('howto-btn').onclick = () => showScreen('howto-screen');
 document.getElementById('back-btn').onclick  = () => showScreen('menu-screen');
+
+// Mode selector
+const MODE_DESCS = {
+  turkish: 'Çapraz hareket · 12 taş · Zorunlu yeme',
+  kurdish: 'Düz hareket · 16 taş · Dama da sadece düz gider'
+};
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.mode = btn.dataset.mode;
+    document.getElementById('mode-desc').textContent = MODE_DESCS[state.mode];
+    playSound('select');
+  };
+});
 
 document.querySelectorAll('.diff-btn').forEach(btn => {
   btn.onclick = () => {
