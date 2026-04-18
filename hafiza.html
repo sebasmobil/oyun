@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hafıza Oyunu</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: #fff;
+}
+
+#stars-bg {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+}
+
+.star {
+  position: absolute; background: #fff;
+  border-radius: 50%;
+  animation: twinkle 2s infinite alternate;
+}
+
+@keyframes twinkle {
+  from { opacity: .2; }
+  to   { opacity: 1; }
+}
+
+.page {
+  position: relative; z-index: 1;
+  max-width: 960px; margin: 0 auto;
+  padding: 14px 12px 32px;
+}
+
+/* ── HEADER ── */
+.title {
+  text-align: center;
+  font-size: clamp(24px, 6vw, 44px);
+  font-weight: 800;
+  background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #c77dff);
+  background-size: 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+  letter-spacing: 2px;
+}
+
+@keyframes shimmer {
+  from { background-position: 0%; }
+  to   { background-position: 300%; }
+}
+
+.subtitle {
+  text-align: center; font-size: 14px;
+  color: rgba(255,255,255,.6); margin-bottom: 10px;
+}
+
+/* ── HUD ── */
+.hud {
+  display: flex; justify-content: center;
+  gap: 8px; flex-wrap: wrap; margin-bottom: 6px;
+}
+
+.hud-box {
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 14px; padding: 8px 14px;
+  text-align: center; min-width: 70px;
+}
+
+.hud-lbl { font-size: 10px; color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: 1px; }
+.hud-val { font-size: 22px; font-weight: 700; color: #ffd93d; line-height: 1.1; }
+
+/* ── TIMER BAR ── */
+.tbar-wrap {
+  height: 6px; border-radius: 3px;
+  background: rgba(255,255,255,.1);
+  overflow: hidden; margin: 4px 0 8px;
+}
+
+.tbar {
+  height: 100%; border-radius: 3px;
+  background: #6bcb77;
+  transition: width 1s linear, background .5s;
+  width: 100%;
+}
+
+/* ── BUTTONS ROW ── */
+.row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+
+.diff-btn {
+  padding: 9px 18px; border: none; border-radius: 50px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+}
+.diff-btn:active { transform: scale(.95); }
+.diff-btn.easy   { background: linear-gradient(135deg,#6bcb77,#4caf50); color:#fff; }
+.diff-btn.medium { background: linear-gradient(135deg,#ffd93d,#ff9800); color:#333; }
+.diff-btn.hard   { background: linear-gradient(135deg,#ff6b6b,#e91e63); color:#fff; }
+.diff-btn.sel    { box-shadow: 0 0 0 3px #fff, 0 0 16px rgba(255,255,255,.3); transform: scale(1.06); }
+
+.theme-btn {
+  padding: 6px 14px;
+  border: 1.5px solid rgba(255,255,255,.25);
+  border-radius: 30px; background: rgba(255,255,255,.08);
+  color: #fff; cursor: pointer; font-size: 13px;
+  transition: background .15s;
+}
+.theme-btn.sel { background: rgba(255,255,255,.22); border-color: #fff; font-weight: 700; }
+
+/* ── GRID ── */
+.grid {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.g4 { grid-template-columns: repeat(4,1fr); }
+.g5 { grid-template-columns: repeat(5,1fr); }
+.g6 { grid-template-columns: repeat(6,1fr); }
+
+/* ── CARD WRAP (square via aspect-ratio with fallback) ── */
+.card-wrap {
+  width: 100%;
+  aspect-ratio: 1;
+  perspective: 600px;
+}
+
+/* fallback for older browsers */
+@supports not (aspect-ratio: 1) {
+  .card-wrap { padding-top: 100%; position: relative; }
+  .card-wrap .card { position: absolute; inset: 0; }
+}
+
+/* ── CARD ── */
+.card {
+  width: 100%; height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform .45s cubic-bezier(.4,0,.2,1);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.card.flipped { transform: rotateY(180deg); }
+
+.card.matched {
+  transform: rotateY(180deg);
+  animation: popMatch .5s ease forwards;
+  cursor: default;
+}
+
+.card.wrong { animation: shakeWrong .4s ease; }
+
+@keyframes popMatch {
+  0%   { transform: rotateY(180deg) scale(1); }
+  40%  { transform: rotateY(180deg) scale(1.18); }
+  70%  { transform: rotateY(180deg) scale(.94); }
+  100% { transform: rotateY(180deg) scale(1); }
+}
+
+@keyframes shakeWrong {
+  0%,100% { transform: rotateY(180deg) translateX(0); }
+  25%     { transform: rotateY(180deg) translateX(-8px); }
+  75%     { transform: rotateY(180deg) translateX(8px); }
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: scale(.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.card-face {
+  position: absolute; inset: 0;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border: 2px solid rgba(255,255,255,.15);
+  overflow: hidden;
+}
+
+/* BACK */
+.card-back {
+  background: linear-gradient(135deg, #2d2d6b, #4a4ab8);
+}
+
+.card-back::before {
+  content: '?';
+  font-size: clamp(20px, 8vw, 40px);
+  font-weight: 900;
+  color: rgba(255,255,255,.4);
+  z-index: 1;
+}
+
+.card-back::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,.03) 0, rgba(255,255,255,.03) 2px,
+    transparent 2px, transparent 10px
+  );
+}
+
+.card:hover:not(.flipped):not(.matched) .card-back {
+  background: linear-gradient(135deg,#3d3d8b,#6060d0);
+  border-color: rgba(255,255,255,.4);
+}
+
+/* FRONT */
+.card-front {
+  background: linear-gradient(135deg,#fff9f0,#fff);
+  transform: rotateY(180deg);
+  font-size: clamp(28px, 9vw, 54px);
+  line-height: 1;
+  user-select: none;
+}
+
+.card.matched .card-front {
+  background: linear-gradient(135deg,#d4edda,#c3e6cb);
+  border-color: #6bcb77;
+}
+
+/* ── RESTART ── */
+.btn-restart {
+  display: block; margin: 4px auto 0;
+  padding: 12px 32px;
+  background: linear-gradient(135deg,#4d96ff,#a855f7);
+  color: #fff; border: none; border-radius: 50px;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+}
+.btn-restart:hover  { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(77,150,255,.4); }
+.btn-restart:active { transform: scale(.96); }
+
+/* ── OVERLAYS ── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.82);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s;
+}
+
+.overlay.show { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: linear-gradient(135deg,#1a1a3e,#2d2d6b);
+  border: 2px solid rgba(255,255,255,.18);
+  border-radius: 24px; padding: 34px 36px;
+  text-align: center; max-width: 360px; width: 88%;
+  animation: modalPop .4s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+@keyframes modalPop {
+  from { transform: scale(.6); opacity:0; }
+  to   { transform: scale(1);  opacity:1; }
+}
+
+.modal-icon { font-size: 60px; display:block; margin-bottom: 10px; }
+.modal-icon.bounce { animation: bounce .9s infinite alternate; }
+@keyframes bounce { to { transform: translateY(-12px); } }
+
+.modal-title    { font-size: 26px; font-weight: 800; color: #ffd93d; margin-bottom: 6px; }
+.modal-subtitle { font-size: 14px; color: rgba(255,255,255,.7); margin-bottom: 20px; line-height: 1.5; }
+
+.modal-stats { display: flex; justify-content: center; gap: 14px; margin-bottom: 20px; }
+.mstat { background: rgba(255,255,255,.08); border-radius: 12px; padding: 10px 14px; }
+.mstat-val { font-size: 24px; font-weight: 700; color: #6bcb77; }
+.mstat-lbl { font-size: 11px; color: rgba(255,255,255,.5); }
+
+.modal-btns { display: flex; gap: 10px; }
+
+.mbtn {
+  flex: 1; padding: 12px; border: none; border-radius: 50px;
+  font-size: 15px; font-weight: 800; cursor: pointer;
+  transition: transform .15s;
+}
+.mbtn:active { transform: scale(.96); }
+.mbtn-cancel { background: linear-gradient(135deg,#555,#333); color:#fff; }
+.mbtn-confirm{ background: linear-gradient(135deg,#ff6b6b,#e91e63); color:#fff; }
+.mbtn-play   { background: linear-gradient(135deg,#ffd93d,#ff9800); color:#333; width:100%; }
+
+/* ── CONFETTI ── */
+#confetti { position:fixed; inset:0; pointer-events:none; z-index:150; overflow:hidden; }
+
+.cp {
+  position:absolute; top:-20px;
+  animation: fall linear forwards;
+  border-radius: 2px;
+}
+
+@keyframes fall {
+  to { transform: translateY(110vh) rotate(720deg); opacity:.1; }
+}
+</style>
+</head>
+<body>
+
+<div id="stars-bg"></div>
+<div id="confetti"></div>
+
+<div class="page">
+  <div class="title">✨ Hafıza Oyunu ✨</div>
+  <div class="subtitle">Eşleri bul, hafızanı göster!</div>
+
+  <div class="hud">
+    <div class="hud-box"><div class="hud-lbl">Hamle</div><div class="hud-val" id="hMoves">0</div></div>
+    <div class="hud-box"><div class="hud-lbl">Süre</div><div class="hud-val" id="hTime">0s</div></div>
+    <div class="hud-box"><div class="hud-lbl">Eşleşme</div><div class="hud-val" id="hMatch">0</div></div>
+    <div class="hud-box"><div class="hud-lbl">Yıldız</div><div class="hud-val" id="hStars">⭐⭐⭐</div></div>
+  </div>
+
+  <div class="tbar-wrap"><div class="tbar" id="tbar"></div></div>
+
+  <div class="row">
+    <button class="diff-btn easy sel" onclick="changeDiff('easy')">🌱 Kolay</button>
+    <button class="diff-btn medium"   onclick="changeDiff('medium')">🔥 Orta</button>
+    <button class="diff-btn hard"     onclick="changeDiff('hard')">💀 Zor</button>
+  </div>
+
+  <div class="row">
+    <button class="theme-btn sel" onclick="changeTheme('animals',this)">🐾 Hayvanlar</button>
+    <button class="theme-btn"     onclick="changeTheme('food',this)">🍕 Yiyecekler</button>
+    <button class="theme-btn"     onclick="changeTheme('space',this)">🚀 Uzay</button>
+    <button class="theme-btn"     onclick="changeTheme('sports',this)">⚽ Spor</button>
+  </div>
+
+  <div class="grid g4" id="grid"></div>
+
+  <button class="btn-restart" onclick="restartGame()">🔄 Yeniden Başla</button>
+</div>
+
+<!-- Confirm overlay -->
+<div class="overlay" id="confirmOverlay">
+  <div class="modal">
+    <span class="modal-icon">⚠️</span>
+    <div class="modal-title" style="color:#ff6b6b">Oyun Silinecek!</div>
+    <div class="modal-subtitle">Mevcut oyun ilerlemeniz kaybolacak.<br>Yine de devam etmek istiyor musunuz?</div>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-cancel"  id="btnNo">❌ İptal</button>
+      <button class="mbtn mbtn-confirm" id="btnYes">✅ Evet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Win overlay -->
+<div class="overlay" id="winOverlay">
+  <div class="modal">
+    <span class="modal-icon bounce" id="winIcon">🏆</span>
+    <div class="modal-title"    id="winTitle">Tebrikler!</div>
+    <div class="modal-subtitle" id="winSub">Tüm eşleri buldun!</div>
+    <div class="modal-stats">
+      <div class="mstat"><div class="mstat-val" id="wMoves">0</div><div class="mstat-lbl">Hamle</div></div>
+      <div class="mstat"><div class="mstat-val" id="wTime">0s</div><div class="mstat-lbl">Süre</div></div>
+      <div class="mstat"><div class="mstat-val" id="wStars">⭐⭐⭐</div><div class="mstat-lbl">Puan</div></div>
+    </div>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-play" onclick="restartGame()">🎮 Tekrar Oyna!</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── DATA ── */
+const THEMES = {
+  animals:['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🦄','🐙','🦋'],
+  food:   ['🍕','🍔','🌮','🍜','🍣','🍩','🎂','🍦','🍇','🍓','🍎','🍌','🥑','🌽','🧁','🍟','🥝','🍑'],
+  space:  ['🚀','🌙','⭐','🪐','☄️','🌌','🛸','👾','🔭','🌍','💫','🌠','🛰️','🌟','🪨','🌑','🌒','🌕'],
+  sports: ['⚽','🏀','🏈','⚾','🎾','🏐','🏉','🎱','🏓','🏸','🥊','🏋️','🤸','🏊','⛷️','🚴','🤺','🏇']
+};
+
+const CFG = {
+  easy:   { pairs:6,  cols:'g4', timeLimit:60,  stars:[8,12]  },
+  medium: { pairs:10, cols:'g4', timeLimit:90,  stars:[14,20] },
+  hard:   { pairs:18, cols:'g6', timeLimit:120, stars:[22,32] }
+};
+
+/* medium: 4 col mobile, 5 col ≥560px */
+const MQ560 = window.matchMedia('(min-width:560px)');
+
+/* ── STATE ── */
+let diff = 'easy', theme = 'animals';
+let flipped = [], matched = 0, moves = 0;
+let elapsed = 0, started = false, locked = false;
+let ticker = null;
+let pendingCallback = null;
+
+/* ── STARS BG ── */
+(function(){
+  const bg = document.getElementById('stars-bg');
+  for(let i=0;i<70;i++){
+    const s = document.createElement('div');
+    s.className='star';
+    const sz=(Math.random()*2.5+0.8).toFixed(1);
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${(Math.random()*100).toFixed(1)}%;top:${(Math.random()*100).toFixed(1)}%;animation-delay:${(Math.random()*3).toFixed(1)}s;animation-duration:${(1.5+Math.random()*2).toFixed(1)}s`;
+    bg.appendChild(s);
+  }
+})();
+
+/* ── CONFIRM MODAL ── */
+document.getElementById('btnYes').onclick = () => {
+  closeOverlay('confirmOverlay');
+  if(pendingCallback){ pendingCallback(); pendingCallback=null; }
+};
+document.getElementById('btnNo').onclick = () => {
+  closeOverlay('confirmOverlay');
+  pendingCallback = null;
+};
+
+function openOverlay(id)  { document.getElementById(id).classList.add('show'); }
+function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
+
+function askConfirm(cb){
+  if(!started || matched===CFG[diff].pairs){ cb(); return; }
+  pendingCallback = cb;
+  openOverlay('confirmOverlay');
+}
+
+/* ── DIFFICULTY / THEME CHANGE ── */
+function changeDiff(d){
+  if(d===diff) return;
+  askConfirm(()=>{
+    diff = d;
+    document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('sel'));
+    document.querySelector('.diff-btn.'+d).classList.add('sel');
+    restartGame();
+  });
+}
+
+function changeTheme(t, btn){
+  if(t===theme) return;
+  askConfirm(()=>{
+    theme = t;
+    document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('sel'));
+    btn.classList.add('sel');
+    restartGame();
+  });
+}
+
+/* ── GAME ── */
+function shuffle(a){ return [...a].sort(()=>Math.random()-.5); }
+
+function restartGame(){
+  clearInterval(ticker);
+  closeOverlay('winOverlay');
+  closeOverlay('confirmOverlay');
+
+  flipped=[]; matched=0; moves=0; elapsed=0; started=false; locked=false;
+
+  document.getElementById('hMoves').textContent = '0';
+  document.getElementById('hTime').textContent  = '0s';
+  document.getElementById('hMatch').textContent = '0';
+  document.getElementById('hStars').textContent = '⭐⭐⭐';
+
+  const bar = document.getElementById('tbar');
+  bar.style.width='100%'; bar.style.background='#6bcb77';
+
+  const cfg    = CFG[diff];
+  const emojis = shuffle(THEMES[theme]).slice(0, cfg.pairs);
+  const deck   = shuffle([...emojis,...emojis]);
+
+  const grid = document.getElementById('grid');
+
+  /* grid columns */
+  let colClass = cfg.cols;
+  if(diff==='medium') colClass = MQ560.matches ? 'g5' : 'g4';
+
+  grid.className = 'grid ' + colClass;
+  grid.innerHTML = '';
+
+  deck.forEach((emoji, i)=>{
+    const wrap = document.createElement('div');
+    wrap.className = 'card-wrap';
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.emoji = emoji;
+
+    /* faces */
+    const back  = document.createElement('div'); back.className  = 'card-face card-back';
+    const front = document.createElement('div'); front.className = 'card-face card-front';
+    front.textContent = emoji;
+
+    card.appendChild(back);
+    card.appendChild(front);
+    card.addEventListener('click', ()=>onFlip(card));
+
+    wrap.appendChild(card);
+    grid.appendChild(wrap);
+
+    /* stagger entrance */
+    card.style.opacity='0';
+    card.style.transform='scale(.6)';
+    card.style.transition='opacity .3s ease, transform .3s ease';
+    setTimeout(()=>{
+      card.style.opacity='1';
+      card.style.transform='scale(1)';
+    }, 60 + i*40);
+  });
+}
+
+function startTicker(){
+  if(started) return;
+  started = true;
+  const limit = CFG[diff].timeLimit;
+  ticker = setInterval(()=>{
+    elapsed++;
+    document.getElementById('hTime').textContent = elapsed+'s';
+    calcStars();
+    const frac = Math.max(0,(limit-elapsed)/limit);
+    const bar  = document.getElementById('tbar');
+    bar.style.width = (frac*100)+'%';
+    bar.style.background = frac>.5?'#6bcb77':frac>.25?'#ffd93d':'#ff6b6b';
+  },1000);
+}
+
+function onFlip(card){
+  if(locked) return;
+  if(card.classList.contains('flipped')||card.classList.contains('matched')) return;
+
+  startTicker();
+
+  /* clear any lingering inline transition override from entrance */
+  card.style.transition='';
+  card.style.opacity='';
+  card.style.transform='';
+
+  card.classList.add('flipped');
+  flipped.push(card);
+
+  if(flipped.length===2){
+    moves++;
+    document.getElementById('hMoves').textContent = moves;
+    locked = true;
+    checkPair();
+  }
+}
+
+function checkPair(){
+  const [a,b] = flipped;
+  if(a.dataset.emoji===b.dataset.emoji){
+    setTimeout(()=>{
+      a.classList.add('matched');
+      b.classList.add('matched');
+      matched++;
+      document.getElementById('hMatch').textContent = matched;
+      flipped=[]; locked=false;
+      calcStars();
+      if(matched===CFG[diff].pairs) setTimeout(showWin,500);
+    },200);
+  } else {
+    setTimeout(()=>{
+      a.classList.add('wrong');
+      b.classList.add('wrong');
+      setTimeout(()=>{
+        a.classList.remove('flipped','wrong');
+        b.classList.remove('flipped','wrong');
+        flipped=[]; locked=false;
+      },500);
+    },600);
+  }
+}
+
+function calcStars(){
+  const [s3,s2] = CFG[diff].stars;
+  const s = moves<=s3?'⭐⭐⭐':moves<=s2?'⭐⭐':'⭐';
+  document.getElementById('hStars').textContent = s;
+  return s;
+}
+
+function showWin(){
+  clearInterval(ticker);
+  const stars = calcStars();
+  const map = {'⭐⭐⭐':['🏆','Mükemmel!'],'⭐⭐':['🌟','Harika!'],'⭐':['👏','Tamamladın!']};
+  const [icon,title] = map[stars];
+  document.getElementById('winIcon').textContent  = icon;
+  document.getElementById('winTitle').textContent = title;
+  document.getElementById('winSub').textContent   = 'Tüm eşleri '+elapsed+' saniyede buldun!';
+  document.getElementById('wMoves').textContent   = moves;
+  document.getElementById('wTime').textContent    = elapsed+'s';
+  document.getElementById('wStars').textContent   = stars;
+  openOverlay('winOverlay');
+  confetti();
+}
+
+function confetti(){
+  const c = document.getElementById('confetti');
+  c.innerHTML='';
+  const cols=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#c77dff','#ff9800','#00bcd4'];
+  for(let i=0;i<120;i++){
+    const p=document.createElement('div');
+    p.className='cp';
+    const sz=6+Math.random()*10;
+    p.style.cssText=`left:${(Math.random()*100).toFixed(1)}%;width:${sz.toFixed(0)}px;height:${sz.toFixed(0)}px;background:${cols[i%cols.length]};animation-delay:${(Math.random()*1.8).toFixed(2)}s;animation-duration:${(2.4+Math.random()*2).toFixed(2)}s;border-radius:${Math.random()>.5?'50%':'2px'}`;
+    c.appendChild(p);
+  }
+  setTimeout(()=>c.innerHTML='',7000);
+}
+
+/* responsive medium grid */
+MQ560.addEventListener('change', ()=>{ if(diff==='medium') restartGame(); });
+
+restartGame();
+</script>
+</body>
+</html>
