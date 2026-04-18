@@ -704,10 +704,29 @@ function showScreen(id) {
 }
 
 // ==================== HIGH SCORES SCREEN ====================
+let previousScreen = 'home'; // skor tablosundan önce hangi ekrandaydık
+
 document.getElementById('hs-btn').addEventListener('click', () => {
-  renderHighScores(); showScreen('hs');
+  // Şu an hangi ekran aktif, onu hatırla
+  const active = document.querySelector('.screen.active');
+  if (active) previousScreen = active.id.replace('-screen', '');
+  // Oyun devam ediyorsa sayacı durdur
+  if (previousScreen === 'game') clearInterval(timerInterval);
+  renderHighScores();
+  showScreen('hs');
 });
-document.getElementById('hs-back').addEventListener('click', () => showScreen('home'));
+
+document.getElementById('hs-back').addEventListener('click', () => {
+  // Oyun ekranından gelindiyse sayacı kaldığı yerden devam ettir
+  if (previousScreen === 'game') {
+    showScreen('game');
+    // Kalan süreyi devam ettir
+    const remaining = parseInt(document.getElementById('timer-val').textContent);
+    if (remaining > 0) startTimer(remaining);
+  } else {
+    showScreen('home');
+  }
+});
 
 function renderHighScores() {
   const list = document.getElementById('hs-list');
