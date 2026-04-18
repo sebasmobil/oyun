@@ -162,6 +162,14 @@ tr.editing-row td{background:rgba(224,92,48,.05)}
 /* ALERT */
 .warn-text{font-size:12px;color:var(--gold);margin-top:6px}
 
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:24px 20px;max-width:300px;width:100%;text-align:center}
+.modal-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:8px;color:var(--text)}
+.modal-msg{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.5}
+.modal-acts{display:flex;gap:10px;justify-content:center}
+.modal-acts button{flex:1;padding:10px;font-size:14px;font-weight:500}
+
 /* ANIMATIONS */
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .fade-in{animation:fadeIn .25s ease}
@@ -199,6 +207,42 @@ document.documentElement.dataset.theme=S.theme==='light'?'light':'';
 const view=document.getElementById('view');
 function render(fn){view.innerHTML='';view.className='fade-in';fn()}
 
+/* ===== MODAL HELPERS ===== */
+function showConfirm(title,msg,onYes){
+  const ov=document.createElement('div');ov.className='modal-overlay';
+  ov.innerHTML=`<div class="modal-box">
+    <div class="modal-title">${title}</div>
+    <div class="modal-msg">${msg}</div>
+    <div class="modal-acts">
+      <button class="btn" id="mNo">Vazgeç</button>
+      <button class="btn btn-danger" id="mYes">Evet, Sil</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#mNo').onclick=()=>ov.remove();
+  ov.querySelector('#mYes').onclick=()=>{ov.remove();onYes()};
+}
+function showConfirmAction(title,msg,yesLabel,yesCls,onYes){
+  const ov=document.createElement('div');ov.className='modal-overlay';
+  ov.innerHTML=`<div class="modal-box">
+    <div class="modal-title">${title}</div>
+    <div class="modal-msg">${msg}</div>
+    <div class="modal-acts">
+      <button class="btn" id="mNo">Vazgeç</button>
+      <button class="btn ${yesCls}" id="mYes">${yesLabel}</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#mNo').onclick=()=>ov.remove();
+  ov.querySelector('#mYes').onclick=()=>{ov.remove();onYes()};
+}
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:10px 18px;border-radius:30px;font-size:13px;z-index:999;white-space:nowrap';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2200);
+}
+
 /* THEME */
 document.getElementById('themeBtn').onclick=()=>{
   S.theme=S.theme==='light'?'dark':'light';
@@ -208,7 +252,10 @@ document.getElementById('themeBtn').onclick=()=>{
 
 /* TOP BUTTONS */
 document.getElementById('newGameBtn').onclick=()=>{
-  if(S.current&&!confirm('Aktif oyun var! Yeni oyun mevcut oyunu siler. Devam?'))return;
+  if(S.current){
+    showConfirmAction('Yeni Oyun','Aktif oyun var! Mevcut oyun silinecek. Devam?','Evet, başlat','btn-danger',()=>{S.current=null;save(S);render(renderSetup)});
+    return;
+  }
   S.current=null;save(S);render(renderSetup);
 };
 document.getElementById('histBtn').onclick=()=>render(renderHistory);
@@ -305,8 +352,8 @@ function renderSetup(){
   });
 
   document.getElementById('startBtn').onclick=()=>{
-    if(players.length<2){alert('En az 2 oyuncu gerekli!');return}
-    if(mode==='esli'&&players.length%2!==0){alert('Eşli oyun için çift sayıda oyuncu gerekli!');return}
+    if(players.length<2){showToast('En az 2 oyuncu gerekli!');return}
+    if(mode==='esli'&&players.length%2!==0){showToast('Eşli oyun için çift sayıda oyuncu gerekli!');return}
     rounds=parseInt(document.getElementById('roundCount').value)||7;
     let finalPartners={};
     let pairs=[];
@@ -475,7 +522,7 @@ function renderGame(){
     if(saveBtn)saveBtn.onclick=()=>{
       let ok=true;
       scoreUnits.forEach((_,ui)=>{if(!pending[ui].finish&&(pending[ui].val===''||pending[ui].val===null||pending[ui].val===undefined))ok=false});
-      if(!ok){alert('Tüm '+( mode==='esli'?'çiftler':'oyuncular')+' için puan girin!');return}
+      if(!ok){showToast('Tüm '+(mode==='esli'?'çiftler':'oyuncular')+' için puan girin!');return}
       scoreUnits.forEach((_,ui)=>{
         const fin=pending[ui].finish||false;
         const finAmt=pending[ui].finishAmt||101;
@@ -507,15 +554,16 @@ function renderGame(){
     });
     const endBtn=document.getElementById('endSet');
     if(endBtn)endBtn.onclick=()=>{
-      if(!confirm('Seti bitirip geçmişe kaydetmek istiyor musunuz?'))return;
-      const totals=scoreUnits.map((_,ui)=>unitTotal(ui));
-      const mn=Math.min(...totals);
-      const winnerUnits=scoreUnits.filter((_,ui)=>totals[ui]===mn).map(u=>u.join(' & '));
-      S.history.unshift({
-        id:Date.now(),date:Date.now(),players,mode,rounds,partners,pairs,scoreUnits,
-        scores:JSON.parse(JSON.stringify(scores)),totals,winnerUnits
+      showConfirmAction('Seti Bitir','Seti bitirip geçmişe kaydetmek istiyor musunuz?','Evet, kaydet','btn-success',()=>{
+        const totals=scoreUnits.map((_,ui)=>unitTotal(ui));
+        const mn=Math.min(...totals);
+        const winnerUnits=scoreUnits.filter((_,ui)=>totals[ui]===mn).map(u=>u.join(' & '));
+        S.history.unshift({
+          id:Date.now(),date:Date.now(),players,mode,rounds,partners,pairs,scoreUnits,
+          scores:JSON.parse(JSON.stringify(scores)),totals,winnerUnits
+        });
+        S.current=null;save(S);render(renderHistory);
       });
-      S.current=null;save(S);render(renderHistory);
     };
   }
 
@@ -595,7 +643,13 @@ function renderHistory(){
       <div class="hist-scores">${h.scoreUnits.map((_,ui)=>`<span class="hist-score">${h.mode==='esli'?h.scoreUnits[ui].join(' & '):h.scoreUnits[ui][0]}: <b>${h.totals[ui]}</b></span>`).join('')}</div>
     </div>`).join('');
   hl.querySelectorAll('.del-hist').forEach(btn=>{
-    btn.onclick=e=>{e.stopPropagation();if(!confirm('Bu seti silmek istiyor musunuz?'))return;S.history.splice(+btn.dataset.hi,1);save(S);renderHistory()};
+    btn.onclick=e=>{
+      e.stopPropagation();
+      const hi=+btn.dataset.hi;
+      showConfirm('Seti Sil','Bu seti geçmişten silmek istiyor musunuz?',()=>{
+        S.history.splice(hi,1);save(S);renderHistory();
+      });
+    };
   });
   hl.querySelectorAll('[data-hi]').forEach(item=>{
     item.onclick=e=>{if(e.target.tagName==='BUTTON')return;renderHistDetail(+item.dataset.hi)};
