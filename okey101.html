@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>101 Okey Takip</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
@@ -71,7 +71,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 /* FORM */
 .field{margin-bottom:12px}
 .field label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:500}
-input,select{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border .15s}
+input,select{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;outline:none;transition:border .15s}
 input:focus,select:focus{border-color:var(--accent)}
 input::placeholder{color:var(--text3)}
 select option{background:var(--surface)}
@@ -121,7 +121,7 @@ tr.editing-row td{background:rgba(224,92,48,.05)}
 
 /* INPUT CELL */
 .inp-cell{display:flex;flex-direction:column;align-items:center;gap:4px}
-.sc-inp{width:68px;padding:5px 7px;text-align:center;border:1px solid var(--border2);border-radius:8px;background:var(--surface3);color:var(--text);font-size:13px}
+.sc-inp{width:68px;padding:5px 7px;text-align:center;border:1px solid var(--border2);border-radius:8px;background:var(--surface3);color:var(--text);font-size:16px}
 .sc-inp:focus{border-color:var(--accent);outline:none}
 .ceza-list{width:100%;display:flex;flex-direction:column;gap:3px;margin-top:2px}
 .ceza-item{display:flex;gap:4px;align-items:center;background:rgba(208,69,69,.08);border-radius:6px;padding:3px 6px}
@@ -373,7 +373,7 @@ function renderGame(){
           const pv=pending[ui]!==undefined?pending[ui].val:'';
           const cezalar=pending[ui]?pending[ui].penalties:[];
           h+=`<td><div class="inp-cell">
-            <input class="sc-inp" type="number" data-ui="${ui}" value="${pv}" placeholder="puan"/>
+            <input class="sc-inp" type="number" inputmode="numeric" pattern="[0-9]*" data-ui="${ui}" value="${pv}" placeholder="puan"/>
             <div class="ceza-list" id="cl_${ui}">
               ${cezalar.map((c,ci)=>`<div class="ceza-item">
                 <select class="ceza-sel" data-ui="${ui}" data-ci="${ci}">
