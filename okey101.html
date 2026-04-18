@@ -184,7 +184,7 @@ tr.editing-row td{background:rgba(224,92,48,.05)}
 <body>
 <div class="app">
   <div class="topbar">
-    <div class="logo">101 <span>Okey</span></div>
+    <div class="logo">101 <span>Okey</span> <sup style="font-size:10px;font-weight:400;color:var(--text3);font-family:'DM Sans',sans-serif;letter-spacing:0;vertical-align:super">v1.0</sup></div>
     <div class="topbar-actions">
       <button class="btn-icon" id="themeBtn" title="Tema değiştir">&#9680;</button>
       <button class="btn btn-sm" id="histBtn">Geçmiş</button>
@@ -634,28 +634,59 @@ function renderStats(el){
 /* ===== HISTORY ===== */
 function renderHistory(){
   view.innerHTML=`<div class="card"><div class="card-title">Geçmiş Setler</div><div id="hl"></div></div>`;
+  drawHistList();
+}
+
+function drawHistList(){
   const hl=document.getElementById('hl');
+  if(!hl)return;
   if(!S.history.length){hl.innerHTML='<div class="empty">Henüz kayıtlı set yok.</div>';return}
-  hl.innerHTML=S.history.map((h,hi)=>`
-    <div class="hist-item" data-hi="${hi}">
-      <div class="hist-top">
-        <span class="hist-date">${fmtDate(h.date)} &middot; ${h.mode==='esli'?'Eşli':'Tekli'} &middot; ${h.rounds} el</span>
-        <button class="btn btn-sm btn-danger del-hist" data-hi="${hi}">Sil</button>
-      </div>
-      <div class="hist-winner">&#9733; ${h.winnerUnits.join(' &amp; ')}</div>
-      <div class="hist-scores">${h.scoreUnits.map((_,ui)=>`<span class="hist-score">${h.mode==='esli'?h.scoreUnits[ui].join(' & '):h.scoreUnits[ui][0]}: <b>${h.totals[ui]}</b></span>`).join('')}</div>
-    </div>`).join('');
-  hl.querySelectorAll('.del-hist').forEach(btn=>{
-    btn.onclick=e=>{
+  hl.innerHTML='';
+  S.history.forEach((h,hi)=>{
+    const wrap=document.createElement('div');
+    wrap.style.cssText='margin-bottom:8px';
+    wrap.innerHTML=`
+      <div style="display:flex;flex-direction:column;gap:6px;padding:14px;border:1px solid var(--border);border-radius:16px;background:var(--surface)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <span style="font-size:12px;color:var(--text3)">${fmtDate(h.date)} &middot; ${h.mode==='esli'?'Eşli':'Tekli'} &middot; ${h.rounds} el</span>
+          <button class="btn btn-sm btn-danger" id="delBtn_${hi}" style="flex-shrink:0">Sil</button>
+        </div>
+        <div id="confirmRow_${hi}" style="display:none;background:rgba(208,69,69,.1);border:1px solid rgba(208,69,69,.3);border-radius:8px;padding:8px 10px;display:none">
+          <span style="font-size:13px;color:var(--text);margin-right:10px">Silinsin mi?</span>
+          <button class="btn btn-sm btn-danger" id="confirmYes_${hi}">Evet Sil</button>
+          <button class="btn btn-sm" id="confirmNo_${hi}" style="margin-left:6px">Vazgeç</button>
+        </div>
+        <div style="font-size:13px;font-weight:500;color:var(--green)">&#9733; ${h.winnerUnits.join(' &amp; ')}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px" id="detailToggle_${hi}">
+          ${h.scoreUnits.map((_,ui)=>`<span style="font-size:12px;color:var(--text2)">${h.mode==='esli'?h.scoreUnits[ui].join(' & '):h.scoreUnits[ui][0]}: <b>${h.totals[ui]}</b></span>`).join('')}
+        </div>
+      </div>`;
+    hl.appendChild(wrap);
+
+    const delBtn=document.getElementById(`delBtn_${hi}`);
+    const confirmRow=document.getElementById(`confirmRow_${hi}`);
+    const confirmYes=document.getElementById(`confirmYes_${hi}`);
+    const confirmNo=document.getElementById(`confirmNo_${hi}`);
+    const detailArea=document.getElementById(`detailToggle_${hi}`);
+
+    delBtn.onclick=e=>{
       e.stopPropagation();
-      const hi=+btn.dataset.hi;
-      showConfirm('Seti Sil','Bu seti geçmişten silmek istiyor musunuz?',()=>{
-        S.history.splice(hi,1);save(S);renderHistory();
-      });
+      confirmRow.style.display='block';
+      delBtn.style.display='none';
     };
-  });
-  hl.querySelectorAll('[data-hi]').forEach(item=>{
-    item.onclick=e=>{if(e.target.tagName==='BUTTON')return;renderHistDetail(+item.dataset.hi)};
+    confirmNo.onclick=e=>{
+      e.stopPropagation();
+      confirmRow.style.display='none';
+      delBtn.style.display='';
+    };
+    confirmYes.onclick=e=>{
+      e.stopPropagation();
+      S.history.splice(hi,1);
+      save(S);
+      drawHistList();
+    };
+    detailArea.onclick=()=>renderHistDetail(hi);
+    detailArea.style.cursor='pointer';
   });
 }
 
