@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Numara Kaçışı</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c26;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f0f0f8;
+    --muted: rgba(240,240,248,0.45);
+    --dim: rgba(240,240,248,0.2);
+    --accent: #7c6cfa;
+    --accent2: #fa6c8a;
+    --green: #3dffc0;
+    --amber: #ffb84d;
+    --red: #ff5a5a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 600px 400px at 20% 10%, rgba(124,108,250,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 500px at 80% 80%, rgba(250,108,138,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 700px;
+    padding: 24px 16px 40px;
+  }
+
+  /* — HEADER — */
+  #header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  #logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+
+  #logo span {
+    color: var(--accent);
+  }
+
+  #version {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  /* — SCREEN: INTRO — */
+  #screen-intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 0 10px;
+  }
+
+  .big-title {
+    font-size: clamp(42px, 10vw, 72px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+
+  .big-title .hl { color: var(--accent); }
+  .big-title .hl2 { color: var(--accent2); }
+
+  .intro-sub {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 420px;
+    line-height: 1.7;
+    margin-bottom: 36px;
+  }
+
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 36px;
+  }
+
+  .how-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: 14px;
+    padding: 16px 14px;
+    text-align: left;
+  }
+
+  .how-icon {
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+
+  .how-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .how-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .btn-start {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 16px 48px;
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: transform 0.1s, opacity 0.1s;
+    margin-bottom: 12px;
+  }
+
+  .btn-start:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-start:active { transform: scale(0.97); }
+
+  /* — HUD — */
+  #screen-game { display: none; }
+
+  #hud {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .hb {
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+
+  .hl-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .hv {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .hv.green { color: var(--green); }
+  .hv.amber { color: var(--amber); }
+  .hv.red { color: var(--red); }
+
+  /* — COMBO BAR — */
+  #combo-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  #combo-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    min-width: 42px;
+  }
+
+  #combo-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--border2);
+    border-radius: 4px;
+  }
+
+  #combo-fill {
+    height: 4px;
+    border-radius: 4px;
+    background: var(--green);
+    width: 0%;
+    transition: width 0.15s, background 0.3s;
+  }
+
+  #combo-txt {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    min-width: 28px;
+    text-align: right;
+  }
+
+  /* — POWER UPS — */
+  #powerups {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .pu-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 0.5px solid var(--border2);
+    background: var(--surface);
+    color: var(--text);
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .pu-btn:hover:not(:disabled) { background: var(--surface2); transform: translateY(-1px); }
+  .pu-btn:active:not(:disabled) { transform: scale(0.96); }
+  .pu-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .pu-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 400;
+  }
+
+  .pu-count.blue { background: rgba(124,108,250,0.2); color: var(--accent); }
+  .pu-count.teal { background: rgba(61,255,192,0.15); color: var(--green); }
+  .pu-count.rose { background: rgba(250,108,138,0.2); color: var(--accent2); }
+
+  /* — NEXT BAR — */
+  #next-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: 10px;
+  }
+
+  #next-hint {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  #next-hint strong {
+    color: var(--green);
+    font-size: 18px;
+    margin-left: 4px;
+  }
+
+  #streak-txt {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  #streak-txt span { color: var(--amber); }
+
+  /* — ARENA — */
+  #arena {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background: var(--surface);
+    border-radius: 16px;
+    border: 0.5px solid var(--border2);
+    overflow: hidden;
+    cursor: crosshair;
+    margin-bottom: 8px;
+  }
+
+  #arena-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  #freeze-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(124,108,250,0.07);
+    border-radius: 16px;
+    pointer-events: none;
+    border: 1.5px solid var(--accent);
+  }
+
+  .num-token {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.07s;
+    z-index: 2;
+  }
+
+  .num-token:hover { transform: scale(1.12); }
+
+  .num-token.target-glow {
+    box-shadow: 0 0 0 3px rgba(61,255,192,0.4), 0 0 12px rgba(61,255,192,0.25);
+  }
+
+  .num-token.bomb {
+    border-style: dashed !important;
+    animation: bombPulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes bombPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,90,90,0.3); }
+    50% { box-shadow: 0 0 0 5px rgba(255,90,90,0); }
+  }
+
+  .pop-anim {
+    position: absolute;
+    pointer-events: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    animation: popUp 0.65s ease-out forwards;
+    z-index: 10;
+  }
+
+  @keyframes popUp {
+    0% { opacity: 1; transform: translateY(0) scale(1.1); }
+    100% { opacity: 0; transform: translateY(-38px) scale(0.8); }
+  }
+
+  /* — MSG — */
+  #msg {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    min-height: 18px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.02em;
+  }
+
+  /* — RESULT SCREEN — */
+  #screen-result {
+    display: none;
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  #res-emoji {
+    font-size: 52px;
+    margin-bottom: 12px;
+    line-height: 1;
+  }
+
+  #res-title {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+
+  #res-sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  #res-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .rs {
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: 12px;
+    padding: 14px 10px;
+  }
+
+  .rs-l {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+
+  .rs-v {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  #res-btn-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    border: 0.5px solid var(--border2);
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--muted);
+    transition: background 0.15s, color 0.15s, transform 0.1s;
+  }
+
+  .btn-secondary:hover { background: var(--surface2); color: var(--text); }
+  .btn-secondary:active { transform: scale(0.97); }
+
+  /* — FREEZE COUNTDOWN — */
+  #freeze-timer {
+    position: absolute;
+    top: 10px; left: 50%; transform: translateX(-50%);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(124,108,250,0.15);
+    border-radius: 8px;
+    padding: 3px 10px;
+    display: none;
+    z-index: 20;
+  }
+
+  /* — LEVEL FLASH — */
+  #level-flash {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 30;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  #level-flash-txt {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--amber);
+    text-shadow: 0 0 30px rgba(255,184,77,0.6);
+    letter-spacing: -1px;
+  }
+
+  /* responsive */
+  @media (max-width: 480px) {
+    #hud { grid-template-columns: repeat(2, 1fr); }
+    #arena { height: 340px; }
+    .big-title { letter-spacing: -1px; }
+  }
+</style>
+</head>
+<body>
+<div id="wrapper">
+
+  <div id="header">
+    <div id="logo">numara<span>kaçışı</span></div>
+    <div id="version">v2.0</div>
+  </div>
+
+  <!-- INTRO -->
+  <div id="screen-intro">
+    <div class="big-title">
+      Sayıları<br><span class="hl">Yakala</span><br><span class="hl2">Kaçmadan</span>
+    </div>
+    <p class="intro-sub">
+      Sayılar ekranda uçuşuyor. Sırayla yakala: 1, 2, 3... Hızlı basarsan combo patlar. Yanlış basarsan combo uçar. 60 saniyede ne kadar skora ulaşabilirsin?
+    </p>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-icon">🎯</div>
+        <div class="how-title">Sırayla dokun</div>
+        <div class="how-desc">Sayılar 1'den başlar. Sıra dışı basarsan combo sıfırlanır.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">⚡</div>
+        <div class="how-title">Combo kır</div>
+        <div class="how-desc">Arka arkaya doğru basışlar combonu katlar. x8'e ulaşabilir misin?</div>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">💣</div>
+        <div class="how-title">Bombalardan kaç</div>
+        <div class="how-desc">Kesik kenarlı sayılar bombadır. Basarsan her şeyi kaybedersin.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">🧊</div>
+        <div class="how-title">Güç-upları kullan</div>
+        <div class="how-desc">Dondur, işaretle veya bomba patlat — doğru anda kullan.</div>
+      </div>
+    </div>
+    <button class="btn-start" onclick="showGame()">Oynamaya Başla</button>
+  </div>
+
+  <!-- GAME -->
+  <div id="screen-game">
+    <div id="hud">
+      <div class="hb"><div class="hl-label">Skor</div><div class="hv green" id="score">0</div></div>
+      <div class="hb"><div class="hl-label">Süre</div><div class="hv" id="tval">60</div></div>
+      <div class="hb"><div class="hl-label">Combo</div><div class="hv amber" id="combo">x1</div></div>
+      <div class="hb"><div class="hl-label">Seviye</div><div class="hv" id="lvl">1</div></div>
+    </div>
+
+    <div id="combo-row">
+      <span id="combo-label">combo</span>
+      <div id="combo-bar"><div id="combo-fill"></div></div>
+      <span id="combo-txt">0/7</span>
+    </div>
+
+    <div id="powerups">
+      <button class="pu-btn" id="pu-freeze" onclick="usePower('freeze')">
+        🧊 Dondur <span class="pu-count blue" id="pu-freeze-c">2</span>
+      </button>
+      <button class="pu-btn" id="pu-reveal" onclick="usePower('reveal')">
+        ★ İşaretle <span class="pu-count teal" id="pu-reveal-c">2</span>
+      </button>
+      <button class="pu-btn" id="pu-bomb" onclick="usePower('bomb')">
+        💥 Bomba Patlat <span class="pu-count rose" id="pu-bomb-c">1</span>
+      </button>
+    </div>
+
+    <div id="next-bar">
+      <div id="next-hint">Sıradaki: <strong id="next-num">1</strong></div>
+      <div id="streak-txt">Streak: <span id="streak">0</span></div>
+    </div>
+
+    <div id="arena">
+      <div id="arena-bg"></div>
+      <div id="freeze-overlay"></div>
+      <div id="freeze-timer"></div>
+      <div id="level-flash"><div id="level-flash-txt"></div></div>
+    </div>
+
+    <div id="msg"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="screen-result">
+    <div id="res-emoji"></div>
+    <div id="res-title"></div>
+    <div id="res-sub"></div>
+    <div id="res-stats">
+      <div class="rs"><div class="rs-l">Toplam Skor</div><div class="rs-v green" id="r-score"></div></div>
+      <div class="rs"><div class="rs-l">En Yüksek Combo</div><div class="rs-v amber" id="r-combo"></div></div>
+      <div class="rs"><div class="rs-l">En Uzun Streak</div><div class="rs-v" id="r-streak"></div></div>
+    </div>
+    <div id="res-btn-row">
+      <button class="btn-start" onclick="startGame()">Tekrar Oyna</button>
+      <button class="btn-secondary" onclick="goIntro()">Ana Menü</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const COLORS = [
+  {bg:'rgba(124,108,250,0.18)',bd:'rgba(124,108,250,0.7)',tx:'#c5beff'},
+  {bg:'rgba(61,255,192,0.12)',bd:'rgba(61,255,192,0.5)',tx:'#3dffc0'},
+  {bg:'rgba(250,108,138,0.15)',bd:'rgba(250,108,138,0.6)',tx:'#ffa0b8'},
+  {bg:'rgba(255,184,77,0.13)',bd:'rgba(255,184,77,0.55)',tx:'#ffd080'},
+  {bg:'rgba(100,200,255,0.13)',bd:'rgba(100,200,255,0.5)',tx:'#90d8ff'},
+  {bg:'rgba(255,120,80,0.13)',bd:'rgba(255,120,80,0.5)',tx:'#ffaa88'},
+  {bg:'rgba(180,120,255,0.13)',bd:'rgba(180,120,255,0.5)',tx:'#d4aaff'},
+];
+
+let tokens, pos, vx, vy, nextTarget, score, combo, comboDecay, timeLeft, mainTimer, gameActive, level, totalSpawned, streak, maxStreak, maxCombo, powers, frozen, revealTimer, freezeCountdown;
+const TNUM = 14;
+
+function $id(id) { return document.getElementById(id); }
+function rnd(a, b) { return a + Math.random() * (b - a); }
+
+function showGame() {
+  $id('screen-intro').style.display = 'none';
+  $id('screen-game').style.display = 'block';
+  $id('screen-result').style.display = 'none';
+  startGame();
+}
+
+function goIntro() {
+  $id('screen-intro').style.display = 'flex';
+  $id('screen-game').style.display = 'none';
+  $id('screen-result').style.display = 'none';
+  clearInterval(mainTimer);
+  cancelAnimationFrame(window._raf);
+}
+
+function startGame() {
+  clearInterval(mainTimer);
+  cancelAnimationFrame(window._raf);
+  $id('screen-game').style.display = 'block';
+  $id('screen-result').style.display = 'none';
+
+  const arena = $id('arena');
+  [...arena.querySelectorAll('.num-token, .pop-anim')].forEach(e => e.remove());
+
+  tokens = []; pos = []; vx = []; vy = [];
+  nextTarget = 1; score = 0; combo = 1; streak = 0; maxStreak = 0; maxCombo = 1;
+  timeLeft = 60; level = 1; totalSpawned = 0; gameActive = true; frozen = false;
+  powers = { freeze: 2, reveal: 2, bomb: 1 };
+
+  updatePowerUI();
+  $id('score').textContent = '0';
+  $id('tval').textContent = '60';
+  $id('combo').textContent = 'x1';
+  $id('lvl').textContent = '1';
+  $id('next-num').textContent = '1';
+  $id('streak').textContent = '0';
+  $id('combo-fill').style.width = '0%';
+  $id('combo-fill').style.background = '#3dffc0';
+  $id('combo-txt').textContent = '0/7';
+  $id('msg').textContent = '';
+  $id('freeze-overlay').style.display = 'none';
+  $id('freeze-timer').style.display = 'none';
+
+  spawnBatch(TNUM);
+
+  mainTimer = setInterval(() => {
+    timeLeft--;
+    $id('tval').textContent = timeLeft;
+    if (timeLeft <= 10) $id('tval').style.color = '#ff5a5a';
+    else $id('tval').style.color = '';
+    if (timeLeft <= 0) endGame();
+    if (timeLeft % 12 === 0 && timeLeft > 0) {
+      level++;
+      $id('lvl').textContent = level;
+      tokens.forEach((_, i) => { vx[i] *= 1.14; vy[i] *= 1.14; });
+      flashLevel('SEVİYE ' + level);
+    }
+    if (timeLeft % 18 === 0 && timeLeft > 0) spawnBombs(2);
+  }, 1000);
+
+  animate();
+}
+
+function spawnBatch(count) {
+  const arena = $id('arena');
+  const aW = arena.offsetWidth, aH = arena.offsetHeight;
+  for (let i = 0; i < count; i++) {
+    const num = totalSpawned + 1;
+    totalSpawned++;
+    spawnToken(num, aW, aH);
+  }
+  highlightTarget();
+}
+
+function spawnToken(num, aW, aH) {
+  const sz = Math.floor(rnd(44, 62));
+  const x = rnd(sz, aW - sz * 2);
+  const y = rnd(sz, aH - sz * 2);
+  const c = COLORS[num % COLORS.length];
+  const el = document.createElement('div');
+  el.className = 'num-token';
+  el.textContent = num;
+  el.style.cssText = `width:${sz}px;height:${sz}px;font-size:${Math.floor(sz * 0.34)}px;background:${c.bg};border-color:${c.bd};color:${c.tx};left:${x}px;top:${y}px;`;
+  el.dataset.num = num;
+  el.addEventListener('click', () => handleClick(num, el));
+  $id('arena').appendChild(el);
+  tokens.push(el);
+  pos.push({ x, y, sz });
+  const spd = 0.6 + level * 0.1;
+  const angle = Math.random() * Math.PI * 2;
+  vx.push(Math.cos(angle) * spd);
+  vy.push(Math.sin(angle) * spd);
+}
+
+function spawnBombs(count) {
+  const candidates = tokens.filter(t => parseInt(t.dataset.num) !== nextTarget && t.dataset.bomb !== '1');
+  for (let i = 0; i < count && candidates.length; i++) {
+    const pick = candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0];
+    pick.classList.add('bomb');
+    pick.dataset.bomb = '1';
+  }
+}
+
+function highlightTarget() {
+  tokens.forEach(t => {
+    t.classList.remove('target-glow');
+    if (parseInt(t.dataset.num) === nextTarget) t.classList.add('target-glow');
+  });
+}
+
+function handleClick(num, el) {
+  if (!gameActive) return;
+
+  if (el.dataset.bomb === '1') {
+    combo = 1; streak = 0;
+    $id('combo').textContent = 'x1';
+    $id('combo-fill').style.width = '0%';
+    $id('combo-txt').textContent = '0/7';
+    $id('streak').textContent = '0';
+    setMsg('💣 BOOM! Bombaya bastın!');
+    el.style.background = 'rgba(255,90,90,0.35)';
+    clearTimeout(comboDecay);
+    setTimeout(() => { if (el.parentNode) removeToken(el); }, 320);
+    return;
+  }
+
+  if (num === nextTarget) {
+    const pts = 10 * combo;
+    score += pts;
+    combo = Math.min(combo + 1, 8);
+    maxCombo = Math.max(maxCombo, combo);
+    streak++;
+    maxStreak = Math.max(maxStreak, streak);
+
+    $id('score').textContent = score;
+    $id('combo').textContent = 'x' + combo;
+    $id('streak').textContent = streak;
+
+    const pct = Math.min((combo - 1) / 7 * 100, 100);
+    $id('combo-fill').style.width = pct + '%';
+    if (combo >= 6) $id('combo-fill').style.background = '#fa6c8a';
+    else if (combo >= 4) $id('combo-fill').style.background = '#ffb84d';
+    else $id('combo-fill').style.background = '#3dffc0';
+    $id('combo-txt').textContent = (combo - 1) + '/7';
+
+    if (combo >= 6) setMsg('🔥 ULTRA x' + combo + '!! +' + pts);
+    else if (combo >= 3) setMsg('⚡ x' + combo + ' combo! +' + pts);
+    else setMsg('+' + pts);
+
+    showPop(el, '+' + pts, combo >= 4 ? '#ffb84d' : '#3dffc0');
+
+    clearTimeout(comboDecay);
+    comboDecay = setTimeout(() => {
+      combo = 1;
+      $id('combo').textContent = 'x1';
+      $id('combo-fill').style.width = '0%';
+      $id('combo-fill').style.background = '#3dffc0';
+      $id('combo-txt').textContent = '0/7';
+    }, 2000);
+
+    removeToken(el);
+    nextTarget++;
+    $id('next-num').textContent = nextTarget;
+    if (nextTarget > totalSpawned) spawnBatch(TNUM);
+    else highlightTarget();
+
+  } else {
+    combo = 1; streak = 0;
+    $id('combo').textContent = 'x1';
+    $id('combo-fill').style.width = '0%';
+    $id('combo-fill').style.background = '#3dffc0';
+    $id('combo-txt').textContent = '0/7';
+    $id('streak').textContent = '0';
+    setMsg('✗ Yanlış! Sıradaki: ' + nextTarget);
+    el.style.transform = 'scale(0.78)';
+    setTimeout(() => { if (el.parentNode) el.style.transform = ''; }, 180);
+    clearTimeout(comboDecay);
+  }
+}
+
+function removeToken(el) {
+  const i = tokens.indexOf(el);
+  if (i === -1) return;
+  tokens.splice(i, 1); pos.splice(i, 1); vx.splice(i, 1); vy.splice(i, 1);
+  el.remove();
+}
+
+function showPop(ref, txt, color) {
+  const arena = $id('arena');
+  const p = document.createElement('div');
+  p.className = 'pop-anim';
+  p.textContent = txt;
+  p.style.color = color;
+  const r = ref.getBoundingClientRect();
+  const ar = arena.getBoundingClientRect();
+  p.style.left = (r.left - ar.left + r.width / 2 - 20) + 'px';
+  p.style.top = (r.top - ar.top - 8) + 'px';
+  arena.appendChild(p);
+  setTimeout(() => p.remove(), 700);
+}
+
+function usePower(type) {
+  if (!gameActive || powers[type] <= 0) return;
+  powers[type]--;
+  updatePowerUI();
+
+  if (type === 'freeze') {
+    frozen = true;
+    $id('freeze-overlay').style.display = 'block';
+    $id('freeze-timer').style.display = 'block';
+    let t = 3;
+    $id('freeze-timer').textContent = '❄ ' + t + 's';
+    clearInterval(freezeCountdown);
+    freezeCountdown = setInterval(() => {
+      t--;
+      if (t <= 0) {
+        clearInterval(freezeCountdown);
+        frozen = false;
+        $id('freeze-overlay').style.display = 'none';
+        $id('freeze-timer').style.display = 'none';
+        setMsg('');
+      } else {
+        $id('freeze-timer').textContent = '❄ ' + t + 's';
+      }
+    }, 1000);
+    setMsg('🧊 Donduruldu! 3 saniye!');
+
+  } else if (type === 'reveal') {
+    clearTimeout(revealTimer);
+    tokens.forEach(t => {
+      t.style.boxShadow = '';
+      if (parseInt(t.dataset.num) === nextTarget) {
+        t.style.boxShadow = '0 0 0 4px rgba(61,255,192,0.6), 0 0 18px rgba(61,255,192,0.35)';
+        revealTimer = setTimeout(() => { if (t.parentNode) t.style.boxShadow = ''; }, 3000);
+      }
+    });
+    setMsg('★ Sıradaki işaretlendi!');
+
+  } else if (type === 'bomb') {
+    let removed = 0;
+    [...tokens].forEach(t => {
+      if (parseInt(t.dataset.num) !== nextTarget && t.dataset.bomb !== '1' && removed < 3) {
+        showPop(t, 'PAT!', '#fa6c8a');
+        removeToken(t);
+        removed++;
+      }
+    });
+    setMsg('💥 ' + removed + ' yanlış sayı patlatıldı!');
+  }
+}
+
+function updatePowerUI() {
+  ['freeze', 'reveal', 'bomb'].forEach(p => {
+    $id('pu-' + p).disabled = powers[p] <= 0;
+    $id('pu-' + p + '-c').textContent = powers[p];
+  });
+}
+
+function flashLevel(txt) {
+  const el = $id('level-flash');
+  $id('level-flash-txt').textContent = txt;
+  el.style.opacity = '1';
+  setTimeout(() => { el.style.opacity = '0'; }, 900);
+}
+
+function animate() {
+  if (!gameActive) return;
+  if (!frozen) {
+    const arena = $id('arena');
+    const aW = arena.offsetWidth, aH = arena.offsetHeight;
+    for (let i = 0; i < tokens.length; i++) {
+      const sz = pos[i].sz;
+      pos[i].x += vx[i];
+      pos[i].y += vy[i];
+      if (pos[i].x <= 0 || pos[i].x >= aW - sz) vx[i] *= -1;
+      if (pos[i].y <= 0 || pos[i].y >= aH - sz) vy[i] *= -1;
+      pos[i].x = Math.max(0, Math.min(aW - sz, pos[i].x));
+      pos[i].y = Math.max(0, Math.min(aH - sz, pos[i].y));
+      tokens[i].style.left = Math.round(pos[i].x) + 'px';
+      tokens[i].style.top = Math.round(pos[i].y) + 'px';
+    }
+  }
+  window._raf = requestAnimationFrame(animate);
+}
+
+function setMsg(t) { $id('msg').textContent = t; }
+
+function endGame() {
+  clearInterval(mainTimer);
+  clearInterval(freezeCountdown);
+  cancelAnimationFrame(window._raf);
+  gameActive = false;
+
+  $id('screen-game').style.display = 'none';
+  $id('screen-result').style.display = 'block';
+
+  const title = $id('res-title');
+  const emoji = $id('res-emoji');
+  const sub = $id('res-sub');
+
+  if (score >= 700) {
+    emoji.textContent = '🏆';
+    title.style.color = '#ffb84d';
+    title.textContent = 'Efsane!';
+    sub.textContent = 'Sen gerçek bir numara avcısısın.';
+  } else if (score >= 400) {
+    emoji.textContent = '🔥';
+    title.style.color = '#3dffc0';
+    title.textContent = 'Harika!';
+    sub.textContent = 'Çok iyi! Tekrar denersen rekoru kırarısın.';
+  } else if (score >= 180) {
+    emoji.textContent = '⚡';
+    title.style.color = '#c5beff';
+    title.textContent = 'İyi İş!';
+    sub.textContent = 'Isiniyorsun. Comboya odaklan!';
+  } else {
+    emoji.textContent = '💀';
+    title.style.color = '#ff5a5a';
+    title.textContent = 'Bitti!';
+    sub.textContent = 'Herkes bir yerden başlar. Tekrar dene!';
+  }
+
+  $id('r-score').textContent = score;
+  $id('r-combo').textContent = 'x' + maxCombo;
+  $id('r-streak').textContent = maxStreak;
+}
+</script>
+</body>
+</html>
