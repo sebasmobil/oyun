@@ -127,9 +127,22 @@ body{display:flex;flex-direction:column;align-items:center;padding:1.4rem 1rem 3
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 .th{animation:pulse 1s infinite;}
 footer{margin-top:16px;font-size:11px;color:var(--tx3);letter-spacing:.06em;text-align:center;}
+
+/* TOAST */
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-20px);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:11px 24px 11px 18px;border-radius:10px;box-shadow:0 6px 28px rgba(0,0,0,.45);opacity:0;pointer-events:none;z-index:400;white-space:nowrap;letter-spacing:.02em;transition:opacity .25s ease,transform .25s ease;display:flex;align-items:center;gap:10px;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.type-check{background:#c0180c;color:#fff;}
+#toast.type-warn{background:#b06000;color:#fff;}
+#toast.type-info{background:#1a7ab0;color:#fff;}
+#toast .t-icon{font-size:19px;line-height:1;}
+#toast .t-bar{position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 10px 10px;background:rgba(255,255,255,.4);transform-origin:left;}
+@keyframes shrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 </style>
 </head>
 <body>
+
+<!-- TOAST -->
+<div id="toast"><span class="t-icon"></span><span class="t-msg"></span><span class="t-bar"></span></div>
 
 <!-- HEADER -->
 <div class="hdr">
@@ -253,7 +266,28 @@ function playTone(type, freq, dur, vol=0.18){
 }
 function playMove(){ playTone('triangle',440,.12,.15); }
 function playCapture(){ playTone('sawtooth',280,.18,.2); setTimeout(()=>playTone('sawtooth',200,.12,.12),80); }
-function playCheck(){ playTone('square',660,.08,.13); setTimeout(()=>playTone('square',880,.1,.1),90); }
+function playCheck(){
+  if(!soundOn) return;
+  try{
+    const ctx=getAC(), t=ctx.currentTime;
+    // Alarm: üç yükselen vuruş + titreşim etkisi
+    [[0, 520, 'square', .22],
+     [0, 780, 'sawtooth', .10],
+     [.13, 620, 'square', .20],
+     [.13, 930, 'sawtooth', .09],
+     [.26, 740, 'square', .24],
+     [.26,1100, 'sawtooth', .10]
+    ].forEach(([delay, freq, type, vol])=>{
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type=type; o.frequency.setValueAtTime(freq, t+delay);
+      o.frequency.linearRampToValueAtTime(freq*1.04, t+delay+.06);
+      g.gain.setValueAtTime(vol, t+delay);
+      g.gain.exponentialRampToValueAtTime(0.001, t+delay+.18);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t+delay); o.stop(t+delay+.2);
+    });
+  }catch(e){}
+}
 function playMate(){ [0,150,300].forEach((d,i)=>setTimeout(()=>playTone('sine',[330,220,110][i],.4,.2),d)); }
 function playSelect(){ playTone('sine',520,.06,.08); }
 function playCastle(){ playTone('triangle',392,.1,.12); setTimeout(()=>playTone('triangle',523,.12,.1),100); }
@@ -410,8 +444,8 @@ function chkSt(c,wasCap,wasCas){
     if(chk){playMate();showOv('Şah Mat!',(c==='w'?'Siyah':'Beyaz')+' kazandı! 🎉');}
     else{showOv('Pat!','Beraberlik — hamle kalmadı.');}
   }else{
-    if(chk)playCheck();
-    else if(wasCas)playCastle();
+    if(chk){playCheck();showToast((c==='w'?'Beyaz':'Siyah')+' Şah Altında!','♚','check');}
+    else if(wasCas){playCastle();showToast('Rok yapıldı','♜','info',1800);}
     else if(wasCap)playCapture();
     else playMove();
     turn=c;setSt(chk?(c==='w'?'Beyaz':'Siyah')+' şah altında! ⚠':null);
@@ -420,6 +454,21 @@ function chkSt(c,wasCap,wasCas){
 
 function showOv(t,m){document.getElementById('ot').textContent=t;document.getElementById('om').textContent=m;document.getElementById('ov').classList.add('show');}
 function closeOv(){document.getElementById('ov').classList.remove('show');init();}
+
+/* ───── TOAST ───── */
+let toastTimer=null;
+function showToast(msg, icon='⚠', type='check', dur=2800){
+  const el=document.getElementById('toast');
+  const bar=el.querySelector('.t-bar');
+  el.querySelector('.t-icon').textContent=icon;
+  el.querySelector('.t-msg').textContent=msg;
+  el.className='show type-'+type;
+  bar.style.animation='none';
+  bar.offsetHeight; // reflow
+  bar.style.animation='shrink '+dur+'ms linear forwards';
+  if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'), dur);
+}
 
 /* ───── NOTATION & LOG ───── */
 function notn(r,f,nr,nf,m){
