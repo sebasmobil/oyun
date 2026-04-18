@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Satranç v1.2</title>
+<title>Satranç v1.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 [data-theme="dark"]{--bg:#0f0e0c;--sur:#1a1916;--sur2:#231f1a;--brd:rgba(255,255,255,.09);--brd2:rgba(255,255,255,.18);--gold:#c9a84c;--gold2:#e8c97a;--tx:#e8dcc8;--tx2:#7a7060;--tx3:#3a342a;--bb:#1f1c18;--ob:rgba(0,0,0,.82);}
@@ -146,7 +146,7 @@ footer{margin-top:16px;font-size:11px;color:var(--tx3);letter-spacing:.06em;text
 
 <!-- HEADER -->
 <div class="hdr">
-  <div class="logo">♔ Satranç <span style="font-size:11px;font-family:'DM Sans',sans-serif;font-weight:400;color:var(--tx3);letter-spacing:.06em;vertical-align:middle;">v1.2</span></div>
+  <div class="logo">♔ Satranç <span style="font-size:11px;font-family:'DM Sans',sans-serif;font-weight:400;color:var(--tx3);letter-spacing:.06em;vertical-align:middle;">v1.3</span></div>
   <div class="hdr-r">
     <button class="icn" id="btn-sound" title="Ses">🔊</button>
     <button class="icn" id="btn-theme" title="Tema">☀</button>
@@ -224,7 +224,7 @@ footer{margin-top:16px;font-size:11px;color:var(--tx3);letter-spacing:.06em;text
 
 <!-- MOVE LOG -->
 <div id="log"></div>
-<footer>Rok · En passant · Terfi · Tüm kurallar geçerli · v1.2</footer>
+<footer>Rok · En passant · Terfi · Tüm kurallar geçerli · v1.3</footer>
 
 <!-- CONFIRM DIALOG -->
 <div id="conf">
@@ -530,29 +530,79 @@ function hClick(r,f){
     }
     sel=null;leg=[];
   }
-  if(p&&col(p)==='w'){sel=[r,f];leg=getLeg(r,f);playSelect();}
+  if(p&&col(p)==='w'){
+    sel=[r,f];leg=getLeg(r,f);playSelect();
+    // Show castling hint if king can castle
+    if(p==='wK'){
+      const canK=leg.some(m=>m.cas==='K'),canQ=leg.some(m=>m.cas==='Q');
+      if(canK&&canQ)showToast('Kısa veya uzun rok yapabilirsiniz','♜','info',2200);
+      else if(canK)showToast('Kısa rok yapabilirsiniz (g1 karesi)','♜','info',2200);
+      else if(canQ)showToast('Uzun rok yapabilirsiniz (c1 karesi)','♜','info',2200);
+    }
+  }
   render();
 }
 
 /* ───── AI MOVE (Web Worker) ───── */
+let aiTimer=null;
+function applyAiMove(mv){
+  if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
+  if(paused||over||!thinking){thinking=false;render();return;}
+  if(mv){
+    const cap=at(mv.nr,mv.nf);if(cap)cB.push(cap[1]);if(mv.ep)cB.push('P');
+    hist.push({board:board.map(x=>[...x]),ep,cast:{...cast}});
+    const n=notn2(mv);
+    doMv2(mv);lf=[mv.r,mv.f];lt=[mv.nr,mv.nf];
+    addLog(n,'b');updCap();
+    const wasCap=!!cap||!!mv.ep,wasCas=!!mv.cas;
+    chkSt('w',wasCap,wasCas);
+  } else {
+    // worker returned null (no moves) - shouldn't happen but handle gracefully
+    turn='w';
+  }
+  thinking=false;render();
+}
+function getFallbackMove(){
+  // simple fallback: pick first legal move for black (no deep search)
+  for(let r=0;r<8;r++)for(let f=0;f<8;f++){
+    if(col(at(r,f))==='b'){
+      const mvs=getLeg(r,f);
+      if(mvs.length){
+        // prefer captures
+        const caps=mvs.filter(m=>at(m.r,m.f));
+        const chosen=caps.length?caps[0]:mvs[0];
+        return {r,f,nr:chosen.r,nf:chosen.f,cas:chosen.cas||null,ep:chosen.ep||0,dp:chosen.dp||0};
+      }
+    }
+  }
+  return null;
+}
 function aiMv(){
   if(paused){setTimeout(()=>{if(!paused&&!over)aiMv();},300);return;}
   thinking=true;setSt();render();
   const w=getWorker();
-  w.onmessage=function(e){
-    if(paused||over){thinking=false;render();return;}
-    const mv=e.data;
-    if(mv){
-      // new worker returns {r,f,nr,nf,cap,ep,cas,dp}
-      const cap=at(mv.nr,mv.nf);if(cap)cB.push(cap[1]);if(mv.ep)cB.push('P');
-      hist.push({board:board.map(x=>[...x]),ep,cast:{...cast}});
-      const n=notn2(mv);
-      doMv2(mv);lf=[mv.r,mv.f];lt=[mv.nr,mv.nf];
-      addLog(n,'b');updCap();
-      const wasCap=!!cap||!!mv.ep,wasCas=!!mv.cas;
-      chkSt('w',wasCap,wasCas);
+  if(!w){
+    // Worker not available - use fallback
+    setTimeout(()=>applyAiMove(getFallbackMove()),100);
+    return;
+  }
+  // Hard timeout: if worker takes too long, use fallback
+  const timeLimits=[800,1500,3000];
+  aiTimer=setTimeout(()=>{
+    aiTimer=null;
+    if(thinking&&!paused&&!over){
+      // Kill and recreate worker, use fallback move now
+      try{w.terminate();}catch(e){}
+      aiWorker=null;
+      applyAiMove(getFallbackMove());
     }
-    thinking=false;render();
+  }, timeLimits[diff-1]);
+  w.onmessage=function(e){applyAiMove(e.data);};
+  w.onerror=function(){
+    if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
+    try{w.terminate();}catch(e){}
+    aiWorker=null;
+    applyAiMove(getFallbackMove());
   };
   w.postMessage({board:board.map(r=>[...r]),ep,cast:{...cast},diff});
 }
