@@ -686,9 +686,11 @@ function startGame(){
   spawnBatch(DS.TNUM||TNUM);
 
   const lvlInt=Math.max(8,Math.floor((MS.dur||60)/5));
+  let elapsed=0; // süresiz mod için geçen saniye sayacı
 
   mainTimer=setInterval(()=>{
     if(!gameActive)return;
+    elapsed++;
     if(MS.dur){
       timeLeft--;
       $id('tval').textContent=timeLeft;
@@ -697,15 +699,16 @@ function startGame(){
       else $id('tval').style.color='';
       if(timeLeft<=0){endGame();return;}
     }
-    if(timeLeft%lvlInt===0&&(MS.dur?timeLeft>0:true)){
+    // Seviye: zamanlı modda timeLeft'e göre, süresiz modda elapsed'a göre
+    const tick=MS.dur?timeLeft:elapsed;
+    if(tick%lvlInt===0&&tick>0){
       level++;$id('hud-extra').textContent=level;
       const boost=slowed?1.05:(DS.lvlMult*MS.speedMult);
       tokens.forEach((_,i)=>{vx[i]*=(1+boost);vy[i]*=(1+boost);});
       flashLevel('SEVİYE '+level);sfxLevel();
     }
-    if(timeLeft%16===0&&(MS.dur?timeLeft>0:true))spawnBombs(DS.bombMin);
-    // Hard mode: ghost tokens
-    if(gameMode==='hard'&&timeLeft%20===0&&timeLeft>0)spawnGhosts(1);
+    if(elapsed%16===0)spawnBombs(DS.bombMin);
+    if(gameMode==='hard'&&elapsed%20===0)spawnGhosts(1);
   },1000);
 
   animate();
