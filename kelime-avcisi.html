@@ -150,19 +150,19 @@ header h1{
 header .subtitle{font-size:1.05rem;color:var(--sub);font-weight:700;margin-top:2px;opacity:.85;transition:color var(--tr);}
 
 /* ── STATS ───────────────────────────────────────────── */
-.stats{display:flex;gap:10px;justify-content:center;margin-bottom:16px;flex-wrap:wrap;}
+.stats{display:flex;gap:8px;justify-content:center;margin-bottom:16px;flex-wrap:nowrap;}
 .stat-pill{
-  background:var(--pill);border-radius:999px;padding:8px 18px;
-  font-size:.95rem;font-weight:800;display:flex;align-items:center;gap:6px;
+  background:var(--pill);border-radius:999px;padding:6px 12px;
+  font-size:.82rem;font-weight:800;display:flex;align-items:center;gap:4px;
   box-shadow:0 4px 14px var(--sh);color:var(--pill-t);
-  border:2.5px solid transparent;
+  border:2.5px solid transparent;white-space:nowrap;
   transition:transform .15s, background var(--tr), color var(--tr), border-color var(--tr);
 }
 .stat-pill.score{border-color:#FFD54F;}
 .stat-pill.level{border-color:#66BB6A;}
 .stat-pill.time {border-color:#EF5350;}
 .stat-pill:hover{transform:scale(1.04);}
-.stat-pill .icon{font-size:1.2rem;}
+.stat-pill .icon{font-size:1rem;}
 
 /* ── CARD ────────────────────────────────────────────── */
 .card{
@@ -354,6 +354,9 @@ body.dark .ls-hard   .ls-badge{background:#2E0D4A;color:#CE93D8;}
     <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">
       🌙<span class="tooltip">Tema</span>
     </button>
+    <button class="icon-btn" id="newGameBtn" onclick="confirmNewGame()" style="display:none;border-color:#EF5350;color:#EF5350;">
+      🆕<span class="tooltip">Yeni Oyun</span>
+    </button>
   </div>
 
   <!-- AYARLAR PANELİ -->
@@ -419,7 +422,7 @@ body.dark .ls-hard   .ls-badge{background:#2E0D4A;color:#CE93D8;}
     <div class="subtitle">Harfleri birleştir, kelimeyi bul! 🎯</div>
   </header>
 
-  <div class="stats">
+  <div class="stats" id="statsBar" style="display:none;">
     <div class="stat-pill score"><span class="icon">⭐</span><span id="scoreDisplay">0</span> puan</div>
     <div class="stat-pill level"><span class="icon">🏅</span> Seviye <span id="levelDisplay">1</span></div>
     <div class="stat-pill time" id="timePill"><span class="icon">⏰</span><span id="timerDisplay">90</span>s</div>
@@ -461,11 +464,6 @@ body.dark .ls-hard   .ls-badge{background:#2E0D4A;color:#CE93D8;}
   </div>
 
   <div id="gameArea" style="display:none;">
-    <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
-      <button onclick="goToLevelSelect()" style="background:var(--card);border:2px solid var(--card-b);border-radius:12px;padding:6px 14px;font-size:.82rem;font-weight:800;font-family:'Nunito',sans-serif;color:var(--txt2);cursor:pointer;box-shadow:0 2px 8px var(--sh);">
-        🎯 Seviye Değiştir
-      </button>
-    </div>
     <div class="card">
       <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
       <div class="progress-label" id="progressLabel">0 / 0 kelime</div>
@@ -518,6 +516,25 @@ body.dark .ls-hard   .ls-badge{background:#2E0D4A;color:#CE93D8;}
   <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
     <button id="nextLevelBtn" onclick="goNextLevel()" style="background:#43A047;color:white;border:none;border-radius:14px;padding:12px 22px;font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;box-shadow:0 4px 0 #2E7D32;">▶ Sonraki Seviye</button>
     <button onclick="goToLevelSelect()" style="background:#7E57C2;color:white;border:none;border-radius:14px;padding:12px 22px;font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;box-shadow:0 4px 0 #4527A0;">🎯 Seviye Seç</button>
+  </div>
+</div>
+
+<!-- YENİ OYUN ONAY MODALI -->
+<div id="newGameModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:998;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--card);border-radius:24px;padding:28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.35);border:2.5px solid var(--card-b);animation:popIn .25s ease;">
+    <div style="font-size:3rem;margin-bottom:10px;">🆕</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:1.5rem;color:var(--h1);margin-bottom:8px;">Yeni Oyun?</div>
+    <div style="font-size:.9rem;font-weight:700;color:var(--txt2);margin-bottom:22px;line-height:1.5;">
+      Mevcut oyun ve puanın sıfırlanacak.<br>Hangi seviyeden başlamak istersin?
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+      <button onclick="startNewGame(0)" style="background:#66BB6A;color:white;border:none;border-radius:14px;padding:11px;font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;box-shadow:0 3px 0 #388E3C;">🌱 Seviye 1 — Kolay</button>
+      <button onclick="startNewGame(1)" style="background:#42A5F5;color:white;border:none;border-radius:14px;padding:11px;font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;box-shadow:0 3px 0 #1976D2;">🌿 Seviye 2 — Orta</button>
+      <button onclick="startNewGame(2)" style="background:#AB47BC;color:white;border:none;border-radius:14px;padding:11px;font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;box-shadow:0 3px 0 #7B1FA2;">🌳 Seviye 3 — Zor</button>
+    </div>
+    <button onclick="cancelNewGame()" style="width:100%;background:var(--card);border:2.5px solid var(--card-b);border-radius:14px;padding:10px;font-family:'Fredoka One',cursive;font-size:.95rem;color:var(--txt2);cursor:pointer;">
+      ❌ Vazgeç
+    </button>
   </div>
 </div>
 
@@ -1134,6 +1151,41 @@ function restartGame() {
   startLevel(0);
 }
 
+function confirmNewGame() {
+  clearInterval(G.timer);
+  playSound('click');
+  const modal = document.getElementById('newGameModal');
+  modal.style.display = 'flex';
+}
+
+function cancelNewGame() {
+  document.getElementById('newGameModal').style.display = 'none';
+  // zamanlayıcıyı devam ettir
+  if (!settings.infinite && G.timeLeft > 0 && document.getElementById('gameArea').style.display !== 'none') {
+    clearInterval(G.timer);
+    G.timer = setInterval(tickTimer, 1000);
+  }
+  playSound('click');
+}
+
+function startNewGame(lvl) {
+  document.getElementById('newGameModal').style.display = 'none';
+  clearInterval(G.timer);
+  G = {level:0, score:0, word:null, letters:[], used:[], answer:[], found:[],
+       timeLeft: settings.infinite ? Infinity : settings.baseTime,
+       timer:null, levelWords:[], wordIdx:0, totalFound:0};
+  document.getElementById('gameover').style.display    = 'none';
+  document.getElementById('levelSelect').style.display = 'none';
+  document.getElementById('gameArea').style.display    = 'block';
+  document.getElementById('statsBar').style.display    = 'flex';
+  document.getElementById('newGameBtn').style.display  = 'flex';
+  document.getElementById('foundWords').innerHTML      = '<span class="empty-found">Henüz kelime bulamadın...</span>';
+  document.getElementById('timePill').classList.remove('danger');
+  updateStats();
+  playSound('click');
+  startLevel(lvl);
+}
+
 /* ── Seviye seçim ekranı ────────────────────────────── */
 function goToLevelSelect() {
   clearInterval(G.timer);
@@ -1141,6 +1193,8 @@ function goToLevelSelect() {
   document.getElementById('gameArea').style.display   = 'none';
   document.getElementById('gameover').style.display   = 'none';
   document.getElementById('levelSelect').style.display = 'block';
+  document.getElementById('statsBar').style.display   = 'none';
+  document.getElementById('newGameBtn').style.display = 'none';
   updateLevelSelectBadges();
   playSound('click');
 }
@@ -1158,6 +1212,8 @@ function updateLevelSelectBadges() {
 function chooseLevelAndStart(lvl) {
   document.getElementById('levelSelect').style.display = 'none';
   document.getElementById('gameArea').style.display    = 'block';
+  document.getElementById('statsBar').style.display    = 'flex';
+  document.getElementById('newGameBtn').style.display  = 'flex';
   document.getElementById('foundWords').innerHTML      = '<span class="empty-found">Henüz kelime bulamadın...</span>';
   document.getElementById('timePill').classList.remove('danger');
   G.score = 0; G.totalFound = 0; G.found = [];
