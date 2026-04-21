@@ -285,6 +285,36 @@ body.dark .lc7{background:#4A1A08;color:#FFAB91;box-shadow:0 4px 0 #2A0E04;}
 .found-tag{background:linear-gradient(135deg,var(--tag-a),var(--tag-b));border:2px solid var(--tag-br);border-radius:10px;padding:5px 13px;font-weight:800;font-size:.9rem;color:var(--tag-t);animation:popIn .25s ease;transition:background var(--tr),color var(--tr),border-color var(--tr);}
 .empty-found{font-size:.9rem;color:var(--empty);font-style:italic;font-weight:600;}
 
+/* ── SEVİYE SEÇİM EKRANI ─────────────────────────────── */
+#levelSelect{display:none;text-align:center;padding:20px 10px;}
+#levelSelect h2{font-family:'Fredoka One',cursive;font-size:2rem;color:var(--h1);margin-bottom:6px;transition:color var(--tr);}
+#levelSelect .ls-sub{font-size:.95rem;color:var(--txt2);font-weight:700;margin-bottom:24px;}
+.ls-cards{display:flex;flex-direction:column;gap:14px;}
+.ls-card{
+  background:var(--card);border-radius:22px;padding:18px 22px;
+  box-shadow:0 6px 20px var(--sh);border:3px solid transparent;
+  cursor:pointer;text-align:left;
+  transition:transform .15s, box-shadow .15s, border-color .2s, background var(--tr);
+  display:flex;align-items:center;gap:16px;
+}
+.ls-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px var(--sh);}
+.ls-card:active{transform:scale(.97);}
+.ls-card.ls-easy  {border-color:#66BB6A;}
+.ls-card.ls-medium{border-color:#42A5F5;}
+.ls-card.ls-hard  {border-color:#AB47BC;}
+.ls-icon{font-size:2.6rem;line-height:1;}
+.ls-info{flex:1;}
+.ls-title{font-family:'Fredoka One',cursive;font-size:1.25rem;color:var(--h1);transition:color var(--tr);}
+.ls-desc{font-size:.83rem;font-weight:700;color:var(--txt2);margin-top:3px;transition:color var(--tr);}
+.ls-badge{font-size:.78rem;font-weight:800;padding:4px 12px;border-radius:999px;white-space:nowrap;}
+.ls-easy   .ls-badge{background:#E8F5E9;color:#2E7D32;}
+.ls-medium .ls-badge{background:#E3F2FD;color:#1565C0;}
+.ls-hard   .ls-badge{background:#F3E5F5;color:#6A1B9A;}
+body.dark .ls-easy   .ls-badge{background:#1B4D1E;color:#A5D6A7;}
+body.dark .ls-medium .ls-badge{background:#0D2F50;color:#90CAF9;}
+body.dark .ls-hard   .ls-badge{background:#2E0D4A;color:#CE93D8;}
+.ls-seen{font-size:.75rem;font-weight:700;color:var(--txt2);margin-top:4px;transition:color var(--tr);}
+
 /* ── OYUN BİTTİ ──────────────────────────────────────── */
 #gameover{display:none;text-align:center;padding:30px 20px;}
 #gameover .go-emoji{font-size:5rem;animation:spin .8s ease;}
@@ -395,7 +425,47 @@ body.dark .lc7{background:#4A1A08;color:#FFAB91;box-shadow:0 4px 0 #2A0E04;}
     <div class="stat-pill time" id="timePill"><span class="icon">⏰</span><span id="timerDisplay">90</span>s</div>
   </div>
 
-  <div id="gameArea">
+  <!-- SEVİYE SEÇİM EKRANI -->
+  <div id="levelSelect" class="card">
+    <h2>🎯 Seviye Seç</h2>
+    <div class="ls-sub">Hangi seviyeden oynamak istersin?</div>
+    <div class="ls-cards">
+      <div class="ls-card ls-easy" onclick="chooseLevelAndStart(0)">
+        <div class="ls-icon">🌱</div>
+        <div class="ls-info">
+          <div class="ls-title">Seviye 1 — Kolay</div>
+          <div class="ls-desc">2-4 harfli kısa kelimeler</div>
+          <div class="ls-seen" id="lsSeen0"></div>
+        </div>
+        <div class="ls-badge">Başlangıç</div>
+      </div>
+      <div class="ls-card ls-medium" onclick="chooseLevelAndStart(1)">
+        <div class="ls-icon">🌿</div>
+        <div class="ls-info">
+          <div class="ls-title">Seviye 2 — Orta</div>
+          <div class="ls-desc">4-6 harfli orta kelimeler</div>
+          <div class="ls-seen" id="lsSeen1"></div>
+        </div>
+        <div class="ls-badge">Orta</div>
+      </div>
+      <div class="ls-card ls-hard" onclick="chooseLevelAndStart(2)">
+        <div class="ls-icon">🌳</div>
+        <div class="ls-info">
+          <div class="ls-title">Seviye 3 — Zor</div>
+          <div class="ls-desc">5+ harfli uzun kelimeler</div>
+          <div class="ls-seen" id="lsSeen2"></div>
+        </div>
+        <div class="ls-badge">Zor</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="gameArea" style="display:none;">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+      <button onclick="goToLevelSelect()" style="background:var(--card);border:2px solid var(--card-b);border-radius:12px;padding:6px 14px;font-size:.82rem;font-weight:800;font-family:'Nunito',sans-serif;color:var(--txt2);cursor:pointer;box-shadow:0 2px 8px var(--sh);">
+        🎯 Seviye Değiştir
+      </button>
+    </div>
     <div class="card">
       <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
       <div class="progress-label" id="progressLabel">0 / 0 kelime</div>
@@ -435,13 +505,20 @@ body.dark .lc7{background:#4A1A08;color:#FFAB91;box-shadow:0 4px 0 #2A0E04;}
     <h2>Süper Oynadın!</h2>
     <div class="go-score" id="goScore"></div>
     <div style="margin-bottom:20px;font-size:1rem;color:var(--txt2);font-weight:700;" id="goWords"></div>
-    <button class="btn btn-restart" onclick="restartGame()">🔄 Tekrar Oyna</button>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-restart" onclick="restartGame()">🔄 Tekrar Oyna</button>
+      <button class="btn" onclick="goToLevelSelect()" style="background:#7E57C2;color:white;box-shadow:0 5px 0 #4527A0;">🎯 Seviye Seç</button>
+    </div>
   </div>
 </div>
 
 <div class="levelup-banner" id="levelupBanner">
-  <h3>🚀 Seviye Atladın!</h3>
-  <p id="levelupText">Seviye 2'ye hoş geldin!</p>
+  <h3>🚀 Seviye Tamamlandı!</h3>
+  <p id="levelupText" style="margin-bottom:16px;"></p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <button id="nextLevelBtn" onclick="goNextLevel()" style="background:#43A047;color:white;border:none;border-radius:14px;padding:12px 22px;font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;box-shadow:0 4px 0 #2E7D32;">▶ Sonraki Seviye</button>
+    <button onclick="goToLevelSelect()" style="background:#7E57C2;color:white;border:none;border-radius:14px;padding:12px 22px;font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;box-shadow:0 4px 0 #4527A0;">🎯 Seviye Seç</button>
+  </div>
 </div>
 
 <script>
@@ -582,7 +659,6 @@ const WORDS = [
     {word:'YOL',  clue:'Araçların ve insanların gittiği güzergah 🛣️'},
     {word:'YÜZ',  clue:'Alın, burun, göz ve ağzın bulunduğu kısım 😊'},
     {word:'ANNE', clue:'Bizi doğuran, en çok seven kişi 👩'},
-    {word:'BABA', clue:'Ailenin erkeği, babamız 👨'},
     {word:'DEDE', clue:'Babanın ya da annenin babası 👴'},
     {word:'NINE', clue:'Babanın ya da annenin annesi 👵'},
     {word:'BEBEK',clue:'Yeni doğmuş, çok küçük insan 👶'},
@@ -673,7 +749,7 @@ const WORDS = [
     {word:'İNEK',   clue:'Süt veren, çiftlikte yaşayan hayvan 🐄'},
     {word:'KEÇİ', clue:'Boynuzu olan, dağda yaşayan hayvan 🐐'},
     {word:'KOYUN',  clue:'Yünü olan, meler meler bağıran hayvan 🐑'},
-    {word:'HOROZ',  clue:'Sabah öten, ibikli erkek tavuk 🐓'},
+    {word:'HOROZ',  clue:'Sabah öten, ibikli ve renkli tüylü kuş 🐓'},
     {word:'GÜVERCİN', clue:'Barışın simgesi, beyaz tüylü kuş 🕊️'},
     {word:'PAPAĞAN', clue:'Konuşmayı taklit eden, renkli tüylü kuş 🦜'},
     {word:'PENGUEN', clue:'Yüzebilen ama uçamayan, siyah beyaz kuş 🐧'},
@@ -722,7 +798,7 @@ const WORDS = [
     {word:'ÖZGÜRLÜK',  clue:'İstediğin gibi yaşayabilme hakkı 🕊️'},
     {word:'PAYLAŞIM',  clue:'Bir şeyi başkalarıyla bölüşme 🤝'},
     {word:'SAYGI',     clue:'Büyüklere ve diğer insanlara gösterilen değer 🙏'},
-    {word:'SINCAP',    clue:'Fındık seven, ağaçta yaşayan küçük hayvan 🐿️'},
+    {word:'SİNCAP',    clue:'Fındık seven, ağaçta yaşayan küçük hayvan 🐿️'},
     {word:'ŞARKICI',   clue:'Sahneye çıkan, şarkı söyleyen kişi 🎤'},
     {word:'ŞELALE',    clue:'Yüksekten dökülen, uğultulu su kütlesi 💦'},
     {word:'TATİL',     clue:'Okul ya da işin olmadığı dinlenme günleri 🏖️'},
@@ -883,10 +959,7 @@ function startLevel(lvl) {
 function loadWord() {
   if (G.wordIdx >= G.levelWords.length) {
     clearInterval(G.timer);
-    if (G.level < WORDS.length - 1) {
-      showLevelUp();
-      setTimeout(()=>{ hideLevelUp(); startLevel(G.level+1); }, 2300);
-    } else { endGame(); }
+    showLevelUp();
     return;
   }
   G.word    = G.levelWords[G.wordIdx];
@@ -1061,12 +1134,60 @@ function restartGame() {
   startLevel(0);
 }
 
+/* ── Seviye seçim ekranı ────────────────────────────── */
+function goToLevelSelect() {
+  clearInterval(G.timer);
+  hideLevelUp();
+  document.getElementById('gameArea').style.display   = 'none';
+  document.getElementById('gameover').style.display   = 'none';
+  document.getElementById('levelSelect').style.display = 'block';
+  updateLevelSelectBadges();
+  playSound('click');
+}
+
+function updateLevelSelectBadges() {
+  const seen = loadSeen();
+  [0,1,2].forEach(lvl => {
+    const total  = WORDS_CLEAN[lvl].length;
+    const done   = seen[lvl].length;
+    const el     = document.getElementById(`lsSeen${lvl}`);
+    if (el) el.textContent = `📖 ${done} / ${total} kelime görüldü`;
+  });
+}
+
+function chooseLevelAndStart(lvl) {
+  document.getElementById('levelSelect').style.display = 'none';
+  document.getElementById('gameArea').style.display    = 'block';
+  document.getElementById('foundWords').innerHTML      = '<span class="empty-found">Henüz kelime bulamadın...</span>';
+  document.getElementById('timePill').classList.remove('danger');
+  G.score = 0; G.totalFound = 0; G.found = [];
+  updateStats();
+  playSound('click');
+  startLevel(lvl);
+}
+
 /* ── Seviye atlama ──────────────────────────────────── */
 function showLevelUp() {
-  document.getElementById('levelupText').textContent = `Seviye ${G.level+2}'ye hoş geldin! 🎊`;
+  const hasNext = G.level < WORDS_CLEAN.length - 1;
+  document.getElementById('levelupText').textContent =
+    hasNext ? `Tebrikler! Seviye ${G.level + 1} bitti 🎊` : 'Tüm seviyeleri bitirdin! 🏆';
+  const nextBtn = document.getElementById('nextLevelBtn');
+  if (nextBtn) nextBtn.style.display = hasNext ? 'inline-block' : 'none';
   document.getElementById('levelupBanner').style.display = 'block';
-  playSound('levelup'); spawnConfetti(50);
+  playSound('levelup');
+  spawnConfetti(50);
 }
+
+function goNextLevel() {
+  hideLevelUp();
+  if (G.level < WORDS_CLEAN.length - 1) {
+    document.getElementById('foundWords').innerHTML = '<span class="empty-found">Henüz kelime bulamadın...</span>';
+    startLevel(G.level + 1);
+  } else {
+    endGame();
+  }
+}
+
 function hideLevelUp() { document.getElementById('levelupBanner').style.display = 'none'; }
 
 /* ── Konfeti ────────────────────────────────────────── */
@@ -1104,9 +1225,8 @@ window.addEventListener('DOMContentLoaded', () => {
     renderAnswer();
     playSound('clear');
   });
-  // Oyunu başlat
-  startLevel(0);
-
+  // Seviye seçim ekranıyla başla
+  goToLevelSelect();
 });
 </script>
 </body>
