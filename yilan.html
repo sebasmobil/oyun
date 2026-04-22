@@ -1,11 +1,43 @@
 <!DOCTYPE html>
-<!-- Snake v1.0 -->
+<!--
+  Yılan Oyunu - Snake Game
+  Copyright (C) 2026 sebasmobil
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published
+  by the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program. If not, see <https://www.gnu.org/licenses/>.
+-->
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 <title>Yilan Oyunu</title>
 <style>
+/* ── INFO BAR ── */
+#infobar{
+  flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  padding:3px 12px 2px;
+  font-size:9px;letter-spacing:0.4px;
+  opacity:0.55;
+  white-space:nowrap;overflow:hidden;
+  gap:6px;
+}
+#infobar a{
+  color:inherit;
+  text-decoration:none;
+}
+#infobar span{opacity:0.4;}
+
 *{box-sizing:border-box;margin:0;padding:0;}
 html{height:100%;}
 body{
@@ -28,7 +60,6 @@ body{
 #lvlbadge{display:flex;flex-direction:column;align-items:center;border-radius:10px;padding:3px 12px;border:1px solid #3a3a3a;}
 #lvltxt{font-size:9px;letter-spacing:1px;opacity:0.45;}
 #lvlnum{font-size:15px;font-weight:700;color:#3fb950;line-height:1.1;}
-#verlbl{font-size:8px;letter-spacing:1px;opacity:0.35;margin-top:1px;}
 
 /* ── ACTION BAR ── */
 #actionbar{
@@ -156,9 +187,16 @@ canvas{display:block;}
 </head>
 <body>
 
+<div id="infobar">
+  <span>Pro 2.0</span>
+  <span>|</span>
+  <span>©sebasmobil 2026</span>
+  <span>|</span>
+  <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" id="agpllink">AGPL v3.0</a>
+</div>
 <div id="topbar">
   <div class="hb"><span class="hl">PUAN</span><span class="hv" id="score">0</span></div>
-  <div id="lvlbadge"><div id="lvltxt">SEVİYE</div><div id="lvlnum">1</div><div id="verlbl">v1.0</div></div>
+  <div id="lvlbadge"><div id="lvltxt">SEVİYE</div><div id="lvlnum">1</div></div>
   <div class="hb r"><span class="hl">EN İYİ</span><span class="hv" id="best">0</span></div>
 </div>
 
@@ -267,6 +305,8 @@ function applyTheme(name) {
   var mbts=document.querySelectorAll('.mbt:not(.ok)');
   for(var i=0;i<mbts.length;i++){mbts[i].style.color=t.mText;mbts[i].style.borderColor=t.mBorder;}
   document.getElementById('speedlbl').style.color=t.textDim;
+  document.getElementById('infobar').style.color=t.text;
+  document.getElementById('agpllink').style.color=t.text;
   updateDots();
   redrawState();
 }
