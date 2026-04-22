@@ -1,3 +1,20 @@
+<!--
+  Numara Kaçışı - Pro 2.0
+  Copyright (C) 2026 sebasmobil
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published
+  by the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program. If not, see <https://www.gnu.org/licenses/>.
+-->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -35,6 +52,24 @@ body{
   transition:background 0.3s,color 0.3s;position:relative;
   padding-top:var(--safe-top);
 }
+/* TOP BAR */
+#top-bar{
+  width:100%;background:var(--surface);
+  border-bottom:0.5px solid var(--border2);
+  padding:5px 16px;
+  display:flex;align-items:center;justify-content:center;gap:0;
+  flex-shrink:0;z-index:50;position:relative;
+  transition:background 0.3s,border-color 0.3s;
+}
+#top-bar-inner{
+  display:flex;align-items:center;gap:10px;
+  font-size:10px;color:var(--dim);
+  font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+  letter-spacing:0.02em;white-space:nowrap;
+}
+#top-bar .sep{opacity:0.35;}
+#top-bar a{color:inherit;text-decoration:none;cursor:pointer;}
+#top-bar a:hover{opacity:0.7;}
 body::before{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(ellipse 700px 500px at 15% 0%,var(--g1),transparent 65%),
@@ -44,7 +79,7 @@ body::before{
 #app{
   position:relative;z-index:1;width:100%;max-width:520px;
   height:100%;display:flex;flex-direction:column;
-  padding:0 14px calc(14px + var(--safe-bot));
+  padding:0 14px calc(10px + var(--safe-bot));
   overflow:hidden;
 }
 
@@ -358,6 +393,17 @@ body::before{
 <body>
 <div id="app">
 
+<!-- TOP BAR -->
+<div id="top-bar">
+  <div id="top-bar-inner">
+    <span>Pro 2.0</span>
+    <span class="sep">|</span>
+    <span>©sebasmobil 2026</span>
+    <span class="sep">|</span>
+    <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">AGPL v3.0</a>
+  </div>
+</div>
+
 <!-- HEADER -->
 <div id="header">
   <div id="logo">numara<span>kaçışı</span></div>
@@ -416,8 +462,8 @@ body::before{
 
     <div class="s-section">Hakkında</div>
     <div class="s-row">
-      <div><div class="s-label">Versiyon</div></div>
-      <div style="font-family:'SF Mono','Courier New',monospace;font-size:11px;color:var(--dim);">v3.0</div>
+      <div><div class="s-label">Lisans</div><div class="s-sub">GNU AGPL v3.0</div></div>
+      <div style="font-size:11px;color:var(--dim);">sebasmobil</div>
     </div>
   </div>
 </div>
