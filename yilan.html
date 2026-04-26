@@ -569,18 +569,17 @@ function queueDir(d) {
 }
 
 function rotateCW(){
-  var last = dirQueue.length > 0 ? dirQueue[dirQueue.length-1] : dir;
-  var idx  = dirIdx(last);
-  var next = DIRS[(idx + 1) % 4];
+  // Anında uygula + snake'i bir adım ilerlet
+  var next = DIRS[(dirIdx(dir) + 1) % 4];
   if(next.x === -dir.x && next.y === -dir.y) return;
-  if(dirQueue.length < 3) dirQueue.push(next);
+  dir = next; dirQueue = [];
+  if(state === 'playing'){ clearInterval(loop); step(); loop = setInterval(step, LEVEL_SPEEDS[level-1]); }
 }
 function rotateCCW(){
-  var last = dirQueue.length > 0 ? dirQueue[dirQueue.length-1] : dir;
-  var idx  = dirIdx(last);
-  var next = DIRS[(idx + 3) % 4];
+  var next = DIRS[(dirIdx(dir) + 3) % 4];
   if(next.x === -dir.x && next.y === -dir.y) return;
-  if(dirQueue.length < 3) dirQueue.push(next);
+  dir = next; dirQueue = [];
+  if(state === 'playing'){ clearInterval(loop); step(); loop = setInterval(step, LEVEL_SPEEDS[level-1]); }
 }
 
 function getLvl(len){
