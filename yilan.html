@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  Yılan Oyunu - Snake Game Pro 3.0.01
+  Yılan Oyunu - Snake Game Pro 3.0.02
   Copyright (C) 2026 sebasmobil
   Licensed under GNU Affero General Public License v3.0
   https://www.gnu.org/licenses/agpl-3.0.html
@@ -15,10 +15,9 @@
 html,body{
   width:100%;height:100%;overflow:hidden;
   font-family:Arial,sans-serif;
-  background:#0a0a0f;color:#eee;
+  background:#111;color:#eee;
   display:flex;flex-direction:column;align-items:stretch;
   touch-action:manipulation;
-  transition: background 0.3s;
 }
 
 /* INFO BAR */
@@ -88,11 +87,9 @@ html,body{
 /* CANVAS */
 #sborder{
   flex:1 1 auto;min-height:0;margin:0 10px;
-  border-radius:12px;padding:0;border:3px solid #3fb950;
-  overflow:hidden;
+  border-radius:6px;padding:0;border:3px solid #333;
+  background:#0d1117;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 16px #3fb95044, 0 0 4px #3fb95066;
-  transition: border-color 0.3s, box-shadow 0.3s;
 }
 #sscreen{position:relative;flex-shrink:0;}
 canvas{display:block;}
@@ -186,7 +183,7 @@ canvas{display:block;}
 <body>
 
 <div id="infobar">
-  <span>Pro 3.0.01</span><span>|</span>
+  <span>Pro 3.0.02</span><span>|</span>
   <span>©sebasmobil 2026</span><span>|</span>
   <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" id="agpllink">AGPL v3.0</a>
 </div>
@@ -268,40 +265,34 @@ canvas{display:block;}
 // ── THEMES ───────────────────────────────────────────────────
 var THEMES = {
   dark:{
-    body:'#0a0a0f',text:'#eee',textDim:'#555',
-    btnBg:'#1a1a24',btnBorder:'#2e2e42',btnText:'#ddd',
-    selBg:'#1a1a24',selBorder:'#2e2e42',selText:'#aaa',
-    lvlBorder:'#2e2e42',canBorder:'#3fb950',
-    canGlow:'0 0 20px #3fb95055, 0 0 6px #3fb95088',
-    canBg:'#0d1117',
-    mBg:'#12121a',mBorder:'#2e2e42',mText:'#eee',
-    sBg:'#12121a',sTopBorder:'#2e2e42',sLbl:'#555',
-    dotOn:'#3fb950',dotOff:'#1a1a24',dotOffB:'#2e2e42',
-    bg:'#0d1117',gr:'#12181f',sn:'#3fb950',sh:'#56d364',ey:'#0d1117'
+    body:'#111',text:'#eee',textDim:'#555',
+    btnBg:'#2a2a2a',btnBorder:'#555',btnText:'#ddd',
+    selBg:'#222',selBorder:'#444',selText:'#aaa',
+    lvlBorder:'#3a3a3a',canBorder:'#333',
+    mBg:'#1e1e1e',mBorder:'#444',mText:'#eee',
+    sBg:'#1a1a1a',sTopBorder:'#333',sLbl:'#555',
+    dotOn:'#3fb950',dotOff:'#222',dotOffB:'#333',
+    bg:'#0d1117',gr:'#161b22',sn:'#3fb950',sh:'#56d364',ey:'#0d1117'
   },
   light:{
-    body:'#9aab8a',text:'#111',textDim:'#5a6a4a',
-    btnBg:'#b8c8a8',btnBorder:'#7a9060',btnText:'#1a2a10',
-    selBg:'#b8c8a8',selBorder:'#7a9060',selText:'#1a2a10',
-    lvlBorder:'#7a9060',canBorder:'#2d7a20',
-    canGlow:'0 0 20px #2d7a2066, 0 0 6px #2d7a2099',
-    canBg:'#f0f8e8',
-    mBg:'#c8d8b8',mBorder:'#7a9060',mText:'#111',
-    sBg:'#c8d8b8',sTopBorder:'#7a9060',sLbl:'#5a6a4a',
-    dotOn:'#2d7a20',dotOff:'#8a9a7a',dotOffB:'#7a9060',
-    bg:'#f0f8e8',gr:'#e0ecd8',sn:'#2d8a2d',sh:'#38b038',ey:'#f0f8e8'
+    body:'#e8e8e3',text:'#111',textDim:'#888',
+    btnBg:'#d5d5d0',btnBorder:'#bbb',btnText:'#222',
+    selBg:'#e8e8e3',selBorder:'#ccc',selText:'#333',
+    lvlBorder:'#bbb',canBorder:'#4a7a4a',
+    mBg:'#f0f0eb',mBorder:'#ccc',mText:'#111',
+    sBg:'#f0f0eb',sTopBorder:'#ccc',sLbl:'#888',
+    dotOn:'#2d8a2d',dotOff:'#ccc',dotOffB:'#bbb',
+    bg:'#ffffff',gr:'#c8c8c0',sn:'#2d8a2d',sh:'#38b038',ey:'#ffffff'
   },
   nokia:{
-    body:'#2a3818',text:'#b8d870',textDim:'#5a7030',
-    btnBg:'#3a4a22',btnBorder:'#6a8030',btnText:'#b8d870',
-    selBg:'#3a4a22',selBorder:'#6a8030',selText:'#b8d870',
-    lvlBorder:'#6a8030',canBorder:'#a8d820',
-    canGlow:'0 0 20px #a8d82066, 0 0 6px #a8d82099',
-    canBg:'#0e1a04',
-    mBg:'#2a3818',mBorder:'#6a8030',mText:'#b8d870',
-    sBg:'#2a3818',sTopBorder:'#6a8030',sLbl:'#5a7030',
-    dotOn:'#a8d820',dotOff:'#2a3818',dotOffB:'#3a4a22',
-    bg:'#0e1a04',gr:'#1a2808',sn:'#a8d820',sh:'#c8f040',ey:'#0e1a04'
+    body:'#6a7a55',text:'#0a1a00',textDim:'#3a4a20',
+    btnBg:'#7a8a65',btnBorder:'#5a6a45',btnText:'#0a1a00',
+    selBg:'#7a8a65',selBorder:'#5a6a45',selText:'#0a1a00',
+    lvlBorder:'#5a6a45',canBorder:'#1a2a0a',
+    mBg:'#8a9a75',mBorder:'#5a6a45',mText:'#0a1a00',
+    sBg:'#8a9a75',sTopBorder:'#5a6a45',sLbl:'#3a4a20',
+    dotOn:'#1a2a0a',dotOff:'#7a8a65',dotOffB:'#5a6a45',
+    bg:'#b0bf8a',gr:'#9aae72',sn:'#1a2a0a',sh:'#2a3a14',ey:'#b0bf8a'
   }
 };
 var t = THEMES.dark;
@@ -320,11 +311,9 @@ function applyTheme(name) {
   sndbtn.style.background = t.btnBg; sndbtn.style.borderColor = t.btnBorder; sndbtn.style.color = t.btnText;
   var sbtn = document.getElementById('settingsbtn');
   sbtn.style.background = t.btnBg; sbtn.style.borderColor = t.btnBorder;
-  var sb = document.getElementById('sborder');
-  sb.style.borderColor = t.canBorder;
-  sb.style.boxShadow = t.canGlow || '';
-  // background is now on canvas bg only, sborder has no bg (overflow:hidden clips canvas)
-  document.getElementById('sscreen').style.background = t.bg;
+  document.getElementById('sborder').style.borderColor = t.canBorder;
+  document.getElementById('sborder').style.borderWidth = '3px';
+  document.getElementById('sborder').style.background = t.bg;
   document.getElementById('sscreen').style.borderColor = t.canBorder;
   var dps = document.querySelectorAll('.dp');
   for (var i = 0; i < dps.length; i++) {
@@ -361,8 +350,7 @@ function sizeCanvas() {
   W = COLS * CELL; H = ROWS * CELL;
   cv.width = W; cv.height = H;
   var sc = document.getElementById('sscreen');
-  // sscreen fills sborder fully so no background gaps show
-  sc.style.width = aw + 'px'; sc.style.height = ah + 'px';
+  sc.style.width = W + 'px'; sc.style.height = H + 'px';
 }
 
 // ── LEVELS ───────────────────────────────────────────────────
@@ -764,9 +752,6 @@ window.addEventListener('load', function() {
   updateDots();
   ctx.fillStyle = t.bg; ctx.fillRect(0,0,W,H);
   show('SNAKE', 'Yeşil tuşa bas');
-  // Ensure sborder uses canBg not body bg on init
-  document.getElementById('sborder').style.background = t.canBg || t.bg;
-  document.getElementById('sborder').style.boxShadow = t.canGlow || '';
 });
 </script>
 </body>
