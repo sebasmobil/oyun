@@ -3,8 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SudokuMaster Pro 2.0</title>
+<title>SudokuMaster Pro 2.1</title>
 <meta name="description" content="Gelişmiş Sudoku Oyunu - sebasmobil">
+
+<!-- PWA / Ana Ekran İkon Desteği -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SudokuMaster">
+<meta name="application-name" content="SudokuMaster">
+<meta name="theme-color" content="#1a3a5c">
+
+<!-- İkon: inline SVG → base64 PNG (iOS + Android ana ekran) -->
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjM4IiBmaWxsPSIjMWEzYTVjIi8+PHJlY3QgeD0iMTgiIHk9IjE4IiB3aWR0aD0iMTQ0IiBoZWlnaHQ9IjE0NCIgcng9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMyIvPjxsaW5lIHgxPSI2NiIgeTE9IjE4IiB4Mj0iNjYiIHkyPSIxNjIiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGxpbmUgeDE9IjExNCIgeTE9IjE4IiB4Mj0iMTE0IiB5Mj0iMTYyIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMyIvPjxsaW5lIHgxPSIxOCIgeTE9IjY2IiB4Mj0iMTYyIiB5Mj0iNjYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGxpbmUgeDE9IjE4IiB5MT0iMTE0IiB4Mj0iMTYyIiB5Mj0iMTE0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMyIvPjxsaW5lIHgxPSI2NiIgeTE9IjE4IiB4Mj0iNjYiIHkyPSIxNjIiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2Ii8+PGxpbmUgeDE9IjExNCIgeTE9IjE4IiB4Mj0iMTE0IiB5Mj0iMTYyIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIvPjxsaW5lIHgxPSIxOCIgeTE9IjY2IiB4Mj0iMTYyIiB5Mj0iNjYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2Ii8+PGxpbmUgeDE9IjE4IiB5MT0iMTE0IiB4Mj0iMTYyIiB5Mj0iMTE0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIvPjx0ZXh0IHg9IjM2IiB5PSI1NCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjZmZkNzAwIj43PC90ZXh0Pjx0ZXh0IHg9Ijg0IiB5PSI1NCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjZmZmIj4zPC90ZXh0Pjx0ZXh0IHg9IjEzMiIgeT0iNTQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZCI+PC90ZXh0Pjx0ZXh0IHg9IjM2IiB5PSIxMDIiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZiI+NTwvdGV4dD48dGV4dCB4PSI4NCIgeT0iMTAyIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmQ3MDAiPjk8L3RleHQ+PHRleHQgeD0iMTMyIiB5PSIxMDIiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZiI+MjwvdGV4dD48dGV4dCB4PSIzNiIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmQiPjwvdGV4dD48dGV4dCB4PSI4NCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmQiPjE8L3RleHQ+PHRleHQgeD0iMTMyIiB5PSIxNTAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZDcwMCI+NjwvdGV4dD48L3N2Zz4=">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjM4IiBmaWxsPSIjMWEzYTVjIi8+PHJlY3QgeD0iMTgiIHk9IjE4IiB3aWR0aD0iMTQ0IiBoZWlnaHQ9IjE0NCIgcng9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMyIvPjxsaW5lIHgxPSI2NiIgeTE9IjE4IiB4Mj0iNjYiIHkyPSIxNjIiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGxpbmUgeDE9IjExNCIgeTE9IjE4IiB4Mj0iMTE0IiB5Mj0iMTYyIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMyIvPjxsaW5lIHgxPSIxOCIgeTE9IjY2IiB4Mj0iMTYyIiB5Mj0iNjYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGxpbmUgeDE9IjE4IiB5MT0iMTE0IiB4Mj0iMTYyIiB5Mj0iMTE0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMyIvPjxsaW5lIHgxPSI2NiIgeTE9IjE4IiB4Mj0iNjYiIHkyPSIxNjIiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2Ii8+PGxpbmUgeDE9IjExNCIgeTE9IjE4IiB4Mj0iMTE0IiB5Mj0iMTYyIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIvPjxsaW5lIHgxPSIxOCIgeTE9IjY2IiB4Mj0iMTYyIiB5Mj0iNjYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2Ii8+PGxpbmUgeDE9IjE4IiB5MT0iMTE0IiB4Mj0iMTYyIiB5Mj0iMTE0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIvPjx0ZXh0IHg9IjM2IiB5PSI1NCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjZmZkNzAwIj43PC90ZXh0Pjx0ZXh0IHg9Ijg0IiB5PSI1NCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjZmZmIj4zPC90ZXh0Pjx0ZXh0IHg9IjEzMiIgeT0iNTQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZCI+PC90ZXh0Pjx0ZXh0IHg9IjM2IiB5PSIxMDIiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZiI+NTwvdGV4dD48dGV4dCB4PSI4NCIgeT0iMTAyIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmQ3MDAiPjk8L3RleHQ+PHRleHQgeD0iMTMyIiB5PSIxMDIiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZiI+MjwvdGV4dD48dGV4dCB4PSIzNiIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmQiPjwvdGV4dD48dGV4dCB4PSI4NCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmQiPjE8L3RleHQ+PHRleHQgeD0iMTMyIiB5PSIxNTAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZDcwMCI+NjwvdGV4dD48L3N2Zz4=">
+
+<!-- Web App Manifest (inline) -->
+<script>
+(function(){
+  const manifest = {
+    name: "SudokuMaster Pro",
+    short_name: "SudokuMaster",
+    description: "Gelişmiş Sudoku Oyunu",
+    start_url: ".",
+    display: "standalone",
+    background_color: "#1a3a5c",
+    theme_color: "#1a3a5c",
+    orientation: "any",
+    icons: [
+      {
+        src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjM4IiBmaWxsPSIjMWEzYTVjIi8+PHJlY3QgeD0iMTgiIHk9IjE4IiB3aWR0aD0iMTQ0IiBoZWlnaHQ9IjE0NCIgcng9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMyIvPjxsaW5lIHgxPSI2NiIgeTE9IjE4IiB4Mj0iNjYiIHkyPSIxNjIiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGxpbmUgeDE9IjExNCIgeTE9IjE4IiB4Mj0iMTE0IiB5Mj0iMTYyIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMyIvPjxsaW5lIHgxPSIxOCIgeTE9IjY2IiB4Mj0iMTYyIiB5Mj0iNjYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGxpbmUgeDE9IjE4IiB5MT0iMTE0IiB4Mj0iMTYyIiB5Mj0iMTE0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMyIvPjxsaW5lIHgxPSI2NiIgeTE9IjE4IiB4Mj0iNjYiIHkyPSIxNjIiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2Ii8+PGxpbmUgeDE9IjExNCIgeTE9IjE4IiB4Mj0iMTE0IiB5Mj0iMTYyIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIvPjxsaW5lIHgxPSIxOCIgeTE9IjY2IiB4Mj0iMTYyIiB5Mj0iNjYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2Ii8+PGxpbmUgeDE9IjE4IiB5MT0iMTE0IiB4Mj0iMTYyIiB5Mj0iMTE0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIvPjx0ZXh0IHg9IjM2IiB5PSI1NCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjZmZkNzAwIj43PC90ZXh0Pjx0ZXh0IHg9Ijg0IiB5PSI1NCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjZmZmIj4zPC90ZXh0Pjx0ZXh0IHg9IjEzMiIgeT0iNTQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZCI+PC90ZXh0Pjx0ZXh0IHg9IjM2IiB5PSIxMDIiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZiI+NTwvdGV4dD48dGV4dCB4PSI4NCIgeT0iMTAyIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmQ3MDAiPjk8L3RleHQ+PHRleHQgeD0iMTMyIiB5PSIxMDIiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZiI+MjwvdGV4dD48dGV4dCB4PSIzNiIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmQiPjwvdGV4dD48dGV4dCB4PSI4NCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmQiPjE8L3RleHQ+PHRleHQgeD0iMTMyIiB5PSIxNTAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZDcwMCI+NjwvdGV4dD48L3N2Zz4=",
+        sizes: "180x180",
+        type: "image/svg+xml",
+        purpose: "any maskable"
+      }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = url;
+  document.head.appendChild(link);
+})();
+</script>
 <style>
 :root {
   --bg: #f5f3ee;
@@ -299,7 +341,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:po
 <!-- ===== WHAT'S NEW OVERLAY ===== -->
 <div class="overlay" id="whatsnew-overlay">
   <div class="modal" id="whatsnew-modal">
-    <span class="version-badge">Pro 2.0 · Yenilikler</span>
+    <span class="version-badge">Pro 2.1 · Yenilikler</span>
     <h2>SudokuMaster'a Hoş Geldiniz!</h2>
     <p>Bu sürümde gelen özellikler:</p>
     <div class="news-scroll" id="news-scroll">
@@ -386,7 +428,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:po
 
     <!-- INFO BAR -->
     <div id="info-bar">
-      <span>SudokuMaster Pro 2.0</span>
+      <span>SudokuMaster Pro 2.1</span>
       <span class="ib-sep">|</span>
       <span>©sebasmobil 2026</span>
       <span class="ib-sep">|</span>
@@ -468,7 +510,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:po
         </div>
         <div class="about-section">
           <h3>Uygulama Hakkında</h3>
-          <p>SudokuMaster Pro 2.0<br>Geliştirici: sebasmobil<br>Tüm hakları saklıdır.</p>
+          <p>SudokuMaster Pro 2.1<br>Geliştirici: sebasmobil<br>Tüm hakları saklıdır.</p>
           <p style="margin-top:8px;">Bu uygulama Android, iOS, Windows ve diğer tüm platformlarda çalışmak üzere tasarlanmıştır.</p>
           <span class="license-badge">© sebasmobil · AGPL v3.0</span>
         </div>
@@ -494,7 +536,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:po
 <script>
 try {
 
-const APP_VERSION = 'Pro 2.0';
+const APP_VERSION = 'Pro 2.1';
 const STORAGE_PREFIX = 'sudokumaster_';
 const MAX_MISTAKES = 3;
 const HINT_LIMITS = { 'cok-kolay': Infinity, 'kolay': 5, 'orta': 3, 'zor': 2, 'uzman': 1 };
