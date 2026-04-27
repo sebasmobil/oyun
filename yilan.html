@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  Yılan Oyunu - Snake Game Pro 3.0.02
+  Yılan Oyunu - Snake Game Pro 3.0.03
   Copyright (C) 2026 sebasmobil
   Licensed under GNU Affero General Public License v3.0
   https://www.gnu.org/licenses/agpl-3.0.html
@@ -9,7 +9,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>Yilan Oyunu</title>
+<title>Yılan Oyunu</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Yılan">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" id="appicon" href="">
+<script>
+(function(){
+  var cv = document.createElement('canvas');
+  cv.width = 512; cv.height = 512;
+  var cx = cv.getContext('2d');
+  // Arka plan - koyu yeşil yuvarlak köşeli
+  cx.fillStyle = '#1a1a1a';
+  cx.beginPath();
+  cx.roundRect(0,0,512,512,100);
+  cx.fill();
+  // Yılan emojisi
+  cx.font = '320px serif';
+  cx.textAlign = 'center';
+  cx.textBaseline = 'middle';
+  cx.fillText('🐍', 256, 270);
+  var ico = document.getElementById('appicon');
+  ico.href = cv.toDataURL('image/png');
+  // Favicon da aynı
+  var lnk = document.createElement('link');
+  lnk.rel = 'icon'; lnk.type = 'image/png';
+  lnk.href = cv.toDataURL('image/png');
+  document.head.appendChild(lnk);
+})();
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{
@@ -192,7 +221,7 @@ canvas{display:block;}
 <body>
 
 <div id="infobar">
-  <span>Pro 3.0.02</span><span>|</span>
+  <span>Pro 3.0.03</span><span>|</span>
   <span>©sebasmobil 2026</span><span>|</span>
   <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" id="agpllink">AGPL v3.0</a>
 </div>
