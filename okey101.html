@@ -3,9 +3,18 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="101 Okey"/>
+<meta name="application-name" content="101 Okey"/>
+<meta name="theme-color" content="#0e0f11"/>
+<meta name="description" content="101 Okey puan takip uygulaması"/>
 <title>101 Okey Takip</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="manifest" id="manifestLink"/>
+<link rel="apple-touch-icon" id="appleTouchIcon"/>
 <style>
 :root{
   --bg:#0e0f11;
@@ -759,6 +768,99 @@ function fmtDate(ts){
 if(S.current)render(renderGame);
 else if(S.history.length)render(renderHistory);
 else render(renderSetup);
+
+/* ===== PWA BOOTSTRAP ===== */
+function generateIcon(size){
+  const c=document.createElement('canvas');c.width=size;c.height=size;
+  const ctx=c.getContext('2d');
+  const r=size*0.18; // corner radius
+
+  // Background rounded rect
+  ctx.beginPath();
+  ctx.moveTo(r,0);ctx.lineTo(size-r,0);ctx.quadraticCurveTo(size,0,size,r);
+  ctx.lineTo(size,size-r);ctx.quadraticCurveTo(size,size,size-r,size);
+  ctx.lineTo(r,size);ctx.quadraticCurveTo(0,size,0,size-r);
+  ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();
+  const grad=ctx.createLinearGradient(0,0,size,size);
+  grad.addColorStop(0,'#1e2127');grad.addColorStop(1,'#0e0f11');
+  ctx.fillStyle=grad;ctx.fill();
+
+  // Subtle inner glow border
+  ctx.strokeStyle='rgba(224,92,48,0.35)';ctx.lineWidth=size*0.025;ctx.stroke();
+
+  const cx=size/2, cy=size/2;
+  const fs=size*0.28; // font size for "101"
+  const fs2=size*0.175; // font size for "OK"
+
+  // "101" text
+  ctx.fillStyle='#e05c30';
+  ctx.font=`800 ${fs}px Syne, Arial Black, sans-serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('101',cx,cy-size*0.1);
+
+  // "OKEY" text
+  ctx.fillStyle='#f0f0f2';
+  ctx.font=`700 ${fs2}px Syne, Arial Black, sans-serif`;
+  ctx.fillText('OKEY',cx,cy+size*0.18);
+
+  // Small orange underline accent
+  const lw=size*0.32, lh=size*0.025;
+  ctx.fillStyle='#e05c30';
+  ctx.beginPath();
+  ctx.roundRect(cx-lw/2, cy+size*0.32, lw, lh, lh/2);
+  ctx.fill();
+
+  return c.toDataURL('image/png');
+}
+
+function setupPWA(){
+  const icon192=generateIcon(192);
+  const icon512=generateIcon(512);
+
+  // Set apple touch icon
+  document.getElementById('appleTouchIcon').href=icon192;
+
+  // Build and inject manifest
+  const manifest={
+    name:'101 Okey Takip',
+    short_name:'101 Okey',
+    description:'101 Okey puan takip uygulaması',
+    start_url:'.',
+    display:'standalone',
+    background_color:'#0e0f11',
+    theme_color:'#0e0f11',
+    orientation:'portrait',
+    lang:'tr',
+    icons:[
+      {src:icon192,sizes:'192x192',type:'image/png',purpose:'any maskable'},
+      {src:icon512,sizes:'512x512',type:'image/png',purpose:'any maskable'}
+    ]
+  };
+  const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  document.getElementById('manifestLink').href=url;
+
+  // Register Service Worker (inline blob)
+  if('serviceWorker' in navigator){
+    const swCode=`
+const CACHE='okey101-v2';
+const ASSETS=[self.location.href.split('?')[0]];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting()});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
+self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res&&res.status===200){const clone=res.clone();caches.open(CACHE).then(c=>c.put(e.request,clone))}return res})))});
+    `;
+    const swBlob=new Blob([swCode],{type:'application/javascript'});
+    const swUrl=URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swUrl,{scope:'./'}).catch(()=>{});
+  }
+}
+
+// Run after fonts might be loaded for better canvas text
+if(document.fonts&&document.fonts.ready){
+  document.fonts.ready.then(setupPWA);
+}else{
+  window.addEventListener('load',setupPWA);
+}
 </script>
 </body>
 </html>
